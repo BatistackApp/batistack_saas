@@ -68,12 +68,13 @@ class StripeWebhookController extends Controller
             ->first();
 
         if ($invoice === null) {
+            Log::warning('Stripe webhook: Invoice not found for payment_failed', ['stripe_invoice_id' => $stripeInvoice->id]);
             return;
         }
 
         $invoice->forceFill([
             'status' => InvoiceStatus::Void,
-            'due_at' => $stripeInvoice->due_date ? now()->createFromTimestamp($stripeInvoice->due_date) : $invoice->due_at,
+            'due_at' => $stripeInvoice->due_date ? \Illuminate\Support\Carbon::createFromTimestamp($stripeInvoice->due_date) : $invoice->due_at,
         ])->save();
     }
 }
