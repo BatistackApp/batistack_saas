@@ -52,12 +52,12 @@ class StripeWebhookController extends Controller
             'amount' => (float) ($stripeInvoice->amount_paid / 100),
             'status' => InvoiceStatus::Paid,
             'issued_at' => optional($stripeInvoice->status_transitions)->finalized_at
-                ? now()->createFromTimestamp($stripeInvoice->status_transitions->finalized_at)
+                ? \Illuminate\Support\Carbon::createFromTimestamp($stripeInvoice->status_transitions->finalized_at)
                 : $invoice->issued_at,
             'paid_at' => $stripeInvoice->paid ? now() : $invoice->paid_at,
-            'billing_period_start' => now()->createFromTimestamp($stripeInvoice->period_start),
-            'billing_period_end' => now()->createFromTimestamp($stripeInvoice->period_end),
-            'due_at' => $stripeInvoice->due_date ? now()->createFromTimestamp($stripeInvoice->due_date) : $invoice->due_at,
+            'billing_period_start' => \Illuminate\Support\Carbon::createFromTimestamp($stripeInvoice->period_start),
+            'billing_period_end' => \Illuminate\Support\Carbon::createFromTimestamp($stripeInvoice->period_end),
+            'due_at' => $stripeInvoice->due_date ? \Illuminate\Support\Carbon::createFromTimestamp($stripeInvoice->due_date) : $invoice->due_at,
         ])->save();
     }
 
