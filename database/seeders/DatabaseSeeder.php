@@ -4,6 +4,10 @@ namespace Database\Seeders;
 
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Database\Seeders\Core\ModuleSeeder;
+use Database\Seeders\Core\PlanModuleSeeder;
+use Database\Seeders\Core\PlanSeeder;
+use Database\Seeders\Core\TenantSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -15,9 +19,11 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            ModuleSeeder::class,
+            PlanSeeder::class,
+            PlanModuleSeeder::class,
+            TenantSeeder::class,
         ]);
     }
 }

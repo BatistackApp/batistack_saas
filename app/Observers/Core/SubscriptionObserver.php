@@ -3,7 +3,9 @@
 namespace App\Observers\Core;
 
 use App\Enums\Core\SubscriptionStatus;
+use App\Jobs\Core\SyncSubscriptionsJob;
 use App\Models\Core\TenantSubscription;
+use App\Notifications\Core\SubscriptionExpiringNotification;
 use Illuminate\Support\Facades\Notification;
 
 class SubscriptionObserver
@@ -25,7 +27,7 @@ class SubscriptionObserver
                 $subscription->tenant->schedulePlanDisable($subscription);
             } elseif ($status === SubscriptionStatus::Trialing->value) {
                 // notifier fin de trial prochainement
-                Notification::send($subscription->tenant->users, new SubscriptionExpiring($subscription));
+                Notification::send($subscription->tenant->users, new SubscriptionExpiringNotification($subscription));
             }
         }
     }

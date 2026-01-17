@@ -30,7 +30,6 @@ class InvoiceFactory extends Factory
             'due_at' => $dueAt,
             'paid_at' => null,
             'tenant_id' => Tenant::factory(),
-            'subscription_id' => TenantSubscription::factory(),
         ];
     }
 

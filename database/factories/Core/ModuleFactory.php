@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Core;
 
+use App\Enums\Core\PlanPriority;
 use App\Models\Core\Module;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -10,22 +11,22 @@ class ModuleFactory extends Factory
     protected $model = Module::class;
 
     private static array $modules = [
-        ['name' => 'Tiers (CRM)', 'slug' => 'tiers', 'priority' => 'Haute'],
-        ['name' => 'Chantiers', 'slug' => 'chantiers', 'priority' => 'Haute'],
-        ['name' => 'Articles & Stock', 'slug' => 'articles-stock', 'priority' => 'Haute'],
-        ['name' => 'Commerce / Facturation', 'slug' => 'commerce-facturation', 'priority' => 'Haute'],
-        ['name' => 'Comptabilité', 'slug' => 'comptabilite', 'priority' => 'Haute'],
-        ['name' => 'Pointage / RH', 'slug' => 'pointage-rh', 'priority' => 'Haute'],
-        ['name' => 'GED', 'slug' => 'ged', 'priority' => 'Moyenne'],
-        ['name' => 'Banque', 'slug' => 'banque', 'priority' => 'Moyenne'],
-        ['name' => 'Notes de Frais', 'slug' => 'notes-frais', 'priority' => 'Moyenne'],
-        ['name' => 'Paie', 'slug' => 'paie', 'priority' => 'Moyenne'],
-        ['name' => 'GPAO', 'slug' => 'gpao', 'priority' => 'Moyenne'],
-        ['name' => 'Flottes', 'slug' => 'flottes', 'priority' => 'Basse'],
-        ['name' => 'Locations', 'slug' => 'locations', 'priority' => 'Basse'],
-        ['name' => 'Interventions', 'slug' => 'interventions', 'priority' => 'Basse'],
-        ['name' => 'Pilotage', 'slug' => 'pilotage', 'priority' => 'Basse'],
-        ['name' => '3D Vision', 'slug' => '3d-vision', 'priority' => 'Basse'],
+        ['name' => 'Tiers (CRM)', 'slug' => 'tiers', 'priority' => 'high'],
+        ['name' => 'Chantiers', 'slug' => 'chantiers', 'priority' => 'high'],
+        ['name' => 'Articles & Stock', 'slug' => 'articles-stock', 'priority' => 'high'],
+        ['name' => 'Commerce / Facturation', 'slug' => 'commerce-facturation', 'priority' => 'high'],
+        ['name' => 'Comptabilité', 'slug' => 'comptabilite', 'priority' => 'high'],
+        ['name' => 'Pointage / RH', 'slug' => 'pointage-rh', 'priority' => 'high'],
+        ['name' => 'GED', 'slug' => 'ged', 'priority' => 'medium'],
+        ['name' => 'Banque', 'slug' => 'banque', 'priority' => 'medium'],
+        ['name' => 'Notes de Frais', 'slug' => 'notes-frais', 'priority' => 'medium'],
+        ['name' => 'Paie', 'slug' => 'paie', 'priority' => 'medium'],
+        ['name' => 'GPAO', 'slug' => 'gpao', 'priority' => 'medium'],
+        ['name' => 'Flottes', 'slug' => 'flottes', 'priority' => 'low'],
+        ['name' => 'Locations', 'slug' => 'locations', 'priority' => 'low'],
+        ['name' => 'Interventions', 'slug' => 'interventions', 'priority' => 'low'],
+        ['name' => 'Pilotage', 'slug' => 'pilotage', 'priority' => 'low'],
+        ['name' => '3D Vision', 'slug' => '3d-vision', 'priority' => 'low'],
     ];
 
     public function definition(): array
@@ -34,7 +35,7 @@ class ModuleFactory extends Factory
 
         return [
             'name' => $module['name'],
-            'slug' => $module['slug'],
+            'slug' => $this->faker->unique()->slug(),
             'description' => $this->getDescriptionForModule($module['slug']),
             'priority' => $module['priority'],
             'is_active' => true,
@@ -44,28 +45,28 @@ class ModuleFactory extends Factory
     public function critical(): static
     {
         return $this->state(fn (array $attributes) => [
-            'priority' => 'Critique',
+            'priority' => PlanPriority::Critical,
         ]);
     }
 
     public function haute(): static
     {
         return $this->state(fn (array $attributes) => [
-            'priority' => 'Haute',
+            'priority' => PlanPriority::High,
         ]);
     }
 
     public function moyenne(): static
     {
         return $this->state(fn (array $attributes) => [
-            'priority' => 'Moyenne',
+            'priority' => PlanPriority::Medium,
         ]);
     }
 
     public function basse(): static
     {
         return $this->state(fn (array $attributes) => [
-            'priority' => 'Basse',
+            'priority' => PlanPriority::Low,
         ]);
     }
 
