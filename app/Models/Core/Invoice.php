@@ -69,11 +69,11 @@ class Invoice extends Model
     public function markAsPaid(): void
     {
         try {
-            if ($this->status === InvoiceStatus::Paid->value && $this->paid_at !== null) {
+            if ($this->status === InvoiceStatus::Paid && $this->paid_at !== null) {
                 return;
             }
 
-            $this->status = InvoiceStatus::Paid->value;
+            $this->status = InvoiceStatus::Paid;
             if ($this->paid_at === null) {
                 $this->paid_at = now();
             }
