@@ -2,6 +2,7 @@
 
 namespace App\Services\Billing;
 
+use App\Enums\Core\SubscriptionStatus;
 use App\Models\Core\TenantSubscription;
 use Illuminate\Support\Facades\Log;
 
@@ -32,8 +33,8 @@ class SubscriptionSyncService
                     $remoteSubscription = $stripeSubscription->asStripeSubscription();
 
                     // Mettre à jour l'état local selon la source externe
-                    $subscription->status = $remoteSubscription->status;
-                    $subscription->ends_at = $remoteSubscription->ended_at ?
+                    $subscription->status = $this->mapStripeStatus($remoteSubscription->status);
+                    $subscription->cancelled_at = $remoteSubscription->ended_at ?
                         \Illuminate\Support\Carbon::createFromTimestamp($remoteSubscription->ended_at) :
                         null;
                     $subscription->save();
@@ -59,5 +60,16 @@ class SubscriptionSyncService
 
             throw $e;
         }
+    }
+
+    private function mapStripeStatus($status): SubscriptionStatus
+    {
+        return match ($status) {
+            'active' => SubscriptionStatus::Active,
+            'canceled' => SubscriptionStatus::Cancelled,
+            'past_due' => SubscriptionStatus::PastDue,
+            'trialing' => SubscriptionStatus::Trialing,
+            default => SubscriptionStatus::Inactive,
+        };
     }
 }

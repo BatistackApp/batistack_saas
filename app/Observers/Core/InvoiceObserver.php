@@ -14,7 +14,7 @@ class InvoiceObserver
     public function created(Invoice $invoice): void
     {
         // synchroniser / enrichir la facture asynchrone
-        if ($invoice->status !== InvoiceStatus::Paid->value) {
+        if ($invoice->status !== InvoiceStatus::Paid) {
             SyncStripeInvoiceJob::dispatch($invoice);
         }
     }

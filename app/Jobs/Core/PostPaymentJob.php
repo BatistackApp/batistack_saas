@@ -29,7 +29,7 @@ class PostPaymentJob implements ShouldQueue
         }
 
         // Ne traiter que les factures effectivement payées
-        if ($invoice->status !== InvoiceStatus::Paid->value) {
+        if ($invoice->status !== InvoiceStatus::Paid) {
             Log::debug('PostPaymentJob: invoice not in PAID status, skipping', [
                 'invoice_id' => $invoice->id,
                 'status' => $invoice->status,
