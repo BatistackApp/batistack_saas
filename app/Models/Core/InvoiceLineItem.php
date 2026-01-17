@@ -22,8 +22,14 @@ class InvoiceLineItem extends Model
     {
         return [
             'type' => InvoiceLineItemType::class,
+            'quantity' => 'decimal:2',
             'unit_price' => 'decimal:2',
             'total_price' => 'decimal:2',
         ];
+    }
+
+    public function calculateTotal(): string
+    {
+        return (string) (($this->quantity ?? 1) * ($this->unit_price ?? 0));
     }
 }

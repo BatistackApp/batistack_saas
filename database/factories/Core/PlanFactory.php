@@ -12,15 +12,58 @@ class PlanFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'slug' => $this->faker->slug(),
-            'monthly_price' => $this->faker->randomFloat(),
-            'yearly_price' => $this->faker->randomFloat(),
-            'stripe_monthly_price_id' => $this->faker->word(),
-            'stripe_yearly_price_id' => $this->faker->word(),
+            'name' => $this->faker->unique()->word(),
+            'slug' => $this->faker->unique()->slug(),
+            'monthly_price' => $this->faker->randomFloat(2, 29, 299),
+            'yearly_price' => $this->faker->randomFloat(2, 290, 2990),
+            'stripe_monthly_price_id' => 'price_' . $this->faker->unique()->md5(),
+            'stripe_yearly_price_id' => 'price_' . $this->faker->unique()->md5(),
             'is_active' => true,
-            'max_users' => $this->faker->randomDigit(),
-            'max_projects' => $this->faker->randomDigit(),
+            'max_users' => $this->faker->numberBetween(1, 50),
+            'max_projects' => $this->faker->numberBetween(5, 100),
         ];
+    }
+
+    public function starter(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Starter',
+            'slug' => 'starter',
+            'monthly_price' => 29.00,
+            'yearly_price' => 290.00,
+            'max_users' => 3,
+            'max_projects' => 5,
+        ]);
+    }
+
+    public function professional(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Professional',
+            'slug' => 'professional',
+            'monthly_price' => 99.00,
+            'yearly_price' => 990.00,
+            'max_users' => 10,
+            'max_projects' => 25,
+        ]);
+    }
+
+    public function enterprise(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Enterprise',
+            'slug' => 'enterprise',
+            'monthly_price' => 299.00,
+            'yearly_price' => 2990.00,
+            'max_users' => 50,
+            'max_projects' => 100,
+        ]);
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
     }
 }

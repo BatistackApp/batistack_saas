@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('tenant_subscriptions', function (Blueprint $table) {
             $table->id();
             $table->string('billing_period');
-            $table->string('status');
+            $table->string('status')->default('active');
             $table->string('stripe_subscription_id')->nullable();
             $table->timestamp('trial_ends_at')->nullable();
             $table->timestamp('current_period_start')->nullable();
@@ -22,6 +22,10 @@ return new class extends Migration
             $table->foreignIdFor(Tenant::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Plan::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
+
+            $table->index('status');
+            $table->index('stripe_subscription_id');
+            $table->index('cancelled_at');
         });
     }
 
