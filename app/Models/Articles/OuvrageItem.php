@@ -4,11 +4,14 @@ namespace App\Models\Articles;
 
 use App\Enums\Articles\UnitOfMeasure;
 use App\Models\Core\Tenant;
+use App\Observers\Articles\OuvrageItemObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([OuvrageItemObserver::class])]
 class OuvrageItem extends Model
 {
     use HasFactory, SoftDeletes;
