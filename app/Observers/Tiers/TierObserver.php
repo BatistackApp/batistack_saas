@@ -14,9 +14,9 @@ class TierObserver
     public function created(Tiers $tiers): void
     {
         $this->logActivity($tiers, 'created');
-        $tiers->tenant->users()
-            ->whereHas('roles', fn ($q) => $q->whereIn('name', ['admin', 'manager']))
-            ->each(fn ($user) => $user->notify(new TierCreatedNotification($tiers)));
+        //$tiers->tenant->users()
+        //    ->whereHas('roles', fn ($q) => $q->whereIn('name', ['admin', 'manager']))
+        //    ->each(fn ($user) => $user->notify(new TierCreatedNotification($tiers)));
 
         ValidateTierSiretJob::dispatch($tiers);
         SyncTierContactsJob::dispatch($tiers);
@@ -25,16 +25,16 @@ class TierObserver
     public function updated(Tiers $tiers): void
     {
         if ($tiers->isDirty('siret')) {
-            ValidateTierSiretJob::dispatch($tier);
+            ValidateTierSiretJob::dispatch($tiers);
         }
 
         if ($tiers->isDirty()) {
             $changes = $tiers->getDirty();
             $this->logActivity($tiers, 'updated', $changes);
 
-            $tiers->tenant->users()
-                ->whereHas('roles', fn ($q) => $q->whereIn('name', ['admin', 'manager']))
-                ->each(fn ($user) => $user->notify(new TierUpdatedNotification($tiers, $changes)));
+            //$tiers->tenant->users()
+            //    ->whereHas('roles', fn ($q) => $q->whereIn('name', ['admin', 'manager']))
+            //    ->each(fn ($user) => $user->notify(new TierUpdatedNotification($tiers, $changes)));
         }
     }
 
