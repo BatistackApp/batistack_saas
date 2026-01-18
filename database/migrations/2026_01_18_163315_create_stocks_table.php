@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->decimal('quantity', 12, 3)->default(0);
             $table->decimal('reserved_quantity', 12, 3)->default(0);
             $table->decimal('average_unit_cost')->nullable();
+            $table->decimal('min_quantity', 12, 3)->default(0);
             $table->timestamps();
             $table->softDeletes();
 

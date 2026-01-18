@@ -11,6 +11,7 @@ class StockMouvementObserver
     {
         $stock = Stock::firstOrCreate(
             [
+                'tenant_id' => $mouvement->tenant_id,
                 'article_id' => $mouvement->article_id,
                 'warehouse_id' => $mouvement->warehouse_id,
             ],
@@ -18,8 +19,8 @@ class StockMouvementObserver
         );
 
         match ($mouvement->type->value) {
-            'entree', 'transfert' => $stock->increment('quantity', $mouvement->quantity),
-            'sortie' => $stock->decrement('quantity', $mouvement->quantity),
+            'entree', 'transfert', 'consommation' => $stock->increment('quantity', $mouvement->quantity),
+            'sortie', 'production' => $stock->decrement('quantity', $mouvement->quantity),
             'ajustement' => $stock->update(['quantity' => $stock->quantity + $mouvement->quantity]),
         };
 
@@ -30,6 +31,7 @@ class StockMouvementObserver
     {
         $stock = Stock::where('article_id', $mouvement->article_id)
             ->where('warehouse_id', $mouvement->warehouse_id)
+            ->where('tenant_id', $mouvement->tenant_id)
             ->first();
 
         if (!$stock) {
@@ -37,8 +39,8 @@ class StockMouvementObserver
         }
 
         match ($mouvement->type->value) {
-            'entree', 'transfert' => $stock->decrement('quantity', $mouvement->quantity),
-            'sortie' => $stock->increment('quantity', $mouvement->quantity),
+            'entree', 'transfert', 'consommation' => $stock->decrement('quantity', $mouvement->quantity),
+            'sortie', 'production' => $stock->increment('quantity', $mouvement->quantity),
             'ajustement' => $stock->update(['quantity' => $stock->quantity - $mouvement->quantity]),
         };
     }

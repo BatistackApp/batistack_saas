@@ -17,7 +17,7 @@ class ArchiveUnusedArticleJob implements ShouldQueue
         // Archiver les articles non utilisés depuis 1 an
         Article::whereNull('archived_at')
             ->where('updated_at', '<', now()->subYear())
-            ->where('id', '!=', function ($query) {
+            ->whereNotIn('id', function ($query) {
                 $query->select('article_id')
                     ->from('stock_mouvements')
                     ->where('created_at', '>', now()->subYear());

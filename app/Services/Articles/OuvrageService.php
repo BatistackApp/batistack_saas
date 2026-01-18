@@ -40,7 +40,7 @@ class OuvrageService
                 'ouvrage_id' => $ouvrage->id,
                 'article_id' => $item['article_id'],
                 'quantity' => $item['quantity'],
-                'unit_id' => $item['unit_id'],
+                'unit_of_measure' => $item['unit_of_measure'],
             ]);
         }
     }

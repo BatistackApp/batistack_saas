@@ -84,7 +84,7 @@ class StockService
             $article,
             $from,
             $quantity,
-            StockMouvementType::Transfert,
+            StockMouvementType::Sortie,
             StockMouvementReason::Transfert,
             $reference
         );
@@ -93,7 +93,7 @@ class StockService
             $article,
             $to,
             $quantity,
-            StockMouvementType::Transfert,
+            StockMouvementType::Entree,
             StockMouvementReason::Transfert,
             $reference
         );
@@ -128,7 +128,6 @@ class StockService
         StockMouvementReason $reason,
         ?string $reference = null
     ): StockMouvement {
-        $stock = $this->getStock($article, $warehouse);
 
         $movement = StockMouvement::create([
             'article_id' => $article->id,
@@ -138,8 +137,6 @@ class StockService
             'reason' => $reason,
             'reference' => $reference,
         ]);
-
-        $this->updateStockQuantity($stock, $type, $quantity);
 
         return $movement;
     }

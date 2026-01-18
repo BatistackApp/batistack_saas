@@ -38,9 +38,11 @@ class ArticleService
 
     public function search(string $query): Collection
     {
-        return Article::where('name', 'like', "%{$query}%")
-            ->orWhere('code', 'like', "%{$query}%")
-            ->whereNull('archived_at')
+        return Article::whereNull('archived_at')
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('code', 'like', "%{$query}%");
+            })
             ->get();
     }
 
