@@ -4,30 +4,63 @@ namespace App\Services\Tiers;
 
 use App\Enums\Tiers\TierType;
 use App\Models\Tiers\Tiers;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\QueryException;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Log;
 
 class TierService
 {
+    private const MAX_SLUG_RETRIES = 5;
+
+    private const INITIAL_BACKOFF_MS = 100;
+
     public function createTier(int $tenantId, array $data): Tiers
     {
-        return Tiers::create([
-            'tenant_id' => $tenantId,
-            'name' => $data['name'],
-            'slug' => $this->generateSlug($data['name']),
-            'description' => $data['description'] ?? null,
-            'email' => $data['email'] ?? null,
-            'phone' => $data['phone'] ?? null,
-            'website' => $data['website'] ?? null,
-            'siret' => $data['siret'] ?? null,
-            'vat_number' => $data['vat_number'] ?? null,
-            'iban' => $data['iban'] ?? null,
-            'bic' => $data['bic'] ?? null,
-            'types' => $data['types'] ?? [],
-            'discount_percentage' => $data['discount_percentage'] ?? 0,
-            'payment_delay_days' => $data['payment_delay_days'] ?? 0,
-            'is_active' => $data['is_active'] ?? true,
-        ]);
+        $attempt = 0;
+
+        while ($attempt < self::MAX_SLUG_RETRIES) {
+            try {
+                $slug = $this->generateSlug($data['name'], $attempt);
+
+                return Tiers::create([
+                    'tenant_id' => $tenantId,
+                    'name' => $data['name'],
+                    'slug' => $slug,
+                    'description' => $data['description'] ?? null,
+                    'email' => $data['email'] ?? null,
+                    'phone' => $data['phone'] ?? null,
+                    'website' => $data['website'] ?? null,
+                    'siret' => $data['siret'] ?? null,
+                    'vat_number' => $data['vat_number'] ?? null,
+                    'iban' => $data['iban'] ?? null,
+                    'bic' => $data['bic'] ?? null,
+                    'types' => $data['types'] ?? [],
+                    'discount_percentage' => $data['discount_percentage'] ?? 0,
+                    'payment_delay_days' => $data['payment_delay_days'] ?? 0,
+                    'is_active' => $data['is_active'] ?? true,
+                ]);
+            } catch (QueryException $e) {
+                if (! $this->isUniqueConstraintViolation($e)) {
+                    throw $e;
+                }
+
+                $attempt++;
+
+                if ($attempt >= self::MAX_SLUG_RETRIES) {
+                    Log::error('Failed to create tier after max retries', [
+                        'tenant_id' => $tenantId,
+                        'tier_name' => $data['name'],
+                        'attempts' => $attempt,
+                    ]);
+
+                    throw $e;
+                }
+
+                $backoffMs = self::INITIAL_BACKOFF_MS * (2 ** ($attempt - 1));
+                usleep($backoffMs * 1000);
+            }
+        }
     }
 
     public function updateTier(Tiers $tiers, array $data): Tiers
@@ -104,17 +137,30 @@ class TierService
             ->get();
     }
 
-    private function generateSlug(string $name): string
+    private function generateSlug(string $name, int $attempt = 0): string
     {
         $baseSlug = \Str::slug($name);
-        $slug = $baseSlug;
-        $counter = 1;
-
-        while (Tiers::where('slug', $slug)->exists()) {
-            $slug = "{$baseSlug}-{$counter}";
-            $counter++;
-        }
+        $suffix = $attempt === 0 ? '' : $this->generateSuffix($attempt);
+        $slug = $suffix ? "{$baseSlug}-{$suffix}" : $baseSlug;
 
         return $slug;
+    }
+
+    private function generateSuffix(int $attempt): string
+    {
+        if ($attempt === 1) {
+            return \Str::random(4);
+        }
+
+        return \Str::random(6);
+    }
+
+    private function isUniqueConstraintViolation(QueryException $e): bool
+    {
+        return \Str::contains($e->getMessage(), [
+            'UNIQUE constraint failed',
+            'Duplicate entry',
+            'duplicate key',
+        ]);
     }
 }
