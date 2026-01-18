@@ -4,7 +4,6 @@ use App\Enums\Tiers\TierType;
 use App\Models\Core\Tenant;
 use App\Models\Tiers\Tiers;
 use App\Services\Tiers\TierService;
-use Tests\TestCase;
 
 beforeEach(function () {
     $this->tierService = new TierService();
