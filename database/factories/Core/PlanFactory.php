@@ -12,12 +12,12 @@ class PlanFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->word(),
-            'slug' => $this->faker->unique()->slug(),
+            'name' => fake()->unique()->word(),
+            'slug' => fake()->unique()->slug(),
             'monthly_price' => $this->faker->randomFloat(2, 29, 299),
             'yearly_price' => $this->faker->randomFloat(2, 290, 2990),
-            'stripe_monthly_price_id' => 'price_' . $this->faker->unique()->md5(),
-            'stripe_yearly_price_id' => 'price_' . $this->faker->unique()->md5(),
+            'stripe_monthly_price_id' => 'price_' . fake()->unique()->md5(),
+            'stripe_yearly_price_id' => 'price_' . fake()->unique()->md5(),
             'is_active' => true,
             'max_users' => $this->faker->numberBetween(1, 50),
             'max_projects' => $this->faker->numberBetween(5, 100),

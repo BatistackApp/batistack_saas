@@ -14,10 +14,10 @@ class TenantFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->unique()->company(),
-            'slug' => $this->faker->unique()->slug(),
-            'stripe_customer_id' => 'cus_' . $this->faker->unique()->md5(),
-            'stripe_subscription_id' => 'sub_' . $this->faker->unique()->md5(),
+            'name' => fake()->unique()->company(),
+            'slug' => fake()->unique()->slug(),
+            'stripe_customer_id' => 'cus_' . fake()->unique()->md5(),
+            'stripe_subscription_id' => 'sub_' . fake()->unique()->md5(),
             'subscription_expires_at' => Carbon::now()->addMonth(),
             'is_active' => true,
             'plan_id' => Plan::factory(),

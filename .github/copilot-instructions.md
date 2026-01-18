@@ -1,4 +1,21 @@
 <laravel-boost-guidelines>
+=== .ai/context-development rules ===
+
+# Etape de développement
+## Backend Developpement
+Pour chaque module:
+
+- Etape 1: Définir le contexte du module
+- Etape 2: Définir les migrations, Enums et Modèle Eloquents propre au module
+- Etape 3: Définir La porté technique du module en s'appuyant sur des exemples concret 
+- Etape 4: Définir les services dont le module aura besoin dans le namespace App/Service/{NomDuModule}
+- Etape 5: Automatisation du module par la mise en place:
+    - Observer
+    - Jobs
+    - Notifications
+    - Schedules (Si Besoin)
+- Etape 6: Etablissement des Tests Unitaires/Features en corrélation avec le Module
+
 === foundation rules ===
 
 # Laravel Boost Guidelines
@@ -10,9 +27,11 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 - php - 8.4.16
 - filament/filament (FILAMENT) - v5
+- laravel/cashier (CASHIER) - v16
 - laravel/fortify (FORTIFY) - v1
 - laravel/framework (LARAVEL) - v12
 - laravel/prompts (PROMPTS) - v0
+- laravel/sanctum (SANCTUM) - v4
 - livewire/flux (FLUXUI_FREE) - v2
 - livewire/livewire (LIVEWIRE) - v4
 - laravel/mcp (MCP) - v0
