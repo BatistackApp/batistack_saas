@@ -18,11 +18,6 @@ class TierUpdatedNotification extends Notification implements ShouldQueue
         return ['database'];
     }
 
-    public function toDatabase($notifiable): array
-    {
-        return [];
-    }
-
     public function toArray($notifiable): array
     {
         return [

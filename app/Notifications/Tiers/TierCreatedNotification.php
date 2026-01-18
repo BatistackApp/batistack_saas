@@ -11,18 +11,11 @@ class TierCreatedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(public Tiers $tier)
-    {
-    }
+    public function __construct(public Tiers $tier) {}
 
     public function via($notifiable): array
     {
         return ['database'];
-    }
-
-    public function toDatabase($notifiable): array
-    {
-        return [];
     }
 
     public function toArray($notifiable): array
