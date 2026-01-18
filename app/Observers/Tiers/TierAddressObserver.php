@@ -9,7 +9,7 @@ class TierAddressObserver
     public function created(TierAddress $address): void
     {
         if ($address->tiers->addresses()->count() === 1) {
-            $address->update(['is_default' => true]);
+            $address->updateQuietly(['is_default' => true]);
         }
     }
 
