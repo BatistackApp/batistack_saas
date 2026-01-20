@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Chantiers;
 
+use App\Enums\Chantiers\CostCategory;
 use App\Models\Chantiers\Chantier;
 use App\Models\Chantiers\ChantierBudget;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -14,8 +15,8 @@ class ChantierBudgetFactory extends Factory
     public function definition(): array
     {
         return [
-            'category' => $this->faker->word(),
-            'planned_amount' => $this->faker->word(),
+            'category' => $this->faker->randomElement(CostCategory::cases()),
+            'planned_amount' => $this->faker->randomFloat(2, 1000, 50000),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
 
