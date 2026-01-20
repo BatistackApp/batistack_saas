@@ -9,7 +9,7 @@ class StockMouvementObserver
 {
     public function created(StockMouvement $mouvement): void
     {
-        $stock = Stock::firstOrCreate(
+        $stock = Stock::withTrashed()->firstOrCreate(
             [
                 'tenant_id' => $mouvement->tenant_id,
                 'article_id' => $mouvement->article_id,
@@ -19,9 +19,8 @@ class StockMouvementObserver
         );
 
         match ($mouvement->type->value) {
-            'entree', 'transfert', 'consommation' => $stock->increment('quantity', $mouvement->quantity),
+            'entree', 'transfert', 'consommation', 'ajustement' => $stock->increment('quantity', $mouvement->quantity),
             'sortie', 'production' => $stock->decrement('quantity', $mouvement->quantity),
-            'ajustement' => $stock->update(['quantity' => $stock->quantity + $mouvement->quantity]),
         };
 
         $stock->update(['last_movement_at' => now()]);
@@ -34,7 +33,7 @@ class StockMouvementObserver
             ->where('tenant_id', $mouvement->tenant_id)
             ->first();
 
-        if (!$stock) {
+        if (! $stock) {
             return;
         }
 

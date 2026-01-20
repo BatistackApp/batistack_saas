@@ -11,15 +11,16 @@ use App\Models\Articles\Warehouse;
 
 class StockService
 {
-    public function getStock(Article $article, Warehouse $warehouse): Stock
+    public function getStock(Article $article, Warehouse $warehouse): \Illuminate\Database\Eloquent\Model
     {
-        return Stock::firstOrCreate(
-            [
-                'article_id' => $article->id,
-                'warehouse_id' => $warehouse->id,
-            ],
-            ['quantity' => 0]
-        );
+        return Stock::where('tenant_id', $article->tenant->id)
+            ->firstOrCreate(
+                [
+                    'article_id' => $article->id,
+                    'warehouse_id' => $warehouse->id,
+                ],
+                ['quantity' => 0]
+            );
     }
 
     public function addStock(
@@ -101,7 +102,7 @@ class StockService
         return [$exit, $entry];
     }
 
-    public function getMovements(Article $article, ?Warehouse $warehouse = null)
+    public function getMovements(Article $article, ?Warehouse $warehouse = null): StockMouvement
     {
         $query = StockMouvement::where('article_id', $article->id);
 
@@ -112,7 +113,7 @@ class StockService
         return $query->latest()->get();
     }
 
-    public function getWarehouseStocks(Warehouse $warehouse)
+    public function getWarehouseStocks(Warehouse $warehouse): \Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Collection
     {
         return Stock::where('warehouse_id', $warehouse->id)
             ->where('quantity', '>', 0)
@@ -129,7 +130,8 @@ class StockService
         ?string $reference = null
     ): StockMouvement {
 
-        $movement = StockMouvement::create([
+        return StockMouvement::create([
+            'tenant_id' => $article->tenant_id,
             'article_id' => $article->id,
             'warehouse_id' => $warehouse->id,
             'quantity' => $quantity,
@@ -137,16 +139,5 @@ class StockService
             'reason' => $reason,
             'reference' => $reference,
         ]);
-
-        return $movement;
-    }
-
-    private function updateStockQuantity(Stock $stock, StockMouvementType $type, float $quantity): void
-    {
-        match ($type) {
-            StockMouvementType::Entree, StockMouvementType::Transfert => $stock->increment('quantity', $quantity),
-            StockMouvementType::Sortie => $stock->decrement('quantity', $quantity),
-            StockMouvementType::Ajustement => $stock->update(['quantity' => $stock->quantity + $quantity]),
-        };
     }
 }
