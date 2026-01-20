@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignIdFor(Chantier::class)->constrained()->cascadeOnDelete();
             $table->string('category');
-            $table->string('planned_amount', 15, 2);
+            $table->decimal('planned_amount', 15, 2);
             $table->timestamps();
 
             $table->index(['chantier_id', 'category']);
