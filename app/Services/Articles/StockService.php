@@ -74,6 +74,9 @@ class StockService
         );
     }
 
+    /**
+     * @throws \Throwable
+     */
     public function transferStock(
         Article $article,
         Warehouse $from,
@@ -81,25 +84,27 @@ class StockService
         float $quantity,
         ?string $reference = null
     ): array {
-        $exit = $this->recordMovement(
-            $article,
-            $from,
-            $quantity,
-            StockMouvementType::Sortie,
-            StockMouvementReason::Transfert,
-            $reference
-        );
 
-        $entry = $this->recordMovement(
-            $article,
-            $to,
-            $quantity,
-            StockMouvementType::Entree,
-            StockMouvementReason::Transfert,
-            $reference
-        );
+        return \DB::transaction(function () use ($article, $from, $to, $quantity, $reference) {
+            $exit = $this->recordMovement(
+                $article,
+                $from,
+                $quantity,
+                StockMouvementType::Sortie,
+                StockMouvementReason::Transfert,
+                $reference
+            );
 
-        return [$exit, $entry];
+            $entry = $this->recordMovement(
+                $article,
+                $to,
+                $quantity,
+                StockMouvementType::Entree,
+                StockMouvementReason::Transfert,
+                $reference
+            );
+            return [$exit, $entry];
+        });
     }
 
     public function getMovements(Article $article, ?Warehouse $warehouse = null): StockMouvement

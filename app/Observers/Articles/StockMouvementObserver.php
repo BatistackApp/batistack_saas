@@ -19,8 +19,8 @@ class StockMouvementObserver
         );
 
         match ($mouvement->type->value) {
-            'entree', 'transfert', 'consommation', 'ajustement' => $stock->increment('quantity', $mouvement->quantity),
-            'sortie', 'production' => $stock->decrement('quantity', $mouvement->quantity),
+            'entree', 'transfert', 'ajustement', 'production' => $stock->increment('quantity', $mouvement->quantity),
+            'sortie', 'consommation' => $stock->decrement('quantity', $mouvement->quantity),
         };
 
         $stock->update(['last_movement_at' => now()]);
@@ -38,9 +38,8 @@ class StockMouvementObserver
         }
 
         match ($mouvement->type->value) {
-            'entree', 'transfert', 'consommation' => $stock->decrement('quantity', $mouvement->quantity),
-            'sortie', 'production' => $stock->increment('quantity', $mouvement->quantity),
-            'ajustement' => $stock->update(['quantity' => $stock->quantity - $mouvement->quantity]),
+            'entree', 'transfert', 'production', 'ajustement' => $stock->decrement('quantity', $mouvement->quantity),
+            'sortie', 'consommation' => $stock->increment('quantity', $mouvement->quantity),
         };
     }
 }

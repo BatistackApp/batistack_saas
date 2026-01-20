@@ -18,13 +18,16 @@ class CheckLowStockJob implements ShouldQueue
     {
         $lowStocks = Stock::whereColumn('quantity', '<', 'min_quantity')
             ->where('min_quantity', '>', 0)
-            ->with(['article', 'warehouse'])
-            ->get();
-
-        foreach ($lowStocks as $stock) {
-            //$stock->article->tenant->users()
-            //    ->whereHas('roles', fn ($q) => $q->whereIn('name', ['admin', 'manager']))
-            //    ->each(fn ($user) => $user->notify(new LowStockAlertNotification($stock)));
-        }
+            ->with(['article.tenant.users' => function ($query) { // Eager load nested relations
+                $query->whereHas('roles', fn ($q) => $q->whereIn('name', ['admin', 'manager']));
+            }, 'warehouse'])
+            ->chunkById(100, function ($lowStocks) {
+                foreach ($lowStocks as $stock) {
+                    // La logique de notification ici
+                    // $stock->tenant->users()
+                    //    ->whereHas('roles', fn ($q) => $q->whereIn('name', ['admin', 'manager']))
+                    //    ->each(fn ($user) => $user->notify(new LowStockAlertNotification($stock)));
+                }
+            });
     }
 }

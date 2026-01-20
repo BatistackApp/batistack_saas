@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Articles;
 
+use App\Enums\Articles\UnitOfMeasure;
 use App\Models\Articles\Article;
 use App\Models\Articles\Ouvrage;
 use App\Models\Articles\OuvrageItem;
@@ -17,7 +18,7 @@ class OuvrageItemFactory extends Factory
     {
         return [
             'quantity' => $this->faker->randomFloat(),
-            'unit_of_measure' => $this->faker->word(),
+            'unit_of_measure' => $this->faker->randomElement(UnitOfMeasure::cases()),
             'waste_percentage' => $this->faker->randomFloat(),
             'sort_order' => $this->faker->randomNumber(),
             'created_at' => Carbon::now(),

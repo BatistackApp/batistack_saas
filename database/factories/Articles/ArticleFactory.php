@@ -2,6 +2,8 @@
 
 namespace Database\Factories\Articles;
 
+use App\Enums\Articles\ArticleType;
+use App\Enums\Articles\UnitOfMeasure;
 use App\Models\Articles\Article;
 use App\Models\Articles\ArticleCategory;
 use App\Models\Core\Tenant;
@@ -21,8 +23,8 @@ class ArticleFactory extends Factory
             'code' => $this->faker->word(),
             'barcode' => $this->faker->word(),
             'sku' => $this->faker->word(),
-            'type' => $this->faker->word(),
-            'unit_of_measure' => $this->faker->word(),
+            'type' => $this->faker->randomElement(ArticleType::cases()),
+            'unit_of_measure' => $this->faker->randomElement(UnitOfMeasure::cases()),
             'weight_kg' => $this->faker->randomFloat(),
             'volume_m3' => $this->faker->randomFloat(),
             'purchase_price' => $this->faker->randomFloat(),

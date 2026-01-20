@@ -21,7 +21,7 @@ return new class extends Migration {
             $table->decimal('quantity', 12, 3);
             $table->string('reference')->nullable();
             $table->text('notes')->nullable();
-            $table->foreignIdFor(User::class, 'created_by')->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(User::class, 'created_by')->constrained()->nullOnDelete();
             $table->timestamp('mouvement_date')->useCurrent();
             $table->timestamps();
             $table->softDeletes();

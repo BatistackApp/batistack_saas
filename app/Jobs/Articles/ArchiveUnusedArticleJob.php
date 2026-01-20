@@ -4,6 +4,7 @@ namespace App\Jobs\Articles;
 
 use App\Models\Articles\Article;
 use App\Models\Core\Tenant;
+use DB;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -14,19 +15,21 @@ class ArchiveUnusedArticleJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private readonly Tenant $tenant) {}
-
     public function handle(): void
     {
-        // Archiver les articles non utilisés depuis 1 an
-        Article::where('tenant_id', $this->tenant->id)
-            ->whereNull('archived_at')
-            ->where('updated_at', '<', now()->subYear())
-            ->whereNotIn('id', function ($query) {
-                $query->select('article_id')
-                    ->from('stock_mouvements')
-                    ->where('created_at', '>', now()->subYear());
-            })
-            ->update(['archived_at' => now()]);
+        $tenants = Tenant::all();
+        foreach ($tenants as $tenant) {
+            // Archiver les articles non utilisés depuis 1 an
+            Article::where('tenant_id', $tenant->id)
+                ->whereNull('archived_at')
+                ->where('updated_at', '<', now()->subYear())
+                ->whereNotExists(function ($query) {
+                    $query->select(DB::raw(1))
+                        ->from('stock_mouvements')
+                        ->whereColumn('stock_mouvements.article_id', 'articles.id')
+                        ->where('created_at', '>', now()->subYear());
+                })
+                ->update(['archived_at' => now()]);
+        }
     }
 }
