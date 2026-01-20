@@ -29,7 +29,7 @@ class ChantierService
     public function recalculateTotalCosts(Chantier $chantier): void
     {
         $total = $chantier->costs()->sum('amount');
-        $chantier->update(['budget_total' => $total]);
+        $chantier->update(['total_costs' => $total]);
     }
 
     public function generateChantierCode(): string

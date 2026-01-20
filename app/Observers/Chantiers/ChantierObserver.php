@@ -17,7 +17,7 @@ class ChantierObserver
 
     public function updated(Chantier $chantier): void
     {
-        if ($chantier->isDirty('budget_total') && $chantier->budget_usage_percent > 90) {
+        if ($chantier->isDirty('total_costs') && $chantier->budget_usage_percent > 90) {
             $chantier->tiers?->notify(new ChantierBudgetAlertNotification($chantier));
         }
     }

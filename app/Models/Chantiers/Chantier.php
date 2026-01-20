@@ -41,12 +41,13 @@ class Chantier extends Model
             'end_date' => 'date',
             'status' => ChantierStatus::class,
             'budget_total' => 'decimal:2',
+            'total_costs' => 'decimal:2',
         ];
     }
 
     public function getTotalCostsAttribute(): float
     {
-        return (float) $this->costs()->sum('amount');
+        return (float) $this->total_costs;
     }
 
     public function getBudgetUsagePercentAttribute(): float

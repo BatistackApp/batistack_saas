@@ -19,6 +19,7 @@ return new class extends Migration
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();
             $table->decimal('budget_total', 15, 2)->default(0);
+            $table->decimal('total_costs', 15, 2)->default(0);
             $table->foreignIdFor(Tiers::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
