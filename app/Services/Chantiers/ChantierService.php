@@ -11,7 +11,6 @@ class ChantierService
 {
     public function createChantier(array $data): Chantier
     {
-        $data['uuid'] = (string) Str::uuid();
         $data['code'] = $data['code'] ?? $this->generateChantierCode();
 
         return Chantier::create($data);
