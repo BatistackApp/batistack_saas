@@ -19,10 +19,11 @@ class SyncChantierJob implements ShouldQueue
     public function handle(): void
     {
         Chantier::query()
-            ->with('costs')
+            ->withSum('costs', 'amount') // Calcule la somme et la stocke dans l'attribut `costs_sum_amount`
             ->chunk(100, function ($chantiers): void {
                 foreach ($chantiers as $chantier) {
-                    $this->chantierService->recalculateTotalCosts($chantier);
+                    // Mettre à jour la colonne `total_costs` (après l'avoir ajoutée)
+                    $chantier->updateQuietly(['total_costs' => $chantier->costs_sum_amount ?? 0]);
                 }
             });
     }
