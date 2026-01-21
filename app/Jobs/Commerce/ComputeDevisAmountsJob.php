@@ -14,7 +14,7 @@ class ComputeDevisAmountsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private Devis $devis) {}
+    public function __construct(private readonly Devis $devis) {}
 
     public function handle(CalculService $calcul): void
     {

@@ -14,7 +14,7 @@ class GenerateCommandeNumberJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private Commande $commande)
+    public function __construct(private readonly Commande $commande)
     {
     }
 

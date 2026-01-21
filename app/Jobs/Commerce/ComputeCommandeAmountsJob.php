@@ -14,7 +14,7 @@ class ComputeCommandeAmountsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private Commande $commande) {}
+    public function __construct(private readonly Commande $commande) {}
 
     public function handle(CalculService $calcul): void
     {

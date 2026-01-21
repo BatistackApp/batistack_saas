@@ -14,7 +14,7 @@ class GenerateFactureNumberJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private Facture $facture) {}
+    public function __construct(private readonly Facture $facture) {}
 
     public function handle(NumberGeneratorService $numberGenerator): void
     {

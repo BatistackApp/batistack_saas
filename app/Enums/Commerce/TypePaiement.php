@@ -17,12 +17,12 @@ enum TypePaiement: string implements HasLabel
     public function getLabel(): string|Htmlable|null
     {
         return match ($this) {
-            self::ESPECE => __('lang/commerce.type_paiement.espece'),
-            self::CHEQUE => __('lang/commerce.type_paiement.cheque'),
-            self::VIREMENT => __('lang/commerce.type_paiement.virement'),
-            self::CARTE_BANCAIRE => __('lang/commerce.type_paiement.carte_bancaire'),
-            self::PAYPAL => __('lang/commerce.type_paiement.paypal'),
-            self::AUTRE => __('lang/commerce.type_paiement.autre'),
+            self::ESPECE => __('commerce.type_paiement.espece'),
+            self::CHEQUE => __('commerce.type_paiement.cheque'),
+            self::VIREMENT => __('commerce.type_paiement.virement'),
+            self::CARTE_BANCAIRE => __('commerce.type_paiement.carte_bancaire'),
+            self::PAYPAL => __('commerce.type_paiement.paypal'),
+            self::AUTRE => __('commerce.type_paiement.autre'),
         };
     }
 }

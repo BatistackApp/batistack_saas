@@ -52,7 +52,7 @@ class Commande extends Model
             'montant_ht' => 'decimal:2',
             'montant_tva' => 'decimal:2',
             'montant_ttc' => 'decimal:2',
-            'statut' => CommandeStatus::class,
+            'status' => CommandeStatus::class,
         ];
     }
 }

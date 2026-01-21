@@ -14,7 +14,7 @@ class ComputeAvoirAmountsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public Avoir $avoir)
+    public function __construct(private readonly Avoir $avoir)
     {
     }
 

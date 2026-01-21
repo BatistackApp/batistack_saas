@@ -14,7 +14,7 @@ class ComputeSituationAmountsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(public Situation $situation)
+    public function __construct(private readonly Situation $situation)
     {
     }
 
