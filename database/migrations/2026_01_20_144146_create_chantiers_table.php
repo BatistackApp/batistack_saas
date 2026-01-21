@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('budget_total', 15, 2)->default(0);
             $table->decimal('total_costs', 15, 2)->default(0);
             $table->foreignIdFor(Tiers::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Core\Tenant::class)->constrained()->cascadeOnDelete();
             $table->timestamps();
             $table->softDeletes();
 
