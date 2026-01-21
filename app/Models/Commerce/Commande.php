@@ -6,12 +6,15 @@ use App\Enums\Commerce\CommandeStatus;
 use App\Models\Chantiers\Chantier;
 use App\Models\Core\Tenant;
 use App\Models\Tiers\Tiers;
+use App\Observers\Commerce\CommandeObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([CommandeObserver::class])]
 class Commande extends Model
 {
     use HasFactory, SoftDeletes;

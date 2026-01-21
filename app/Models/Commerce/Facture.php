@@ -5,12 +5,15 @@ namespace App\Models\Commerce;
 use App\Models\Chantiers\Chantier;
 use App\Models\Core\Tenant;
 use App\Models\Tiers\Tiers;
+use App\Observers\Commerce\FactureObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([FactureObserver::class])]
 class Facture extends Model
 {
     use HasFactory, SoftDeletes;
@@ -49,6 +52,11 @@ class Facture extends Model
     public function avoirs(): HasMany
     {
         return $this->hasMany(Avoir::class);
+    }
+
+    public function lignes(): HasMany
+    {
+        return $this->hasMany(FactureLigne::class);
     }
 
     protected function casts(): array
