@@ -3,6 +3,7 @@
 namespace App\Models\Chantiers;
 
 use App\Enums\Chantiers\ChantierStatus;
+use App\Models\Core\Tenant;
 use App\Models\Tiers\Tiers;
 use App\Observers\Chantiers\ChantierObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -17,6 +18,12 @@ class Chantier extends Model
 {
     use HasFactory, SoftDeletes;
     protected $guarded = [];
+
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class);
+    }
 
     public function tiers(): BelongsTo
     {
