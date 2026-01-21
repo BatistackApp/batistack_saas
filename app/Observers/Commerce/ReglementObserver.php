@@ -4,6 +4,7 @@ namespace App\Observers\Commerce;
 
 use App\Jobs\Commerce\UpdateFacturePaymentStatusJob;
 use App\Models\Commerce\Reglement;
+use App\Notifications\Commerce\ReglementReceivedNotification;
 
 class ReglementObserver
 {

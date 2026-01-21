@@ -3,14 +3,16 @@
 namespace App\Observers\Commerce;
 
 use App\Jobs\Commerce\ComputeDevisAmountsJob;
+use App\Jobs\Commerce\GenerateDevisNumberJob;
 use App\Models\Commerce\Devis;
+use App\Notifications\Commerce\DevisValidatedNotification;
 
 class DevisObserver
 {
     public function creating(Devis $devis): void
     {
         if (! $devis->number) {
-            GenerateDevisNumber::dispatch($devis);
+            GenerateDevisNumberJob::dispatch($devis);
         }
     }
 

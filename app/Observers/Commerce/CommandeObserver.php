@@ -3,6 +3,7 @@
 namespace App\Observers\Commerce;
 
 use App\Jobs\Commerce\ComputeCommandeAmountsJob;
+use App\Jobs\Commerce\GenerateCommandeNumberJob;
 use App\Models\Commerce\Commande;
 
 class CommandeObserver
@@ -10,7 +11,7 @@ class CommandeObserver
     public function creating(Commande $commande): void
     {
         if (! $commande->number) {
-            GenerateCommandeNumber::dispatch($commande);
+            GenerateCommandeNumberJob::dispatch($commande);
         }
     }
 
