@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Commerce;
 
+use App\Enums\Commerce\DocumentStatus;
 use App\Models\Commerce\Facture;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -20,5 +21,8 @@ class AccountFactureJob implements ShouldQueue
         // Créer les écritures comptables
         // À intégrer avec le module Comptabilité
         // Enregistrement: Ventes/Clients, TVA, Produits
+        $this->facture->update([
+            'status' => DocumentStatus::Invoiced,
+        ]);
     }
 }

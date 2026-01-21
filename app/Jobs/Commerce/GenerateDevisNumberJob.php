@@ -3,6 +3,7 @@
 namespace App\Jobs\Commerce;
 
 use App\Models\Commerce\Devis;
+use App\Services\Commerce\NumberGeneratorService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -17,17 +18,10 @@ class GenerateDevisNumberJob implements ShouldQueue
     {
     }
 
-    public function handle(): void
+    public function handle(NumberGeneratorService $numberGenerator): void
     {
-        $year = now()->year;
-        $lastNumber = Devis::where('tenant_id', $this->devis->tenant_id)
-            ->where('number', 'like', "DEV-$year-%")
-            ->latest('id')
-            ->first();
-
-        $sequence = $lastNumber ? (int)explode('-', $lastNumber->number)[2] + 1 : 1;
         $this->devis->update([
-            'number' => sprintf('DEV-%d-%06d', $year, $sequence),
+            'number' => $numberGenerator->generateDevisNumber($this->devis->tenant_id),
         ]);
     }
 }

@@ -4,11 +4,15 @@ namespace App\Models\Commerce;
 
 use App\Enums\Commerce\DocumentStatus;
 use App\Models\Core\Tenant;
+use App\Observers\Commerce\AvenantObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([AvenantObserver::class])]
 class Avenant extends Model
 {
     use HasFactory, SoftDeletes;
@@ -22,6 +26,11 @@ class Avenant extends Model
     public function commande(): BelongsTo
     {
         return $this->belongsTo(Commande::class);
+    }
+
+    public function lignes(): HasMany
+    {
+        return $this->hasMany(AvenantLigne::class);
     }
 
     protected function casts(): array

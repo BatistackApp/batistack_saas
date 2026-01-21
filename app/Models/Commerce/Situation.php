@@ -37,6 +37,12 @@ class Situation extends Model
         return $this->hasMany(Facture::class);
     }
 
+    public function lignes(): HasMany
+    {
+        return $this->hasMany(SituationLigne::class);
+    }
+
+
     protected function casts(): array
     {
         return [

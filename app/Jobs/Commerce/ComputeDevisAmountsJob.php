@@ -3,6 +3,7 @@
 namespace App\Jobs\Commerce;
 
 use App\Models\Commerce\Devis;
+use App\Services\Commerce\CalculService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,20 +16,18 @@ class ComputeDevisAmountsJob implements ShouldQueue
 
     public function __construct(private Devis $devis) {}
 
-    public function handle(): void
+    public function handle(CalculService $calcul): void
     {
-        $montantHt = $this->devis->lignes()->sum('montant_ht');
+        $this->devis->load('lignes');
 
-        $montantTva = 0;
-        foreach ($this->devis->lignes() as $ligne) {
-            $tvaRate = $ligne->tva->percentage() / 100;
-            $montantTva += $ligne->montant_ht * $tvaRate;
-        }
+        $montantHT = $this->devis->lignes->sum('montant_ht');
+        $montantTVA = $calcul->calculateTotalTVA($this->devis->lignes);
+        $montantTTC = $montantHT + $montantTVA;
 
         $this->devis->update([
-            'montant_ht' => $montantHt,
-            'montant_tva' => round($montantTva, 2),
-            'montant_ttc' => round($montantHt + $montantTva, 2),
+            'montant_ht' => $montantHT,
+            'montant_tva' => $montantTVA,
+            'montant_ttc' => $montantTTC,
         ]);
     }
 }

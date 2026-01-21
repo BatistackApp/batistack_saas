@@ -3,6 +3,7 @@
 namespace App\Jobs\Commerce;
 
 use App\Models\Commerce\Facture;
+use App\Services\Commerce\CalculService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -15,20 +16,20 @@ class ComputeFactureAmountsJob implements ShouldQueue
 
     public function __construct(private Facture $facture) {}
 
-    public function handle(): void
+    public function handle(CalculService $calcul): void
     {
-        $montantHt = $this->facture->lignes()->sum('montant_ht');
+        $this->facture->load('lignes', 'reglements');
 
-        $montantTva = 0;
-        foreach ($this->facture->lignes() as $ligne) {
-            $tvaRate = $ligne->tva->percentage() / 100;
-            $montantTva += $ligne->montant_ht * $tvaRate;
-        }
+        $montantHT = $this->facture->lignes->sum('montant_ht');
+        $montantTVA = $calcul->calculateTotalTVA($this->facture->lignes);
+        $montantTTC = $montantHT + $montantTVA;
+        $montantPaye = $this->facture->reglements->sum('montant');
 
         $this->facture->update([
-            'montant_ht' => $montantHt,
-            'montant_tva' => round($montantTva, 2),
-            'montant_ttc' => round($montantHt + $montantTva, 2),
+            'montant_ht' => $montantHT,
+            'montant_tva' => $montantTVA,
+            'montant_ttc' => $montantTTC,
+            'montant_paye' => $montantPaye,
         ]);
     }
 }

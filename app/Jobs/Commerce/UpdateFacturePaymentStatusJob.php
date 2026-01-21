@@ -18,15 +18,25 @@ class UpdateFacturePaymentStatusJob implements ShouldQueue
 
     public function handle(): void
     {
-        $montantTtc = $this->facture->montant_ttc;
-        $montantPaye = $this->facture->reglements()->sum('montant');
+        $this->facture->load('reglements');
 
-        $status = match (true) {
-            $montantPaye == 0 => DocumentStatus::Invoiced,
-            $montantPaye < $montantTtc => DocumentStatus::PartiallyPaid,
-            $montantPaye >= $montantTtc => DocumentStatus::Paid,
-        };
+        $montantPaye = $this->facture->reglements->sum('montant');
 
-        $this->facture->update(['status' => $status]);
+        if ($this->facture->montant_ttc == 0) {
+            return;
+        }
+
+        if ($montantPaye == 0) {
+            $status = DocumentStatus::Invoiced;
+        } elseif ($montantPaye < $this->facture->montant_ttc) {
+            $status = DocumentStatus::PartiallyPaid;
+        } else {
+            $status = DocumentStatus::Paid;
+        }
+
+        $this->facture->update([
+            'montant_paye' => $montantPaye,
+            'status' => $status,
+        ]);
     }
 }
