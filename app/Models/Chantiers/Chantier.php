@@ -4,6 +4,7 @@ namespace App\Models\Chantiers;
 
 use App\Enums\Chantiers\ChantierStatus;
 use App\Models\Core\Tenant;
+use App\Models\HR\EmployeeTimesheetLine;
 use App\Models\Tiers\Tiers;
 use App\Observers\Chantiers\ChantierObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
@@ -38,6 +39,11 @@ class Chantier extends Model
     public function budgets(): HasMany
     {
         return $this->hasMany(ChantierBudget::class);
+    }
+
+    public function timesheetLines(): HasMany
+    {
+        return $this->hasMany(EmployeeTimesheetLine::class);
     }
 
     protected function casts(): array
