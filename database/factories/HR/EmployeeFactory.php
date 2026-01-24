@@ -18,7 +18,7 @@ class EmployeeFactory extends Factory
             'employee_number' => $this->faker->word(),
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName(),
-            'hire_date' => $this->faker->dateTimeBetween('now', '-1 year'),
+            'hire_date' => $this->faker->dateTimeBetween('-1 year'),
             'resignation_date' => $this->faker->boolean ? null : Carbon::now(),
             'status' => $this->faker->boolean(),
             'notes' => $this->faker->boolean ?? $this->faker->word(),

@@ -19,7 +19,7 @@ class EmployeeService
     /**
      * Récupérer le taux horaire actif d'un employé pour une date donnée
      */
-    public function getCurrentRate(Employee $employee, ?Carbon $date = null): ?EmployeeRate
+    public function getCurrentRate(Employee $employee, $date = null): ?EmployeeRate
     {
         $date = $date ?? now();
 

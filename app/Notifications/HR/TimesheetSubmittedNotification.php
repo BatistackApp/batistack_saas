@@ -29,7 +29,7 @@ class TimesheetSubmittedNotification extends Notification implements ShouldQueue
             ->line(__('hr.notifications.timesheet_submitted_body', [
                 'date' => $this->timesheet->timesheet_date->format('d/m/Y'),
             ]))
-            ->action(__('hr.notifications.view_timesheet'), route('timesheets.show', $this->timesheet));
+            ->action(__('hr.notifications.view_timesheet'), '#');
     }
 
     public function toDatabase($notifiable): array

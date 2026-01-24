@@ -119,6 +119,15 @@ class LeaveService
      */
     public function calculateDurationInDays(EmployeeLeave $leave): int
     {
-        return $leave->end_date->diffInDays($leave->start_date) + 1;
+        $start = Carbon::parse($leave->start_date)->startOfDay();
+        $end = Carbon::parse($leave->end_date)->endOfDay();
+
+        if ($end->lt($start)) {
+            return 0;
+        }
+
+        // diffInDays retourne le nombre de jours entiers entre les dates;
+        // +1 pour inclure le jour de fin (ex: 2025-01-01 -> 2025-01-05 = 5 jours)
+        return $start->diffInDays($end) + 1;
     }
 }

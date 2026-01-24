@@ -13,7 +13,7 @@ class ChantiersLaborCostService
     /**
      * Calculer le coût total de la main-d'œuvre pour un chantier sur une période
      */
-    public function calculateChantieLaborCost(Chantier $chantier, Carbon $startDate, Carbon $endDate): array
+    public function calculateChantieLaborCost(Chantier $chantier, $startDate, $endDate): array
     {
         $timesheetLines = $chantier->timesheetLines()
             ->whereHas('employeeTimesheet', function ($query) use ($startDate, $endDate) {
@@ -66,7 +66,7 @@ class ChantiersLaborCostService
     /**
      * Récupérer les heures totales pointées sur un chantier pour une période
      */
-    public function getChantieTotalHours(Chantier $chantier, Carbon $startDate, Carbon $endDate): array
+    public function getChantieTotalHours(Chantier $chantier, $startDate, $endDate): array
     {
         $timesheetLines = $chantier->timesheetLines()
             ->whereHas('employeeTimesheet', function ($query) use ($startDate, $endDate) {
