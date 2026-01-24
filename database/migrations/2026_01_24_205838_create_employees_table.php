@@ -20,6 +20,10 @@ return new class extends Migration {
             $table->date('resignation_date')->nullable();
             $table->boolean('status')->default(true);
             $table->text('notes')->nullable();
+            $table->decimal('hourly_rate', 10, 2)->nullable();
+            $table->decimal('transport_allowance', 10, 2)->nullable();
+            $table->boolean('has_transport_benefit')->default(false);
+            $table->string('iban')->nullable()->comment("IBAN de l'employé");
             $table->timestamps();
             $table->softDeletes();
 
