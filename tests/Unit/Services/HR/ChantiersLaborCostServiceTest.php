@@ -33,8 +33,11 @@ it('calculates labor cost for a chantier', function () {
         'hours_work' => 10.00,
     ]);
 
-    $emSer = new \App\Services\HR\EmployeeService();
-    $service = new ChantiersLaborCostService($emSer);
+    $employeeServiceMock = mock(App\Services\HR\EmployeeService::class);
+    $employeeServiceMock->shouldReceive('getCurrentRate')->andReturn($rate);
+
+    // Injection du mock via le service container ou directement
+    $service = new ChantiersLaborCostService($employeeServiceMock);
     $cost = $service->calculateChantieLaborCost($chantier, now(), now());
 
     expect($cost['total_cost'])->toBe(200.00);

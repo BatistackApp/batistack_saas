@@ -109,25 +109,10 @@ class LeaveService
     {
         return $employee->leaves()
             ->where('status', LeaveStatus::Approved)
-            ->whereBetween('start_date', [$startDate, $endDate])
-            ->orWhereBetween('end_date', [$startDate, $endDate])
+            ->where(function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('start_date', [$startDate, $endDate])
+                    ->orWhereBetween('end_date', [$startDate, $endDate]);
+            })
             ->get();
-    }
-
-    /**
-     * Calculer la durée en jours (incluant le premier et le dernier jour)
-     */
-    public function calculateDurationInDays(EmployeeLeave $leave): int
-    {
-        $start = Carbon::parse($leave->start_date)->startOfDay();
-        $end = Carbon::parse($leave->end_date)->endOfDay();
-
-        if ($end->lt($start)) {
-            return 0;
-        }
-
-        // diffInDays retourne le nombre de jours entiers entre les dates;
-        // +1 pour inclure le jour de fin (ex: 2025-01-01 -> 2025-01-05 = 5 jours)
-        return $start->diffInDays($end) + 1;
     }
 }

@@ -13,9 +13,4 @@ class EmployeeTimesheetObserver
             $timesheet->employee->user->notify(new TimesheetSubmittedNotification($timesheet));
         }
     }
-
-    public function deleting(EmployeeTimesheet $timesheet): void
-    {
-        $timesheet->lines()->delete();
-    }
 }

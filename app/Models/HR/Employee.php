@@ -47,16 +47,4 @@ class Employee extends Model
             'resignation_date' => 'date',
         ];
     }
-
-    public function currentRate(): \stdClass
-    {
-        return $this->rates()
-            ->where('effective_from', '<=', now()->toDateString())
-            ->where(function ($query) {
-                $query->whereNull('effective_to')
-                    ->orWhere('effective_to', '>=', now()->toDateString());
-            })
-            ->latest('effective_from')
-            ->first();
-    }
 }
