@@ -11,7 +11,7 @@ return new class extends Migration {
         Schema::create('accounting_accounts', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Tenant::class)->constrained()->cascadeOnDelete();
-            $table->string('number')->unique();
+            $table->string('number');
             $table->string('name');
             $table->string('type')->default(\App\Enums\Accounting\AccountType::Asset->value);
             $table->boolean('is_active')->default(true);
@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->timestamps();
 
             $table->index(['tenant_id', 'number']);
+            $table->unique(['tenant_id', 'number']);
         });
     }
 
