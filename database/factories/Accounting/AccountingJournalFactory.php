@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Accounting;
 
+use App\Enums\Accounting\JournalType;
 use App\Models\Accounting\AccountingJournal;
 use App\Models\Core\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -16,7 +17,7 @@ class AccountingJournalFactory extends Factory
         return [
             'code' => $this->faker->word(),
             'name' => $this->faker->name(),
-            'type' => $this->faker->word(),
+            'type' => $this->faker->randomElement(JournalType::cases()),
             'is_active' => $this->faker->boolean(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),

@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Accounting;
 
+use App\Enums\Accounting\AccountType;
 use App\Models\Accounting\AccountingAccounts;
 use App\Models\Core\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -16,7 +17,7 @@ class AccountingAccountsFactory extends Factory
         return [
             'number' => $this->faker->word(),
             'name' => $this->faker->name(),
-            'type' => $this->faker->word(),
+            'type' => $this->faker->randomElement(AccountType::cases()),
             'is_active' => $this->faker->boolean(),
             'description' => $this->faker->text(),
             'created_at' => Carbon::now(),

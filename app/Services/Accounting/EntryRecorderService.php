@@ -36,7 +36,7 @@ class EntryRecorderService
 
         $entry = AccountingEntry::create([
             'tenant_id' => $tenant->id,
-            'journal_id' => $journal->id,
+            'accounting_journal_id' => $journal->id,
             'reference' => $reference,
             'posted_at' => $postedAt,
             'description' => $description,
@@ -49,8 +49,8 @@ class EntryRecorderService
 
         foreach ($lines as $line) {
             AccountingEntryLine::create([
-                'entry_id' => $entry->id,
-                'account_id' => $line['account_id'],
+                'accounting_entry_id' => $entry->id,
+                'accounting_accounts_id' => $line['account_id'],
                 'debit' => $line['debit'] ?? 0,
                 'credit' => $line['credit'] ?? 0,
                 'description' => $line['description'] ?? null,

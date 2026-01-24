@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Accounting;
 
+use App\Enums\Accounting\EntryStatus;
 use App\Models\Accounting\AccountingEntry;
 use App\Models\Accounting\AccountingJournal;
 use App\Models\Core\Tenant;
@@ -18,7 +19,7 @@ class AccountingEntryFactory extends Factory
             'reference' => $this->faker->word(),
             'posted_at' => Carbon::now(),
             'description' => $this->faker->text(),
-            'status' => $this->faker->word(),
+            'status' => $this->faker->randomElement(EntryStatus::cases()),
             'total_debit' => $this->faker->randomFloat(),
             'total_credit' => $this->faker->randomFloat(),
             'source_type' => $this->faker->word(),

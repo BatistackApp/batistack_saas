@@ -5,6 +5,8 @@ namespace App\Services\Accounting;
 use App\Models\Accounting\AccountingJournal;
 use App\Models\Accounting\AccountingSequence;
 use App\Models\Core\Tenant;
+use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 
 class SequenceService
 {
@@ -13,14 +15,14 @@ class SequenceService
      * Format : {CODE_JOURNAL}{ANNÉE}{NUMÉRO}
      * Exemple : VT20240001
      */
-    public function generateReference(Tenant $tenant, AccountingJournal $journal, \DateTime $date): string
+    public function generateReference(Tenant $tenant, AccountingJournal $journal, CarbonImmutable $date): string
     {
         $year = $date->year;
 
         $sequence = AccountingSequence::firstOrCreate(
             [
                 'tenant_id' => $tenant->id,
-                'journal_id' => $journal->id,
+                'accounting_journal_id' => $journal->id,
                 'year' => $year,
             ],
             ['next_number' => 1]
