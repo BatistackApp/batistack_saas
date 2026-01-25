@@ -31,7 +31,7 @@ class PayrollSlipFactory extends Factory
             'total_hours_travel' => $this->faker->numberBetween(0, 10),
             'gross_amount' => $this->faker->numberBetween(2000, 3500),
             'social_contributions' => $this->faker->numberBetween(500, 1000),
-            'employee_deductions' => $this->faker->numberBetween(50, 200),
+            'employee_deduction' => $this->faker->numberBetween(50, 200),
             'net_amount' => $this->faker->numberBetween(1500, 2500),
             'transport_amount' => $this->faker->numberBetween(0, 100),
             'notes' => $this->faker->word(),

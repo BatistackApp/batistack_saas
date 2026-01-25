@@ -2,6 +2,8 @@
 
 namespace App\Observers\Payroll;
 
+use App\Jobs\Payroll\CreateAccountingEntriesJob;
+use App\Jobs\Payroll\SendPayrollNotificationJob;
 use App\Models\Payroll\PayrollSetting;
 use App\Models\Payroll\PayrollSlip;
 use App\Services\Payroll\PayrollValidationService;
