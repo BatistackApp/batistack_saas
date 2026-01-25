@@ -20,7 +20,7 @@ class PayrollExportService
     ): PayrollExport {
         // Récupérer les fiches validées
         $slips = PayrollSlip::query()
-            ->where('company_id', $company->id)
+            ->where('tenant_id', $company->id)
             ->where('year', $year)
             ->where('month', $month)
             ->whereIn('status', ['validated', 'exported'])
@@ -43,7 +43,7 @@ class PayrollExportService
         // Enregistrer dans la base de données
         $export = PayrollExport::create([
             'uuid' => Str::uuid(),
-            'company_id' => $company->id,
+            'tenant_id' => $company->id,
             'format' => $format,
             'year' => $year,
             'month' => $month,
@@ -56,7 +56,7 @@ class PayrollExportService
 
         // Mettre à jour le statut des fiches
         PayrollSlip::query()
-            ->where('company_id', $company->id)
+            ->where('tenant_id', $company->id)
             ->where('year', $year)
             ->where('month', $month)
             ->update(['status' => 'exported', 'exported_at' => now()]);

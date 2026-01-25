@@ -20,7 +20,7 @@ class CalculatePayrollService
         Tenant $company,
         Collection $timesheets,
     ): array {
-        $settings = PayrollSetting::firstWhere('company_id', $company->id);
+        $settings = PayrollSetting::firstWhere('tenant_id', $company->id);
         $hourlyRate = $employee->hourly_rate ?? 20.00;
 
         // Grouper par chantier

@@ -35,7 +35,7 @@ class PayrollAccountingService
 
         AccountingEntryLine::create([
             'accounting_entry_id' => $entry->id,
-            'accounting_accounts_id' => AccountingAccounts::where('tenant_id', $journal->tenant_id)->where('number', 6411)->first()->id,
+            'accounting_accounts_id' => AccountingAccounts::where('tenant_id', $journal->tenant_id)->where('number', 6411)->firstOrFail()->id,
             'debit' => $slip->gross_amount,
             'credit' => 0,
             'description' => "Salaire Brut - {$slip->employee->last_name} {$slip->employee->first_name}"
@@ -43,7 +43,7 @@ class PayrollAccountingService
 
         AccountingEntryLine::create([
             'accounting_entry_id' => $entry->id,
-            'accounting_accounts_id' => AccountingAccounts::where('tenant_id', $journal->tenant_id)->where('number', 4281)->first()->id,
+            'accounting_accounts_id' => AccountingAccounts::where('tenant_id', $journal->tenant_id)->where('number', 4281)->firstOrFail()->id,
             'debit' => 0,
             'credit' => $slip->net_amount,
             'description' => "Dettes salaires - {$slip->employee->last_name} {$slip->employee->first_name}"
@@ -51,7 +51,7 @@ class PayrollAccountingService
 
         AccountingEntryLine::create([
             'accounting_entry_id' => $entry->id,
-            'accounting_accounts_id' => AccountingAccounts::where('tenant_id', $journal->tenant_id)->where('number', 4391)->first()->id,
+            'accounting_accounts_id' => AccountingAccounts::where('tenant_id', $journal->tenant_id)->where('number', 4391)->firstOrFail()->id,
             'debit' => 0,
             'credit' => $slip->social_contributions,
             'description' => "Charges sociales - {$slip->employee->last_name} {$slip->employee->first_name}"
@@ -60,7 +60,7 @@ class PayrollAccountingService
         if ($slip->transport_amount > 0) {
             AccountingEntryLine::create([
                 'accounting_entry_id' => $entry->id,
-                'accounting_accounts_id' => AccountingAccounts::where('tenant_id', $journal->tenant_id)->where('number', 6422)->first()->id,
+                'accounting_accounts_id' => AccountingAccounts::where('tenant_id', $journal->tenant_id)->where('number', 6422)->firstOrFail()->id,
                 'debit' => $slip->transport_amount,
                 'credit' => 0,
                 'description' => "Indemnité Trajets - {$slip->employee->last_name} {$slip->employee->first_name}"
