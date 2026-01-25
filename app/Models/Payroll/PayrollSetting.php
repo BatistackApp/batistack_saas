@@ -4,11 +4,14 @@ namespace App\Models\Payroll;
 
 use App\Enums\Payroll\PayrollExportFormat;
 use App\Models\Core\Tenant;
+use App\Observers\Payroll\PayrollSettingObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([PayrollSettingObserver::class])]
 class PayrollSetting extends Model
 {
     use HasFactory, SoftDeletes;

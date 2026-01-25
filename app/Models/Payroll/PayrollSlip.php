@@ -5,12 +5,15 @@ namespace App\Models\Payroll;
 use App\Enums\Payroll\PayrollStatus;
 use App\Models\Core\Tenant;
 use App\Models\HR\Employee;
+use App\Observers\Payroll\PayrollSlipObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([PayrollSlipObserver::class])]
 class PayrollSlip extends Model
 {
     use HasFactory, SoftDeletes;
