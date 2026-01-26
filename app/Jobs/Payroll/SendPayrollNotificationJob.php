@@ -3,6 +3,7 @@
 namespace App\Jobs\Payroll;
 
 use App\Models\Payroll\PayrollSlip;
+use App\Notifications\Payroll\PayrollSlipExportedNotification;
 use App\Notifications\Payroll\PayrollSlipValidatedNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;

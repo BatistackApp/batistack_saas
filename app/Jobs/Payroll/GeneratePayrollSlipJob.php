@@ -3,7 +3,6 @@
 namespace App\Jobs\Payroll;
 
 use App\Models\Core\Tenant;
-use App\Models\Payroll\PayrollSlip;
 use App\Services\Payroll\GeneratePayrollSlipService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -17,8 +16,8 @@ class GeneratePayrollSlipJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public function __construct(public Tenant $tenant,
-                                public int    $year,
-                                public int    $month) {}
+        public int $year,
+        public int $month) {}
 
     public function handle(GeneratePayrollSlipService $service): void
     {
@@ -36,14 +35,14 @@ class GeneratePayrollSlipJob implements ShouldQueue
                 );
             }
 
-            Log::info("Payroll slips generated", [
+            Log::info('Payroll slips generated', [
                 'tenant_id' => $this->tenant->id,
                 'year' => $this->year,
                 'month' => $this->month,
                 'count' => $employees->count(),
             ]);
         } catch (\Exception $e) {
-            Log::error("Payroll generation failed", [
+            Log::error('Payroll generation failed', [
                 'tenant_id' => $this->tenant->id,
                 'error' => $e->getMessage(),
             ]);
