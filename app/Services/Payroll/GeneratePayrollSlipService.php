@@ -14,9 +14,12 @@ use Illuminate\Support\Str;
 
 class GeneratePayrollSlipService
 {
-    public function __construct(private CalculatePayrollService $calculateService)
-    {
-    }
+    public function __construct(
+        private CalculatePayrollService $calculateService,
+        private PayrollMealAllowanceService $mealAllowanceService,
+        private PayrollOvertimeService $overtimeService,
+        private PayrollTravelAllowanceService $travelAllowanceService,
+    ) {}
 
     public function generate(
         Tenant $company,
@@ -53,6 +56,41 @@ class GeneratePayrollSlipService
             $timesheets,
         );
 
+        // Calculs des indemnités et majorations
+        $mealAllowanceData = $this->mealAllowanceService->calculateForPayrollSlip(
+            PayrollSlip::make([
+                'employee_id' => $employee->id,
+                'tenant_id' => $company->id,
+                'period_start' => $periodStart,
+                'period_end' => $periodEnd,
+            ])
+        );
+
+        $overtimeData = $this->overtimeService->calculateForPayrollSlip(
+            PayrollSlip::make([
+                'employee_id' => $employee->id,
+                'tenant_id' => $company->id,
+                'period_start' => $periodStart,
+                'period_end' => $periodEnd,
+            ]),
+            $timesheets,
+        );
+
+        $travelAllowanceData = $this->travelAllowanceService->calculateForPayrollSlip(
+            PayrollSlip::make([
+                'employee_id' => $employee->id,
+                'tenant_id' => $company->id,
+                'period_start' => $periodStart,
+                'period_end' => $periodEnd,
+            ])
+        );
+
+        // Calcul du montant brut total
+        $grossAmount = $calculations['gross_amount']
+            + $mealAllowanceData['total_amount']
+            + $overtimeData['total_amount']
+            + $travelAllowanceData['total_amount'];
+
         // Créer la fiche
         $slip = PayrollSlip::create([
             'uuid' => Str::uuid(),
@@ -65,7 +103,7 @@ class GeneratePayrollSlipService
             'status' => PayrollStatus::Draft,
             'total_hours_work' => $calculations['total_hours_work'],
             'total_hours_travel' => $calculations['total_hours_travel'],
-            'gross_amount' => $calculations['gross_amount'],
+            'gross_amount' => $grossAmount,
             'social_contributions' => $calculations['social_contributions'],
             'employee_deductions' => $calculations['employee_deductions'],
             'net_amount' => $calculations['net_amount'],
@@ -74,6 +112,11 @@ class GeneratePayrollSlipService
 
         // Créer les lignes par chantier
         $this->createPayrollLines($slip, $calculations['lines']);
+
+        // Créer les lignes d'indemnités
+        $this->mealAllowanceService->createMealAllowanceLines($slip, $mealAllowanceData);
+        $this->overtimeService->createOvertimeLines($slip, $overtimeData);
+        $this->travelAllowanceService->createTravelAllowanceLines($slip, $travelAllowanceData);
 
         return $slip;
     }
@@ -94,7 +137,7 @@ class GeneratePayrollSlipService
     }
 
     /**
-     * @param array<string, mixed> $lines
+     * @param  array<string, mixed>  $lines
      */
     private function createPayrollLines(PayrollSlip $slip, array $lines): void
     {
