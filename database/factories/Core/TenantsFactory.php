@@ -16,6 +16,7 @@ class TenantsFactory extends Factory
         return [
             'name' => $this->faker->name(),
             'slug' => $this->faker->slug(),
+            'email' => $this->faker->email(),
             'database' => $this->faker->word(),
             'domain' => $this->faker->word(),
             'status' => $this->faker->randomElement(TenantStatus::cases()),
