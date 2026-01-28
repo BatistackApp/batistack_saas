@@ -45,19 +45,29 @@ class ProrataCostCalculator
         BillingCycle $newCycle,
         float $newPrice,
     ): float {
-        $currentCredit = $this->calculateProrataCredit($tenant, $currentCycle, $currentPrice);
-
         $subscription = $tenant->subscriptions()
-            ->active()
+            ->where('stripe_status', 'active')
             ->first();
 
-        if (!$subscription) {
-            return $newPrice;
+        if (! $subscription) {
+            return 0;
         }
 
-        $daysRemaining = $currentCycle->getDays() - $subscription->created_at->diffInDays(now());
-        $newProrata = $this->calculateProrataNewPrice($newCycle, $newPrice, $daysRemaining);
+        $currentPrice = (float) $currentPrice;
+        $newPrice = (float) $newPrice;
 
-        return max(0, $newProrata - $currentCredit);
+        $daysInCycle = $currentCycle === BillingCycle::Monthly ? 30 : 365;
+        $daysUsed = $subscription->created_at->diffInDays(now());
+        $daysRemaining = max(0, $daysInCycle - $daysUsed);
+
+        // Crédit non utilisé au prix actuel
+        $creditForCurrentPrice = ($currentPrice / $daysInCycle) * $daysRemaining;
+
+        // Coût pour le nouveau prix sur les jours restants
+        $costForNewPrice = ($newPrice / $daysInCycle) * $daysRemaining;
+
+        // L'ajustement = crédit actuel - nouveau coût
+        // Downgrade (new < current) = résultat négatif ✓
+        return $creditForCurrentPrice - $costForNewPrice;
     }
 }

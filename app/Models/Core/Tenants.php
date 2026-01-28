@@ -11,15 +11,24 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Cashier\Billable;
+use Laravel\Cashier\Subscription;
 
 #[ObservedBy([TenantsObserver::class])]
 class Tenants extends Model
 {
     use HasFactory, SoftDeletes, Billable, Notifiable;
     protected $guarded = [];
+    protected $keyType = 'int';
+    protected string $billableKey = 'id';
 
     public function modules(): HasMany {
         return $this->hasMany(TenantModule::class);
+    }
+
+    public function subscriptions(): HasMany
+    {
+        return $this->hasMany(Subscription::class, 'user_id', 'id')
+            ->where('type', self::class);
     }
 
     protected function casts(): array

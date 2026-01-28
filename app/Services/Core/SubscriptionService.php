@@ -20,7 +20,7 @@ class SubscriptionService
             return 0;
         }
 
-        return match($cycle) {
+        return (float) match($cycle) {
             BillingCycle::Monthly => $monthlyPrice,
             BillingCycle::Quarterly => $monthlyPrice * 3,
             BillingCycle::Yearly => $monthlyPrice * 12,
@@ -29,13 +29,15 @@ class SubscriptionService
 
     public function isSubscriptionExpired(Tenants $tenant): bool
     {
-        $subscription = $this->getActiveSubscription($tenant);
+        $subscription = $tenant->subscriptions()
+            ->where('stripe_status', 'active')
+            ->first();
 
         if (!$subscription) {
             return false;
         }
 
-        return $subscription->ends_at && $subscription->ends_at < now();
+        return $subscription->ends_at !== null && $subscription->ends_at->isPast();
     }
 
     public function isSubscriptionActive(Tenants $tenant): bool
