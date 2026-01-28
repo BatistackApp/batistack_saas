@@ -10,6 +10,12 @@ class TenantDatabaseService
     public function createSchema(string $databaseName): bool
     {
         try {
+            // SQLite n'a pas besoin de créer un schéma - ignorer en test
+            if (DB::getDriverName() === 'sqlite') {
+                Log::info("Database schema skipped (SQLite): {$databaseName}");
+                return true;
+            }
+
             DB::statement("CREATE SCHEMA IF NOT EXISTS `{$databaseName}` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
 
             Log::info("Database schema created: {$databaseName}");

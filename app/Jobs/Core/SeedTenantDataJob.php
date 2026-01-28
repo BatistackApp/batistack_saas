@@ -3,6 +3,7 @@
 namespace App\Jobs\Core;
 
 use Artisan;
+use DB;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -26,6 +27,12 @@ class SeedTenantDataJob implements ShouldQueue
     {
         try {
             Log::info("Starting seeding for tenant: {$this->tenantId}");
+
+            // En test avec SQLite, ignorer les migrations de schéma tenant
+            if (DB::getDriverName() === 'sqlite') {
+                Log::info("Migration skipped for SQLite: {$this->databaseName}");
+                return;
+            }
 
             // Exécuter les seeders tenant-spécifiques
             Artisan::call('db:seed', [

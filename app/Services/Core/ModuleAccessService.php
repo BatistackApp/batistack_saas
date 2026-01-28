@@ -14,7 +14,7 @@ class ModuleAccessService
             "module:access:{$tenant->id}:{$moduleSlug}",
             ttl: 86400,
             callback: function () use ($tenant, $moduleSlug) {
-                return TenantModule::where('tenant_id', $tenant->id)
+                return TenantModule::where('tenants_id', $tenant->id)
                     ->whereHas('module', fn ($q) => $q->where('slug', $moduleSlug))
                     ->where(function ($q) {
                         $q->where('status', \App\Enums\Core\TenantModuleStatus::Active->value)

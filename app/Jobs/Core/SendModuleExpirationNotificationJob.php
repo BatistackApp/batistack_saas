@@ -20,8 +20,8 @@ class SendModuleExpirationNotificationJob implements ShouldQueue
     public int $tries = 3;
 
     public function __construct(
-        private int $tenantId,
-        private int $moduleId,
+        public int     $tenantId,
+        public int     $moduleId,
         private string $type = 'expired', // 'warning' ou 'expired'
     )
     {

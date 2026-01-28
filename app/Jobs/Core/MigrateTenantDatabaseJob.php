@@ -3,6 +3,7 @@
 namespace App\Jobs\Core;
 
 use Artisan;
+use DB;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -25,6 +26,12 @@ class MigrateTenantDatabaseJob implements ShouldQueue
     {
         try {
             Log::info("Starting migration for schema: {$this->databaseName}");
+
+            // En test avec SQLite, ignorer les migrations de schéma tenant
+            if (DB::getDriverName() === 'sqlite') {
+                Log::info("Migration skipped for SQLite: {$this->databaseName}");
+                return;
+            }
 
             // Exécuter les migrations spécifiques au tenant
             Artisan::call('migrate', [

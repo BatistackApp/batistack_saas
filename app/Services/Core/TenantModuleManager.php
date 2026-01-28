@@ -17,7 +17,7 @@ class TenantModuleManager
         return DB::transaction(function () use ($tenant, $moduleId, $config) {
             $tenantModule = TenantModule::updateOrCreate(
                 [
-                    'tenant_id' => $tenant->id,
+                    'tenants_id' => $tenant->id,
                     'module_id' => $moduleId,
                 ],
                 [

@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->string('status')->default(\App\Enums\Core\TenantStatus::Active->value);
             $table->json('settings')->nullable();
             $table->timestamp('activated_at')->nullable();
-            $table->timestamp('suspended_at');
+            $table->timestamp('suspended_at')->nullable();
             $table->timestamps();
             $table->softDeletes();
 

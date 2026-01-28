@@ -14,10 +14,11 @@ class TenantModule extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $foreignKey = 'tenants_id';
 
     public function tenant(): BelongsTo
     {
-        return $this->belongsTo(Tenants::class);
+        return $this->belongsTo(Tenants::class, 'tenants_id');
     }
 
     public function module(): BelongsTo

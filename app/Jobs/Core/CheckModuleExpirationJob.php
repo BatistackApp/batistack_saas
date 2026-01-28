@@ -32,20 +32,22 @@ class CheckModuleExpirationJob implements ShouldQueue
                 ->get();
 
             foreach ($expiredModules as $tenantModule) {
+                $tenantId = $tenantModule->tenants_id;
+
                 $tenantModule->update([
                     'status' => \App\Enums\Core\TenantModuleStatus::Expired->value,
                 ]);
 
                 Log::info("Module marked as expired", [
-                    'tenant_id' => $tenantModule->tenant_id,
+                    'tenants_id' => $tenantId,
                     'module_id' => $tenantModule->module_id,
                 ]);
 
-                // Invalider le cache
-                $this->accessService->invalidateModuleCache($tenantModule->tenant_id);
+                if ($tenantId) {
+                    $this->accessService->invalidateModuleCache($tenantId);
 
-                // Envoyer notification
-                dispatch(new SendModuleExpirationNotificationJob($tenantModule->tenant_id, $tenantModule->module_id));
+                    dispatch(new SendModuleExpirationNotificationJob($tenantId, $tenantModule->module_id));
+                }
             }
 
             Log::info("Module expiration check completed. Modules expired: {$expiredModules->count()}");

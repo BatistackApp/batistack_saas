@@ -57,7 +57,7 @@ class TenantProvisioningService
         ModuleCatalog::where('is_core', true)
             ->each(function (ModuleCatalog $module) use ($tenant) {
                 TenantModule::create([
-                    'tenant_id' => $tenant->id,
+                    'tenants_id' => $tenant->id,
                     'module_id' => $module->id,
                     'status' => \App\Enums\Core\TenantModuleStatus::Active->value,
                     'starts_at' => now(),

@@ -32,7 +32,7 @@ class CoreServiceProvider extends ServiceProvider
         $this->app->booted(function () {
             $schedule = $this->app->make(Schedule::class);
 
-            $schedule->job(new CheckModuleExpirationJob())
+            $schedule->job(CheckModuleExpirationJob::class)
                 ->dailyAt('01:00')
                 ->name('core:check-module-expiration')
                 ->onFailure(function () {

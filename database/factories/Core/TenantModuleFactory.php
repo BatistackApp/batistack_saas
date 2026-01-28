@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Core;
 
+use App\Enums\Core\TenantModuleStatus;
 use App\Models\Core\ModuleCatalog;
 use App\Models\Core\TenantModule;
 use App\Models\Core\Tenants;
@@ -15,9 +16,9 @@ class TenantModuleFactory extends Factory
     public function definition(): array
     {
         return [
-            'status' => $this->faker->word(),
+            'status' => $this->faker->randomElement(TenantModuleStatus::cases()),
             'starts_at' => Carbon::now(),
-            'ends_at' => Carbon::now(),
+            'ends_at' => null,
             'config' => $this->faker->words(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
