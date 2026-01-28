@@ -39,6 +39,21 @@ class PayrollSlip extends Model
         return $this->hasMany(PayrollSlipDeduction::class);
     }
 
+    public function mealAllowances(): HasMany
+    {
+        return $this->hasMany(PayrollMealAllowance::class);
+    }
+
+    public function overtimes(): HasMany
+    {
+        return $this->hasMany(PayrollOvertime::class);
+    }
+
+    public function travelAllowances(): HasMany
+    {
+        return $this->hasMany(PayrollTravelAllowances::class);
+    }
+
     protected function casts(): array
     {
         return [

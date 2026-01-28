@@ -3,6 +3,7 @@
 namespace App\Services\Payroll;
 
 use App\Enums\Payroll\PayrollExportFormat;
+use App\Enums\Payroll\PayrollStatus;
 use App\Models\Core\Tenant;
 use App\Models\Payroll\PayrollExport;
 use App\Models\Payroll\PayrollSlip;
@@ -23,7 +24,7 @@ class PayrollExportService
             ->where('tenant_id', $company->id)
             ->where('year', $year)
             ->where('month', $month)
-            ->whereIn('status', ['validated', 'exported'])
+            ->whereIn('status', [PayrollStatus::Validated->value, PayrollStatus::Exported->value])
             ->with('employee')
             ->get();
 
@@ -65,7 +66,7 @@ class PayrollExportService
     }
 
     /**
-     * @param Collection<PayrollSlip> $slips
+     * @param  Collection<PayrollSlip>  $slips
      */
     private function generateGeneric(Collection $slips): string
     {
@@ -88,21 +89,21 @@ class PayrollExportService
     }
 
     /**
-     * @param Collection<PayrollSlip> $slips
+     * @param  Collection<PayrollSlip>  $slips
      */
     private function generateSilae(Collection $slips): string
     {
         $rows = [
             ['[Import Silae Format]'],
-            [],];
+            [], ];
 
         foreach ($slips as $slip) {
             $rows[] = ["NumClient={$slip->company->siret}"];
             $rows[] = ["NumSalarie={$slip->employee->id}"];
             $rows[] = ["Mois={$slip->month}/{$slip->year}"];
-            $rows[] = ["SalaireBrut=" . number_format($slip->gross_amount, 2, '.', '')];
-            $rows[] = ["Charges=" . number_format($slip->social_contributions, 2, '.', '')];
-            $rows[] = ["SalaireNet=" . number_format($slip->net_amount, 2, '.', '')];
+            $rows[] = ['SalaireBrut='.number_format($slip->gross_amount, 2, '.', '')];
+            $rows[] = ['Charges='.number_format($slip->social_contributions, 2, '.', '')];
+            $rows[] = ['SalaireNet='.number_format($slip->net_amount, 2, '.', '')];
             $rows[] = [];
         }
 
@@ -110,7 +111,7 @@ class PayrollExportService
     }
 
     /**
-     * @param Collection<PayrollSlip> $slips
+     * @param  Collection<PayrollSlip>  $slips
      */
     private function generateSage(Collection $slips): string
     {
@@ -122,8 +123,8 @@ class PayrollExportService
 
         foreach ($slips as $slip) {
             $rows[] = ['Compte=6411'];
-            $rows[] = ['Debit=' . number_format($slip->gross_amount, 2, '.', '')];
-            $rows[] = ['LibellePiece=Paie ' . $slip->employee->name . ' ' . $slip->month . '/' . $slip->year];
+            $rows[] = ['Debit='.number_format($slip->gross_amount, 2, '.', '')];
+            $rows[] = ['LibellePiece=Paie '.$slip->employee->name.' '.$slip->month.'/'.$slip->year];
             $rows[] = [];
         }
 
@@ -131,13 +132,13 @@ class PayrollExportService
     }
 
     /**
-     * @param array<int, array<string>> $rows
+     * @param  array<int, array<string>>  $rows
      */
     private function arrayToCsv(array $rows): string
     {
         $csv = '';
         foreach ($rows as $row) {
-            $csv .= '"' . implode('","', $row) . '"' . "\n";
+            $csv .= '"'.implode('","', $row).'"'."\n";
         }
 
         return $csv;
