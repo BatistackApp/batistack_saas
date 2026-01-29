@@ -42,6 +42,14 @@ return [
             'secret' => env('STRIPE_WEBHOOK_SECRET'),
             'tolerance' => env('STRIPE_WEBHOOK_TOLERANCE', 300),
         ],
-    ]
+    ],
+
+    'ovh' => [
+        'api_url' => env("OVH_API_URL", "https://eu.api.ovh.com/1.0"),
+        'app_key' => env("OVH_APP_KEY"),
+        'consumer_key' => env("OVH_CONSUMER_KEY"),
+        'token' => env("OVH_TOKEN"),
+        'base_domain' => env('OVH_BASE_DOMAIN', 'batistack.app'),
+    ],
 
 ];

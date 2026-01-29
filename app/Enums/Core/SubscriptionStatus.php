@@ -3,37 +3,50 @@
 namespace App\Enums\Core;
 
 use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
+use BackedEnum;
 
-enum SubscriptionStatus: string implements HasColor, HasLabel
+enum SubscriptionStatus: string implements HasLabel, HasColor, HasIcon
 {
     case Active = 'active';
-    case Inactive = 'inactive';
-    case Cancelled = 'cancelled';
+    case Paused = 'paused';
     case PastDue = 'past_due';
-    case Trialing = 'trialing';
+    case Cancelled = 'cancelled';
+    case Expired = 'expired';
 
     public function getColor(): string|array|null
     {
-        return match ($this) {
-            self::Active => 'bg-green-500',
-            self::Inactive => 'bg-gray-500',
-            self::Cancelled => 'bg-red-500',
-            self::PastDue => 'bg-yellow-500',
-            self::Trialing => 'bg-yellow-500',
-            default => null,
+        return match($this) {
+            self::Active => 'success',
+            self::Paused => 'warning',
+            self::PastDue => 'danger',
+            self::Cancelled => 'gray',
+            self::Expired => 'gray',
+        };
+    }
+
+    public function getIcon(): string|BackedEnum|Htmlable|null
+    {
+        return match($this) {
+            self::Active => Heroicon::CheckCircle,
+            self::Paused => Heroicon::PauseCircle,
+            self::PastDue => Heroicon::ExclamationTriangle,
+            self::Cancelled => Heroicon::XCircle,
+            self::Expired => Heroicon::ArchiveBoxXMark,
         };
     }
 
     public function getLabel(): string|Htmlable|null
     {
-        return match ($this) {
-            self::Active => 'Active',
-            self::Inactive => 'Inactive',
-            self::Cancelled => 'Cancelled',
-            self::PastDue => 'Past Due',
-            self::Trialing => 'Trialing',
+        return match($this) {
+            self::Active => __('core.subscription_status.active'),
+            self::Paused => __('core.subscription_status.paused'),
+            self::PastDue => __('core.subscription_status.past_due'),
+            self::Cancelled => __('core.subscription_status.cancelled'),
+            self::Expired => __('core.subscription_status.expired'),
         };
     }
 }
