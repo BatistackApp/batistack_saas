@@ -27,10 +27,10 @@ class CheckTierDocumentExpirationJob implements ShouldQueue
                 // À adapter selon implémentation GED
                 // TODO: Implémenter la logique de connexion à la GED
                 return false;
+            })
+            ->each(function (Tiers $tier) {
+                $tier->notify(new DocumentExpirationNotification($tier));
             });
 
-        $tiersWithExpiringDocs->each(function (Tiers $tier) {
-            $tier->notify(new DocumentExpirationNotification($tier));
-        });
     }
 }
