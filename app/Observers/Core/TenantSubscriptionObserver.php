@@ -2,6 +2,7 @@
 
 namespace App\Observers\Core;
 
+use App\Enums\Core\TenantStatus;
 use App\Models\Core\Tenants;
 use App\Services\Core\BillingHistoryService;
 use Laravel\Cashier\Subscription;
@@ -16,11 +17,11 @@ class TenantSubscriptionObserver
     public function created(Subscription $subscription): void
     {
         $tenant = Tenants::find($subscription->billable_id);
-        if (!$tenant) {
+        if (! $tenant) {
             return;
         }
 
-        Log::info("Subscription created via Cashier", [
+        Log::info('Subscription created via Cashier', [
             'tenant_id' => $tenant->id,
             'stripe_subscription_id' => $subscription->stripe_id,
             'plan' => $subscription->stripe_price,
@@ -41,14 +42,33 @@ class TenantSubscriptionObserver
 
     public function updated(Subscription $subscription): void
     {
-        $tenant = Tenants::find($subscription->billable_id);
-
-        if (!$tenant || !$subscription->isDirty()) {
+        if (! $subscription->isDirty('stripe_status')) {
             return;
         }
 
+        $tenant = Tenants::find($subscription->billable_id);
+
+        if (! $tenant) {
+            Log::warning('Tenant not found for subscription', [
+                'subscription_id' => $subscription->stripe_id,
+                'billable_id' => $subscription->billable_id,
+            ]);
+
+            return;
+        }
+
+        if ($subscription->stripe_status === 'past_due') {
+            $tenant->update(['status' => TenantStatus::Suspended]);
+        }
+
+        // ✅ Réactiver le tenant si le statut repasse à "active"
+        if ($subscription->stripe_status === 'active' && $tenant->status === TenantStatus::Suspended) {
+            $tenant->update(['status' => TenantStatus::Active]);
+        }
+
+
         if ($subscription->isDirty('stripe_status')) {
-            Log::info("Subscription status changed", [
+            Log::info('Subscription status changed', [
                 'tenant_id' => $tenant->id,
                 'old_status' => $subscription->getOriginal('stripe_status'),
                 'new_status' => $subscription->stripe_status,
@@ -71,11 +91,11 @@ class TenantSubscriptionObserver
     {
         $tenant = Tenants::find($subscription->billable_id);
 
-        if (!$tenant) {
+        if (! $tenant) {
             return;
         }
 
-        Log::warning("Subscription deleted", [
+        Log::warning('Subscription deleted', [
             'tenant_id' => $tenant->id,
             'stripe_subscription_id' => $subscription->stripe_id,
         ]);
@@ -84,7 +104,7 @@ class TenantSubscriptionObserver
             tenant: $tenant,
             eventType: 'subscription_deleted',
             stripeSubscriptionId: $subscription->stripe_id,
-            description: "Abonnement supprimé",
+            description: 'Abonnement supprimé',
         );
     }
 }
