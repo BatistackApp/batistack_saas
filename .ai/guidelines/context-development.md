@@ -11,4 +11,4 @@ Pour chaque module:
     - Jobs
     - Notifications
     - Schedules (Si Besoin)
-- Etape 6: Etablissement des Tests Unitaires/Features en corrélation avec le Module
+- Etape 6: Etablissement des Tests Unitaires/Features en corrélation avec le Module dans le format PESTPHP.
