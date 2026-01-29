@@ -7,6 +7,7 @@ use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Observers\Tiers\TierObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -46,10 +47,12 @@ class Tiers extends Model
     }
 
     // Accessors
-    public function getDisplayNameAttribute(): string
+    protected function displayName(): Attribute
     {
-        return $this->type_entite === 'personne_morale'
-            ? $this->raison_sociale
-            : "{$this->prenom} {$this->nom}";
+        return Attribute::get(
+            fn () => $this->type_entite === 'personne_morale'
+                ? $this->raison_sociale
+                : "{$this->prenom} {$this->nom}"
+        );
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Jobs\Tiers;
 
 use App\Models\Tiers\Tiers;
+use App\Notifications\Tiers\TierWelcomeNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

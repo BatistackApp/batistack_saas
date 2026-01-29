@@ -7,9 +7,13 @@ use App\Models\Tiers\Tiers;
 
 class TierTypeManager
 {
+    public function hasType(Tiers $tier, TierType $type): bool
+    {
+        return $tier->types()->where('type', $type->value)->exists();
+    }
     public function addType(Tiers $tier, TierType $type, bool $isPrimary = false): void
     {
-        if ($tier->hasType($type)) {
+        if ($this->hasType($tier, $type)) {
             return;
         }
 
@@ -30,7 +34,7 @@ class TierTypeManager
 
     public function setPrimaryType(Tiers $tier, TierType $type): void
     {
-        if (! $tier->hasType($type)) {
+        if (! $this->hasType($tier, $type)) {
             throw new \Exception("Tier does not have type: {$type->value}");
         }
 

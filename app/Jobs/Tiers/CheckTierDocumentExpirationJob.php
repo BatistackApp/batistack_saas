@@ -3,6 +3,7 @@
 namespace App\Jobs\Tiers;
 
 use App\Models\Tiers\Tiers;
+use App\Notifications\Tiers\DocumentExpirationNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -24,6 +25,7 @@ class CheckTierDocumentExpirationJob implements ShouldQueue
             ->filter(function (Tiers $tier) {
                 // Logique de vérification via GED
                 // À adapter selon implémentation GED
+                // TODO: Implémenter la logique de connexion à la GED
                 return false;
             });
 
