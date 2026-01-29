@@ -20,14 +20,12 @@ class CheckOverdueInvoicesJob implements ShouldQueue
 
     public function __construct(
         private BillingHistoryService $historyService,
-    )
-    {
-    }
+    ) {}
 
     public function handle(): void
     {
         try {
-            Log::info("Checking overdue invoices...");
+            Log::info('Checking overdue invoices...');
 
             $overdueThreshold = now()->subDays(30);
 
@@ -42,7 +40,7 @@ class CheckOverdueInvoicesJob implements ShouldQueue
                 if ($tenant->status === TenantStatus::Active->value) {
                     $tenant->update(['status' => TenantStatus::Suspended->value]);
 
-                    Log::warning("Tenant suspended due to overdue invoices", [
+                    Log::warning('Tenant suspended due to overdue invoices', [
                         'tenant_id' => $tenant->id,
                     ]);
 
@@ -51,14 +49,14 @@ class CheckOverdueInvoicesJob implements ShouldQueue
                     $this->historyService->logEvent(
                         tenant: $tenant,
                         eventType: 'tenant_suspended_overdue',
-                        description: "Tenant suspendu pour non-paiement",
+                        description: 'Tenant suspendu pour non-paiement',
                     );
                 }
             }
 
             Log::info("Overdue invoices check completed. Tenants suspended: {$tenantsWithOverdueInvoices->count()}");
         } catch (\Exception $e) {
-            Log::error("Overdue invoices check failed", [
+            Log::error('Overdue invoices check failed', [
                 'error' => $e->getMessage(),
             ]);
 
