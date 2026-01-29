@@ -52,28 +52,4 @@ class Tiers extends Model
             ? $this->raison_sociale
             : "{$this->prenom} {$this->nom}";
     }
-
-    // Methods
-    public function hasType(TierType $type): bool
-    {
-        return $this->types()->where('type', $type->value)->exists();
-    }
-
-    public function addType(TierType $type, bool $isPrimary = false): void
-    {
-        if (! $this->hasType($type)) {
-            $this->types()->create([
-                'type' => $type->value,
-                'is_primary' => $isPrimary,
-            ]);
-        }
-    }
-
-    private function generateCodeTiers(): string
-    {
-        $prefix = Str::upper(Str::random(3));
-        $number = str_pad((string) (self::count() + 1), 6, '0', STR_PAD_LEFT);
-
-        return "{$prefix}-{$number}";
-    }
 }
