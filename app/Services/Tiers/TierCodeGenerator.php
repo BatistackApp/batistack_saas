@@ -4,14 +4,16 @@ namespace App\Services\Tiers;
 
 use App\Models\Tiers\Tiers;
 use Illuminate\Support\Str;
+use Random\RandomException;
 
 class TierCodeGenerator
 {
+
     public function generate(): string
     {
         $prefix = Str::upper(Str::random(3));
-        $count = Tiers::count() + 1;
-        $number = str_pad((string) $count, 6, '0', STR_PAD_LEFT);
+        // Utilise une partie du timestamp et une chaîne aléatoire pour plus d'unicité
+        $number = substr(time(), -3).str_pad(random_int(0, 999), 3, '0', STR_PAD_LEFT);
 
         return "{$prefix}-{$number}";
     }
