@@ -70,45 +70,47 @@ class TierValidator
     public function validate(array $data)
     {
         return Validator::make($data, [
-            'siret' => ['nullable', 'string', 'size:14', function ($attribute, $value, $fail) {
-                if (! $this->isLuhnValid($value)) {
-                    $fail(__('tiers.validation.siret_invalid'));
-                }
-            }],
-            'iban' => ['nullable', 'string', function ($attribute, $value, $fail) {
-                if (! $this->isIbanValid($value)) {
-                    $fail(__('tiers.validation.iban_invalid'));
-                }
-            }],
-            'numero_tva' => 'nullable|string|regex:/^[A-Z]{2}[0-9]{11}$/',
+            'siret' => ['nullable', 'string', 'size:14', fn ($a, $v, $f) => $this->checkLuhn($v) ?: $f(__('SIRET invalide'))],
+            'iban' => ['nullable', 'string', fn ($a, $v, $f) => $this->checkIban($v) ?: $f(__('IBAN invalide'))],
         ]);
     }
 
-    /** Algorithme de Luhn pour SIRET */
-    private function isLuhnValid($siret): bool
+    private function checkLuhn($val): bool
     {
-        $siret = str_replace(' ', '', $siret);
-        if (! is_numeric($siret) || strlen($siret) != 14) {
+        $val = preg_replace('/\D/', '', $val);
+        if (strlen($val) !== 14) {
             return false;
         }
         $sum = 0;
         for ($i = 0; $i < 14; $i++) {
-            $tmp = ((($i + 1) % 2) + 1) * intval($siret[$i]);
-            $sum += ($tmp > 9) ? $tmp - 9 : $tmp;
+            $n = (int) $val[13 - $i];
+            if ($i % 2 === 1) {
+                $n *= 2;
+                if ($n > 9) {
+                    $n -= 9;
+                }
+            }
+            $sum += $n;
         }
 
         return $sum % 10 === 0;
     }
 
-    /** Validation IBAN Simplifiée */
-    private function isIbanValid($iban): bool
+    private function checkIban($iban): bool
     {
         $iban = strtoupper(str_replace(' ', '', $iban));
-        if (! preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]{14,30}$/', $iban)) {
+        if (! preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]{12,30}$/', $iban)) {
             return false;
         }
 
-        // Une logique de validation par modulo 97 pourrait être ajoutée ici ou via une lib externe.
-        return true;
+        // Algorithme Modulo 97
+        $charMap = ['A' => 10, 'B' => 11, 'C' => 12, 'D' => 13, 'E' => 14, 'F' => 15, 'G' => 16, 'H' => 17, 'I' => 18, 'J' => 19, 'K' => 20, 'L' => 21, 'M' => 22, 'N' => 23, 'O' => 24, 'P' => 25, 'Q' => 26, 'R' => 27, 'S' => 28, 'T' => 29, 'U' => 30, 'V' => 31, 'W' => 32, 'X' => 33, 'Y' => 34, 'Z' => 35];
+        $checkString = substr($iban, 4).substr($iban, 0, 4);
+        $numericIban = '';
+        foreach (str_split($checkString) as $char) {
+            $numericIban .= is_numeric($char) ? $char : $charMap[$char];
+        }
+
+        return bcmod($numericIban, '97') === '1';
     }
 }

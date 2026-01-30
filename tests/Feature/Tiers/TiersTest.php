@@ -2,6 +2,7 @@
 
 use App\Enums\Tiers\TierComplianceStatus;
 use App\Enums\Tiers\TierDocumentStatus;
+use App\Enums\Tiers\TierDocumentType;
 use App\Enums\Tiers\TierStatus;
 use App\Enums\Tiers\TierType as TierTypeEnum;
 use App\Jobs\Tiers\CheckTiersActivityJob;
@@ -141,6 +142,28 @@ describe('Tier Model', function () {
         (new CheckTiersActivityJob)->handle(new SirenService);
 
         expect($tier->refresh()->status)->toBe(TierStatus::Inactive);
+    });
+
+    test('un document assurance doit pouvoir stocker les activités couvertes', function () {
+        $tier = Tiers::factory()->create();
+        $doc = TierDocument::create([
+            'tiers_id' => $tier->id,
+            'type' => TierDocumentType::DECENNALE,
+            'montant_garantie' => 1000000,
+            'activites_couvertes' => 'Maçonnerie, Charpente, Couverture',
+            'expires_at' => now()->addYear(),
+            'status' => TierDocumentStatus::Valid,
+            'file_path' => 'assurances/decennale.pdf'
+        ]);
+
+        expect($doc->activites_couvertes)->toContain('Maçonnerie');
+    });
+
+    test('le validateur rejette un IBAN erroné via modulo 97', function () {
+        $validator = new TierValidator();
+        // IBAN avec une erreur volontaire
+        $result = $validator->validate(['iban' => 'FR7630006000011234567890123']);
+        expect($result->fails())->toBeTrue();
     });
 
     it('generates unique code_tiers automatically', function () {

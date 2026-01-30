@@ -15,6 +15,9 @@ return new class extends Migration {
             $table->string('file_path');
             $table->date('expires_at')->index();
             $table->string('status')->default(\App\Enums\Tiers\TierDocumentStatus::Pending_verification->value); // valid, to_renew, expired
+            $table->string('verification_key')->nullable();
+            $table->decimal('montant_garantie', 15, 2)->nullable();
+            $table->text('activites_couvertes')->nullable();
             $table->timestamp('verified_at')->nullable();
             $table->foreignId('verified_by')->nullable()->constrained('users');
             $table->timestamps();
