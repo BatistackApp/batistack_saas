@@ -11,6 +11,7 @@ use Illuminate\Notifications\Notifiable;
 class ProjectUser extends Model
 {
     use HasFactory, Notifiable;
+    protected $table = 'project_user';
 
     public function project(): BelongsTo
     {

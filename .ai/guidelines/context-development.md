@@ -3,7 +3,7 @@
 Pour chaque module:
 
 - Etape 1: Définir le contexte du module
-- Etape 2: Définir les migrations, Enums et Modèle Eloquents propre au module
+- Etape 2: Définir les migrations, Enums et Modèle Eloquents, Factories propre au module
 - Etape 3: Définir La porté technique du module en s'appuyant sur des exemples concret 
 - Etape 4: Définir les services dont le module aura besoin dans le namespace App/Service/{NomDuModule}
 - Etape 5: Automatisation du module par la mise en place:

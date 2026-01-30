@@ -21,9 +21,9 @@ class Project extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'tenants_id', 'client_id', 'code_project', 'name',
+        'tenants_id', 'customer_id', 'code_project', 'name',
         'description', 'address', 'latitude', 'longitude',
-        'budget_initial_ht', 'status', 'planned_start_at',
+        'initial_budget_ht', 'status', 'planned_start_at',
         'planned_end_at', 'actual_start_at', 'actual_end_at'
     ];
 
