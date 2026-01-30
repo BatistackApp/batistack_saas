@@ -6,6 +6,7 @@ use App\Models\Tiers\TierDocument;
 use App\Models\Tiers\TierQualification;
 use App\Models\Tiers\Tiers;
 use App\Models\Tiers\TierType;
+use App\Services\SirenService;
 use App\Services\Tiers\TierCodeGenerator;
 use App\Services\Tiers\TierSearchService;
 use App\Services\Tiers\TierTypeManager;
@@ -60,6 +61,34 @@ describe('Tier Model', function () {
         ]);
 
         expect($tier->isCompliant())->toBeFalse();
+    });
+
+    it('le service Sirene peut récupérer des données d\'entreprise', function () {
+        Http::fake([
+            'api.insee.fr/*' => Http::response([
+                'etablissements' => [
+                    [
+                        'uniteLegale' => [
+                            'denominationUniteLegale' => 'BATISTACK SAS',
+                            'activitePrincipaleUniteLegale' => '6201Z',
+                        ],
+                        'adresseEtablissement' => [
+                            'numeroVoieEtablissement' => '10',
+                            'typeVoieEtablissement' => 'RUE',
+                            'libelleVoieEtablissement' => 'DU CODE',
+                            'codePostalEtablissement' => '75000',
+                            'libelleCommuneEtablissement' => 'PARIS',
+                        ],
+                    ]
+                ],
+            ], 200),
+        ]);
+
+        $service = app(SirenService::class);
+        $data = $service->fetchCompanyData('12345678901234');
+
+        expect($data['raison_social'])->toBe('BATISTACK SAS')
+            ->and($data['code_naf'])->toBe('6201Z');
     });
 
     it('generates unique code_tiers automatically', function () {

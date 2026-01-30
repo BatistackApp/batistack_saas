@@ -52,4 +52,9 @@ return [
         'base_domain' => env('OVH_BASE_DOMAIN', 'batistack.app'),
     ],
 
+    'portail_siren' => [
+        'baseUrl' => 'https://api.insee.fr/api-sirene/3.11',
+        'api_key' => env('PORTAIL_SIREN_API_KEY'),
+    ]
+
 ];
