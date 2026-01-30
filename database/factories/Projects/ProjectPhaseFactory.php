@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Projects;
 
+use App\Enums\Projects\ProjectPhaseStatus;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -17,7 +18,7 @@ class ProjectPhaseFactory extends Factory
             'name' => $this->faker->name(),
             'allocated_budget' => $this->faker->randomFloat(),
             'order' => $this->faker->randomNumber(),
-            'status' => $this->faker->word(),
+            'status' => $this->faker->randomElement(ProjectPhaseStatus::cases()),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
 

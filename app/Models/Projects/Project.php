@@ -27,15 +27,6 @@ class Project extends Model
         'planned_end_at', 'actual_start_at', 'actual_end_at'
     ];
 
-    protected $casts = [
-        'status' => ProjectStatus::class,
-        'planned_start_at' => 'date',
-        'planned_end_at' => 'date',
-        'actual_start_at' => 'date',
-        'actual_end_at' => 'date',
-        'budget_initial_ht' => 'decimal:2',
-    ];
-
     public function tenants(): BelongsTo
     {
         return $this->belongsTo(Tenants::class);
@@ -61,10 +52,12 @@ class Project extends Model
     protected function casts(): array
     {
         return [
+            'status' => ProjectStatus::class,
             'planned_start_at' => 'date',
             'planned_end_at' => 'date',
             'actual_start_at' => 'date',
             'actual_end_at' => 'date',
+            'initial_budget_ht' => 'decimal:2',
         ];
     }
 }
