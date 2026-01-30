@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Log;
+
 class SirenService
 {
     public function __construct(private string $baseUrl = '')
@@ -15,6 +17,10 @@ class SirenService
             ->get($this->baseUrl.'/siret?q='.$siret);
 
         if ($response->failed()) {
+            Log::warning("Échec de l'appel à l'API SIRENE pour le SIRET {$siret}", [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
             return null;
         }
 
