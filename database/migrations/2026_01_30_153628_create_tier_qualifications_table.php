@@ -8,19 +8,18 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('tier_documents', function (Blueprint $table) {
+        Schema::create('tier_qualifications', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Tiers::class)->constrained()->cascadeOnDelete();
-            $table->string('type'); // ex: ATTESTATION_URSSAF, DECENNALE, KBIS
-            $table->string('file_path');
-            $table->date('expires_at')->index();
-            $table->string('status')->default(\App\Enums\Tiers\TierDocumentStatus::Valid->value); // valid, to_renew, expired
+            $table->string('label'); // ex: Qualibat 1552, RGE
+            $table->string('reference')->nullable();
+            $table->date('valid_until')->index();
             $table->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('tier_documents');
+        Schema::dropIfExists('tier_qualifications');
     }
 };

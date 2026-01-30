@@ -2,22 +2,21 @@
 
 namespace Database\Factories\Tiers;
 
-use App\Models\Tiers\TierDocument;
+use App\Models\Tiers\TierQualification;
 use App\Models\Tiers\Tiers;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
-class TierDocumentFactory extends Factory
+class TierQualificationFactory extends Factory
 {
-    protected $model = TierDocument::class;
+    protected $model = TierQualification::class;
 
     public function definition(): array
     {
         return [
-            'type' => $this->faker->word(),
-            'file_path' => $this->faker->word(),
-            'expires_at' => $this->faker->date(),
-            'status' => $this->faker->word(),
+            'label' => $this->faker->word(),
+            'reference' => $this->faker->word(),
+            'valid_until' => Carbon::now(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
 

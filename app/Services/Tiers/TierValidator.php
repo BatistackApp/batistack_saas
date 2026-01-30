@@ -3,6 +3,7 @@
 namespace App\Services\Tiers;
 
 use App\Models\Tiers\Tiers;
+use Illuminate\Support\Facades\Validator;
 
 class TierValidator
 {
@@ -61,5 +62,53 @@ class TierValidator
             'iban.regex' => __('validation.iban_format'),
             'bic.regex' => __('validation.bic_format'),
         ];
+    }
+
+    /**
+     * Valide la structure complète d'un tiers avant enregistrement.
+     */
+    public function validate(array $data)
+    {
+        return Validator::make($data, [
+            'siret' => ['nullable', 'string', 'size:14', function ($attribute, $value, $fail) {
+                if (! $this->isLuhnValid($value)) {
+                    $fail(__('tiers.validation.siret_invalid'));
+                }
+            }],
+            'iban' => ['nullable', 'string', function ($attribute, $value, $fail) {
+                if (! $this->isIbanValid($value)) {
+                    $fail(__('tiers.validation.iban_invalid'));
+                }
+            }],
+            'numero_tva' => 'nullable|string|regex:/^[A-Z]{2}[0-9]{11}$/',
+        ]);
+    }
+
+    /** Algorithme de Luhn pour SIRET */
+    private function isLuhnValid($siret): bool
+    {
+        $siret = str_replace(' ', '', $siret);
+        if (! is_numeric($siret) || strlen($siret) != 14) {
+            return false;
+        }
+        $sum = 0;
+        for ($i = 0; $i < 14; $i++) {
+            $tmp = ((($i + 1) % 2) + 1) * intval($siret[$i]);
+            $sum += ($tmp > 9) ? $tmp - 9 : $tmp;
+        }
+
+        return $sum % 10 === 0;
+    }
+
+    /** Validation IBAN Simplifiée */
+    private function isIbanValid($iban): bool
+    {
+        $iban = strtoupper(str_replace(' ', '', $iban));
+        if (! preg_match('/^[A-Z]{2}[0-9]{2}[A-Z0-9]{14,30}$/', $iban)) {
+            return false;
+        }
+
+        // Une logique de validation par modulo 97 pourrait être ajoutée ici ou via une lib externe.
+        return true;
     }
 }

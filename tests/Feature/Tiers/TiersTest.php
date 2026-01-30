@@ -3,6 +3,7 @@
 use App\Enums\Tiers\TierStatus;
 use App\Enums\Tiers\TierType as TierTypeEnum;
 use App\Models\Tiers\TierDocument;
+use App\Models\Tiers\TierQualification;
 use App\Models\Tiers\Tiers;
 use App\Models\Tiers\TierType;
 use App\Services\Tiers\TierCodeGenerator;
@@ -39,6 +40,23 @@ describe('Tier Model', function () {
             'expires_at' => now()->subDay(),
             'status' => 'expired',
             'file_path' => 'test.pdf',
+        ]);
+
+        expect($tier->isCompliant())->toBeFalse();
+    });
+
+    it('le validateur rejette un SIRET invalide via l\'algorithme de Luhn', function () {
+        $validator = new App\Services\Tiers\TierValidator;
+        $result = $validator->validate(['siret' => '12345678901234']); // SIRET bidon
+        expect($result->fails())->toBeTrue();
+    });
+
+    it('un tiers devient non-conforme si une qualification expire', function () {
+        $tier = Tiers::factory()->create();
+        TierQualification::create([
+            'tiers_id' => $tier->id,
+            'label' => 'Qualibat 1552',
+            'valid_until' => now()->subDay(),
         ]);
 
         expect($tier->isCompliant())->toBeFalse();

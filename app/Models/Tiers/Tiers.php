@@ -52,6 +52,11 @@ class Tiers extends Model
         return $this->hasMany(TierDocument::class, 'tiers_id');
     }
 
+    public function qualifications(): HasMany
+    {
+        return $this->hasMany(TierQualification::class, 'tiers_id');
+    }
+
     // Accessors
     protected function displayName(): Attribute
     {
@@ -64,8 +69,16 @@ class Tiers extends Model
 
     public function isCompliant(): bool
     {
-        return ! $this->documents()
+        // 1. Vérification des documents administratifs
+        $hasInvalidDocs = $this->documents()
             ->whereIn('status', ['expired', 'missing'])
             ->exists();
+
+        // 2. Vérification des qualifications techniques expirées
+        $hasExpiredQualifs = $this->qualifications()
+            ->where('valid_until', '<', now())
+            ->exists();
+
+        return ! $hasInvalidDocs && ! $hasExpiredQualifs;
     }
 }
