@@ -125,7 +125,7 @@ describe('Tier Model', function () {
         $tier = Tiers::factory()->create();
         $tier->documents()->create([
             'type' => \App\Enums\Tiers\TierDocumentType::BTP_CARD->value,
-            'status' => TierDocumentStatus::Pending_verification,
+            'status' => TierDocumentStatus::PendingVerification,
             'expires_at' => now()->addMonths(3),
             'file_path' => 'doc.pdf',
         ]);

@@ -32,7 +32,7 @@ class TierComplianceService
 
         // 2. Vérification de la validation humaine
         $hasPending = $tier->documents()
-            ->where('status', TierDocumentStatus::Pending_verification->value)
+            ->where('status', TierDocumentStatus::PendingVerification->value)
             ->exists();
 
         if ($hasPending) {

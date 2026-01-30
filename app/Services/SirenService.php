@@ -4,7 +4,10 @@ namespace App\Services;
 
 class SirenService
 {
-    public function __construct(private string $baseUrl = 'https://api.insee.fr') {}
+    public function __construct(private string $baseUrl = '')
+    {
+        $this->baseUrl = config('services.portail_siren.baseUrl');
+    }
 
     public function fetchCompanyData(string $siret): ?array
     {
