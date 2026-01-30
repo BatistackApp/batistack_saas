@@ -1,7 +1,9 @@
 <?php
 
+use App\Enums\Tiers\TierDocumentStatus;
 use App\Enums\Tiers\TierStatus;
 use App\Enums\Tiers\TierType as TierTypeEnum;
+use App\Jobs\Tiers\CheckTiersActivityJob;
 use App\Models\Tiers\TierDocument;
 use App\Models\Tiers\TierDocumentRequirement;
 use App\Models\Tiers\TierQualification;
@@ -97,7 +99,7 @@ describe('Tier Model', function () {
         TierDocumentRequirement::create([
             'tier_type' => 'subcontractor',
             'document_type' => 'URSSAF',
-            'is_mandatory' => true
+            'is_mandatory' => true,
         ]);
 
         $tier = Tiers::factory()->create();
@@ -111,10 +113,33 @@ describe('Tier Model', function () {
         $tier->contacts()->create([
             'first_name' => 'Jean',
             'last_name' => 'Compta',
-            'job_title' => 'Comptable'
+            'job_title' => 'Comptable',
         ]);
 
         expect($tier->contacts)->toHaveCount(1);
+    });
+
+    test('un tiers avec document en attente de vérification n\'est pas conforme', function () {
+        $tier = Tiers::factory()->create();
+        $tier->documents()->create([
+            'type' => \App\Enums\Tiers\TierDocumentType::BTP_CARD->value,
+            'status' => TierDocumentStatus::Pending_verification,
+            'expires_at' => now()->addMonths(3),
+            'file_path' => 'doc.pdf',
+        ]);
+
+        expect($tier->getComplianceStatus())->toBe('en_attente_verification');
+    });
+
+    test('le job détecte une entreprise cessée et la passe en inactive', function () {
+        $tier = Tiers::factory()->create(['siret' => '12345678901234', 'status' => TierStatus::Active]);
+
+        // Simuler une réponse SIRENE "Cessée" (etatAdministratif = C)
+        Http::fake(['api.insee.fr/*' => Http::response(['etablissement' => [['uniteLegale' => ['etatAdministratifUniteLegale' => 'C']]]], 200)]);
+
+        (new CheckTiersActivityJob)->handle(new SirenService);
+
+        expect($tier->refresh()->status)->toBe(TierStatus::Inactive);
     });
 
     it('generates unique code_tiers automatically', function () {

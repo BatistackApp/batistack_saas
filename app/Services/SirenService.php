@@ -27,6 +27,16 @@ class SirenService
         ];
     }
 
+    /**
+     * Vérifie si l'entreprise est toujours active (Recommandation 4)
+     */
+    public function isStillActive(string $siret): bool
+    {
+        $data = $this->fetchCompanyData($siret);
+
+        return ($data['status_activite'] ?? 'A') === 'A';
+    }
+
     private function formatAddress(array $addr): string
     {
         return trim(($addr['numeroVoieEtablissement'] ?? '').' '.($addr['typeVoieEtablissement'] ?? '').' '.($addr['libelleVoieEtablissement'] ?? ''));

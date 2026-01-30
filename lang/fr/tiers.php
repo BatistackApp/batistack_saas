@@ -25,6 +25,7 @@ return [
         'to_renew' => 'À renouveler',
         'expired' => 'Expiré',
         'missing' => 'Manquant',
+        'pending_verification' => 'En attente de vérification',
     ],
     'tier_payment_term' => [
         'at_receipt' => 'À la réception',

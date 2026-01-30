@@ -10,7 +10,7 @@ return new class extends Migration {
         Schema::create('tier_document_requirements', function (Blueprint $table) {
             $table->id();
             $table->string('tier_type')->default(\App\Enums\Tiers\TierType::Supplier->value);
-            $table->string('document_type'); // ex: URSSAF, DECENNALE, DC4
+            $table->string('document_type')->default(\App\Enums\Tiers\TierDocumentType::BTP_CARD->value); // ex: URSSAF, DECENNALE, DC4
             $table->boolean('is_mandatory')->default(true);
             $table->timestamps();
         });

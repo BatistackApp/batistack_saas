@@ -17,6 +17,7 @@ class TierDocument extends Model
         return [
             'status' => TierDocumentStatus::class,
             'expires_at' => 'date',
+            'verified_at' => 'date',
         ];
     }
 

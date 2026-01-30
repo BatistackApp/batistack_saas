@@ -14,7 +14,9 @@ return new class extends Migration {
             $table->string('type'); // ex: ATTESTATION_URSSAF, DECENNALE, KBIS
             $table->string('file_path');
             $table->date('expires_at')->index();
-            $table->string('status')->default(\App\Enums\Tiers\TierDocumentStatus::Valid->value); // valid, to_renew, expired
+            $table->string('status')->default(\App\Enums\Tiers\TierDocumentStatus::Pending_verification->value); // valid, to_renew, expired
+            $table->timestamp('verified_at')->nullable();
+            $table->foreignId('verified_by')->nullable()->constrained('users');
             $table->timestamps();
         });
     }
