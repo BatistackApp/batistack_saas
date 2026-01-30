@@ -20,6 +20,12 @@ return new class extends Migration {
             $table->text('activites_couvertes')->nullable();
             $table->timestamp('verified_at')->nullable();
             $table->foreignId('verified_by')->nullable()->constrained('users');
+
+            // Pour assurance
+            $table->string('assureur_nom')->nullable();
+            $table->string('police_numero')->nullable();
+            $table->json('lots_couverts')->nullable();
+
             $table->timestamps();
         });
     }

@@ -4,11 +4,14 @@ namespace App\Models\Tiers;
 
 use App\Enums\Tiers\TierDocumentStatus;
 use App\Enums\Tiers\TierDocumentType;
+use App\Observers\Tiers\TierDocumentObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([TierDocumentObserver::class])]
 class TierDocument extends Model
 {
     use HasFactory;
@@ -22,6 +25,7 @@ class TierDocument extends Model
             'expires_at' => 'date',
             'verified_at' => 'date',
             'montant_garantie' => 'decimal:2',
+            'lots_couverts' => 'array'
         ];
     }
 

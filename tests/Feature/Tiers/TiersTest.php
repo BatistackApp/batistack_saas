@@ -6,6 +6,7 @@ use App\Enums\Tiers\TierDocumentType;
 use App\Enums\Tiers\TierStatus;
 use App\Enums\Tiers\TierType as TierTypeEnum;
 use App\Jobs\Tiers\CheckTiersActivityJob;
+use App\Jobs\Tiers\VerifyUrssafAttestationJob;
 use App\Models\Tiers\TierDocument;
 use App\Models\Tiers\TierDocumentRequirement;
 use App\Models\Tiers\TierQualification;
@@ -107,7 +108,7 @@ describe('Tier Model', function () {
         $tier = Tiers::factory()->create();
         $tier->types()->create(['type' => 'subcontractor']);
 
-        expect($tier->getComplianceStatus())->toBe('non_conforme_manquant');
+        expect($tier->getComplianceStatus())->toBe('non_compliant_missing');
     });
 
     test('on peut rattacher plusieurs contacts à un tiers', function () {
@@ -131,6 +132,28 @@ describe('Tier Model', function () {
         ]);
 
         expect($tier->getComplianceStatus())->toBe(TierComplianceStatus::PendingVerification->value);
+    });
+
+    test('un tiers avec un document en attente de vérification a le statut PendingVerification', function () {
+        $tier = Tiers::factory()->create();
+        $tier->documents()->create([
+            'type' => TierDocumentType::URSSAF->value,
+            'status' => TierComplianceStatus::PendingVerification->value,
+            'expires_at' => now()->addMonths(6),
+            'file_path' => 'doc.pdf'
+        ]);
+
+        expect($tier->getComplianceStatus())->toBe('pending_verification');
+    });
+
+    test('le job URSSAF valide le document si la clé est correcte', function () {
+        $doc = TierDocument::factory()->create(['verification_key' => 'VALIDE123']);
+
+        Http::fake(['api.urssaf.fr/*' => Http::response(['etat' => 'VALIDE'], 200)]);
+
+        (new VerifyUrssafAttestationJob($doc))->handle(app(\App\Services\UrssafApiService::class));
+
+        expect($doc->refresh()->status->value)->toBe('valid');
     });
 
     test('le job détecte une entreprise cessée et la passe en inactive', function () {

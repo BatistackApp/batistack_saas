@@ -11,11 +11,11 @@ use Illuminate\Contracts\Support\Htmlable;
 enum TierComplianceStatus: string implements HasLabel, HasIcon, HasColor
 {
     case Compliant = 'conforme';
-    case ToRenew = 'a_renouveler';
-    case NonCompliantMissing = 'non_conforme_manquant';
-    case NonCompliantExpired = 'non_conforme_expire';
-    case PendingVerification = 'en_attente_verification';
-    case QualificationExpired = 'qualification_expiree';
+    case ToRenew = 'to_renew';
+    case NonCompliantMissing = 'non_compliant_missing';
+    case NonCompliantExpired = 'non_compliant_expired';
+    case PendingVerification = 'pending_verification';
+    case QualificationExpired = 'qualification_expired';
 
     public function getColor(): string|array|null
     {
