@@ -19,7 +19,7 @@ class CheckTierDocumentExpirationJob implements ShouldQueue
 
     public function __construct() {}
 
-    public function handle(TierComplianceService $service): void
+    public function handle(): void
     {
         TierDocument::where('expires_at', '<', now())
             ->where('status', '!=', TierDocumentStatus::Expired)
@@ -31,14 +31,10 @@ class CheckTierDocumentExpirationJob implements ShouldQueue
             ->where('status', '!=', TierDocumentStatus::Expired)
             ->get();
 
-        foreach ($expiringDocs as $doc) {
-            // Notifier le Tiers concerné
-            $doc->tier->notify(new DocumentExpirationNotification($doc->tier));
-
-            // Note : L'envoi aux utilisateurs internes (Admin/Compta)
-            // se fera via le système de notification global de l'application.
-        }
-
-
+        $expiringDocs->groupBy('tiers_id')->each(function ($docs, $tierId) {
+            $tier = $docs->first()->tier;
+            // Passez la collection de documents à la notification
+            $tier->notify(new DocumentExpirationNotification($tier, $docs));
+        });
     }
 }

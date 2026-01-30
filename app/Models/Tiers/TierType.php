@@ -14,7 +14,7 @@ class TierType extends Model
     use HasFactory;
     protected $guarded = [];
 
-    public function tiers(): BelongsTo
+    public function tier(): BelongsTo
     {
         return $this->belongsTo(Tiers::class);
     }

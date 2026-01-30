@@ -24,5 +24,6 @@ return [
         'valid' => 'Valide',
         'to_renew' => 'À renouveler',
         'expired' => 'Expiré',
+        'missing' => 'Manquant',
     ],
 ];

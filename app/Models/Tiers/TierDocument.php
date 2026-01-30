@@ -20,7 +20,7 @@ class TierDocument extends Model
         ];
     }
 
-    public function tiers(): BelongsTo
+    public function tier(): BelongsTo
     {
         return $this->belongsTo(Tiers::class);
     }

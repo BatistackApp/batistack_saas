@@ -11,6 +11,7 @@ enum TierDocumentStatus: string implements HasLabel, HasColor
     case Valid = 'valid';
     case ToRenew = 'to_renew';
     case Expired = 'expired';
+    case Missing = 'missing';
 
     public function getColor(): string|array|null
     {
@@ -18,6 +19,7 @@ enum TierDocumentStatus: string implements HasLabel, HasColor
             self::Valid => 'green',
             self::ToRenew => 'amber',
             self::Expired => 'red',
+            self::Missing => 'gray',
         };
     }
 
@@ -27,6 +29,7 @@ enum TierDocumentStatus: string implements HasLabel, HasColor
             self::Valid => __('tiers.tier_document_status.valid'),
             self::ToRenew => __('tiers.tier_document_status.to_renew'),
             self::Expired => __('tiers.tier_document_status.expired'),
+            self::Missing => __('tiers.tier_document_status.missing'),
         };
     }
 }

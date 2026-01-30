@@ -79,7 +79,7 @@ describe('Tier Model', function () {
                             'codePostalEtablissement' => '75000',
                             'libelleCommuneEtablissement' => 'PARIS',
                         ],
-                    ]
+                    ],
                 ],
             ], 200),
         ]);
@@ -162,7 +162,13 @@ describe('TierType Model', function () {
             'tiers_id' => $tier->id,
             'type' => TierTypeEnum::Customer->value,
         ]);
-    })->throws(\Illuminate\Database\UniqueConstraintViolationException::class);
+
+        // L'exception est attendue sur cette action
+        expect(fn () => TierType::factory()->create([
+            'tiers_id' => $tier->id,
+            'type' => TierTypeEnum::Customer->value,
+        ]))->toThrow(\Illuminate\Database\UniqueConstraintViolationException::class);
+    });
 
     it('sets first type as primary by default', function () {
         $tier = Tiers::factory()->create();
@@ -207,9 +213,13 @@ describe('TierCodeGenerator Service', function () {
     });
 
     it('throws exception after max retries', function () {
+        // On mock le modèle pour qu'il prétende que chaque code existe déjà
+        Tiers::shouldReceive('where')->andReturnSelf();
+        Tiers::shouldReceive('exists')->andReturn(true);
+
         $generator = app(TierCodeGenerator::class);
-        $generator->generateWithRetry(0);
-    })->throws(\Exception::class, 'Unable to generate unique tier code');
+        $generator->generateWithRetry(5); // Le nombre d'essais par défaut
+    })->throws(\Exception::class, 'Unable to generate unique tier code after 5 attempts');
 });
 
 describe('TierSearchService', function () {
