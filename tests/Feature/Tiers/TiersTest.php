@@ -3,6 +3,7 @@
 use App\Enums\Tiers\TierStatus;
 use App\Enums\Tiers\TierType as TierTypeEnum;
 use App\Models\Tiers\TierDocument;
+use App\Models\Tiers\TierDocumentRequirement;
 use App\Models\Tiers\TierQualification;
 use App\Models\Tiers\Tiers;
 use App\Models\Tiers\TierType;
@@ -89,6 +90,31 @@ describe('Tier Model', function () {
 
         expect($data['raison_social'])->toBe('BATISTACK SAS')
             ->and($data['code_naf'])->toBe('6201Z');
+    });
+
+    test('un sous-traitant sans attestation URSSAF obligatoire est non-conforme', function () {
+        // Configurer l'exigence
+        TierDocumentRequirement::create([
+            'tier_type' => 'subcontractor',
+            'document_type' => 'URSSAF',
+            'is_mandatory' => true
+        ]);
+
+        $tier = Tiers::factory()->create();
+        $tier->types()->create(['type' => 'subcontractor']);
+
+        expect($tier->getComplianceStatus())->toBe('non_conforme_manquant');
+    });
+
+    test('on peut rattacher plusieurs contacts à un tiers', function () {
+        $tier = Tiers::factory()->create();
+        $tier->contacts()->create([
+            'first_name' => 'Jean',
+            'last_name' => 'Compta',
+            'job_title' => 'Comptable'
+        ]);
+
+        expect($tier->contacts)->toHaveCount(1);
     });
 
     it('generates unique code_tiers automatically', function () {

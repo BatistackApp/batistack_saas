@@ -26,4 +26,13 @@ return [
         'expired' => 'Expiré',
         'missing' => 'Manquant',
     ],
+    'tier_payment_term' => [
+        'at_receipt' => 'À la réception',
+        'net_15' => 'Net 15 jours',
+        'net_30' => 'Net 30 jours',
+        'net_45' => 'Net 45 jours',
+        'net_60' => 'Net 60 jours',
+        'end_of_month_30' => 'Fin de mois + 30 jours',
+        'end_of_month_60' => 'Fin de mois + 60 jours',
+    ],
 ];

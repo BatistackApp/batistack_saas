@@ -2,6 +2,7 @@
 
 namespace App\Models\Tiers;
 
+use App\Enums\Tiers\TierPaymentTerm;
 use App\Enums\Tiers\TierStatus;
 use App\Models\Core\Tenants;
 use App\Models\User;
@@ -26,6 +27,7 @@ class Tiers extends Model
     {
         return [
             'status' => TierStatus::class,
+            'condition_reglement' => TierPaymentTerm::class,
             'metadata' => 'array',
             'has_compte_prorata' => 'boolean',
             'retenue_garantie_pct' => 'decimal:2',
@@ -57,6 +59,11 @@ class Tiers extends Model
         return $this->hasMany(TierQualification::class, 'tiers_id');
     }
 
+    public function contacts(): HasMany
+    {
+        return $this->hasMany(TierContact::class, 'tiers_id');
+    }
+
     // Accessors
     protected function displayName(): Attribute
     {
@@ -67,18 +74,43 @@ class Tiers extends Model
         );
     }
 
+    /**
+     * Logique de conformité avancée (Vigilance segmentée)
+     */
+    public function getComplianceStatus(): string
+    {
+        // 1. Récupérer les types de ce tiers
+        $tierTypes = $this->types()->pluck('type')->toArray();
+
+        // 2. Vérifier les documents obligatoires manquants
+        $mandatoryTypes = TierDocumentRequirement::whereIn('tier_type', $tierTypes)
+            ->where('is_mandatory', true)
+            ->pluck('document_type')
+            ->toArray();
+
+        $presentTypes = $this->documents()->pluck('type')->toArray();
+        $missingMandatory = array_diff($mandatoryTypes, $presentTypes);
+
+        if (! empty($missingMandatory)) {
+            return 'non_conforme_manquant';
+        }
+
+        // 3. Vérifier les expirations
+        $hasExpired = $this->documents()->where('status', 'expired')->exists();
+        if ($hasExpired) {
+            return 'non_conforme_expire';
+        }
+
+        $hasToRenew = $this->documents()->where('status', 'to_renew')->exists();
+        if ($hasToRenew) {
+            return 'a_renouveler';
+        }
+
+        return 'conforme';
+    }
+
     public function isCompliant(): bool
     {
-        // 1. Vérification des documents administratifs
-        $hasInvalidDocs = $this->documents()
-            ->whereIn('status', ['expired', 'missing'])
-            ->exists();
-
-        // 2. Vérification des qualifications techniques expirées
-        $hasExpiredQualifs = $this->qualifications()
-            ->where('valid_until', '<', now())
-            ->exists();
-
-        return ! $hasInvalidDocs && ! $hasExpiredQualifs;
+        return $this->getComplianceStatus() === 'conforme' || $this->getComplianceStatus() === 'a_renouveler';
     }
 }

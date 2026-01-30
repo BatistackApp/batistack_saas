@@ -33,7 +33,7 @@ return new class extends Migration {
             $table->string('iban')->nullable();
             $table->string('bic')->nullable();
             $table->integer('delai_paiement_days')->default(30);
-            $table->string('condition_reglement')->nullable();
+            $table->string('condition_reglement')->default(\App\Enums\Tiers\TierPaymentTerm::AtReceipt->value);
             $table->decimal('retenue_garantie_pct', 5, 2)->default(5.00);
             $table->boolean('has_compte_prorata')->default(false);
 
