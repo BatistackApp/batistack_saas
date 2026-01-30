@@ -3,10 +3,13 @@
 namespace App\Models\Projects;
 
 use App\Enums\Projects\ProjectPhaseStatus;
+use App\Observers\Projects\ProjectPhaseObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([ProjectPhaseObserver::class])]
 class ProjectPhase extends Model
 {
     use HasFactory;

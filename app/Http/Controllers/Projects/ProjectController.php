@@ -2,38 +2,74 @@
 
 namespace App\Http\Controllers\Projects;
 
+use App\Enums\Projects\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Projects\ProjectRequest;
 use App\Models\Projects\Project;
+use App\Services\Projects\ProjectBudgetService;
+use App\Services\Projects\ProjectManagementService;
+use Illuminate\Http\JsonResponse;
 
 class ProjectController extends Controller
 {
-    public function index()
+    public function __construct(
+        protected ProjectManagementService $managementService,
+        protected ProjectBudgetService $budgetService
+    ) {}
+
+    public function index(): JsonResponse
     {
-        return Project::all();
+        $projects = Project::query()
+            ->with(['customer', 'phases'])
+            ->latest()
+            ->get();
+
+        return response()->json($projects);
     }
 
-    public function store(ProjectRequest $request)
+    public function store(ProjectRequest $request): JsonResponse
     {
-        return Project::create($request->validated());
+        $project = Project::create($request->validated());
+
+        $this->managementService->transitionToStatus($project, ProjectStatus::Study);
+
+        return response()->json($project);
     }
 
-    public function show(Project $project)
+    public function show(Project $project): JsonResponse
     {
-        return $project;
+        $project->load(['customer', 'phases', 'members']);
+
+        $summary = $this->budgetService->getFinancialSummary($project);
+
+        return response()->json([
+            'project' => $project,
+            'financial_summary' => $summary,
+        ]);
     }
 
-    public function update(ProjectRequest $request, Project $project)
+    public function update(ProjectRequest $request, Project $project): JsonResponse
     {
-        $project->update($request->validated());
+        $validated = $request->validated();
 
-        return $project;
+        // Si le statut change, on passe par le service pour appliquer les règles métier
+        if (isset($validated['status']) && $validated['status'] !== $project->status->value) {
+            try {
+                $this->managementService->transitionToStatus($project, $validated['status']);
+            } catch (\Exception $e) {
+                return response()->json(['message' => $e->getMessage()], 422);
+            }
+        }
+
+        $project->update($validated);
+
+        return response()->json($project);
     }
 
-    public function destroy(Project $project)
+    public function destroy(Project $project): JsonResponse
     {
         $project->delete();
 
-        return response()->json();
+        return response()->json(null, 204);
     }
 }

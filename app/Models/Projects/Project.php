@@ -6,6 +6,8 @@ use App\Enums\Projects\ProjectStatus;
 use App\Models\Core\Tenants;
 use App\Models\Tiers\Tiers;
 use App\Models\User;
+use App\Observers\Projects\ProjectObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([ProjectObserver::class])]
 class Project extends Model
 {
     use HasFactory, SoftDeletes;
