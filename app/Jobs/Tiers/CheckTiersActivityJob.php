@@ -20,11 +20,17 @@ class CheckTiersActivityJob implements ShouldQueue
     public function handle(SirenService $service): void
     {
         Tiers::whereNotNull('siret')
-            ->where('status', '!=', TierStatus::Archived)
+            ->where('status', '!=', TierStatus::Archived->value)
             ->chunk(100, function ($tiers) use ($service) {
                 foreach ($tiers as $tier) {
+                    if (! $tier->siret) {
+                        continue;
+                    }
+
+                    $data = $service->fetchCompanyData($tier->siret);
+
                     if (! $service->isStillActive($tier->siret)) {
-                        $tier->update(['status' => TierStatus::Inactive]);
+                        $tier->update(['status' => TierStatus::Inactive->value]);
                         // Notification au service achat/admin ici
                     }
                 }

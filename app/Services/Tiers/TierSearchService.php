@@ -4,6 +4,7 @@ namespace App\Services\Tiers;
 
 use App\Models\Tiers\Tiers;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 
 class TierSearchService
@@ -64,7 +65,7 @@ class TierSearchService
         return $this;
     }
 
-    public function paginate(int $perPage = 15): Paginator
+    public function paginate(int $perPage = 15): LengthAwarePaginator
     {
         return $this->query->paginate($perPage);
     }

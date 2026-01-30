@@ -2,6 +2,8 @@
 
 namespace Database\Factories\Tiers;
 
+use App\Enums\Tiers\TierDocumentStatus;
+use App\Enums\Tiers\TierDocumentType;
 use App\Models\Tiers\TierDocument;
 use App\Models\Tiers\Tiers;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -14,10 +16,10 @@ class TierDocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => $this->faker->word(),
+            'type' => $this->faker->randomElement(TierDocumentType::cases()),
             'file_path' => $this->faker->word(),
             'expires_at' => $this->faker->date(),
-            'status' => $this->faker->word(),
+            'status' => $this->faker->randomElement(TierDocumentStatus::cases()),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
 

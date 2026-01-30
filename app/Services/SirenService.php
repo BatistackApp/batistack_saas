@@ -20,10 +20,11 @@ class SirenService
 
         return [
             'raison_social' => $data['uniteLegale']['denominationUniteLegale'] ?? null,
-            'adresse' => $this->formatAddress($data['adresseEtablissement']),
+            'adresse' => $this->formatAddress($data['adresseEtablissement'] ?? []),
             'code_postal' => $data['adresseEtablissement']['codePostalEtablissement'] ?? null,
             'ville' => $data['adresseEtablissement']['libelleCommuneEtablissement'] ?? null,
             'code_naf' => $data['uniteLegale']['activitePrincipaleUniteLegale'] ?? null,
+            'etat_administratif' => $data['uniteLegale']['etatAdministratifUniteLegale'] ?? 'A',
         ];
     }
 
@@ -34,7 +35,9 @@ class SirenService
     {
         $data = $this->fetchCompanyData($siret);
 
-        return ($data['status_activite'] ?? 'A') === 'A';
+        if (!$data) return true;
+
+        return ($data['etat_administratif'] ?? 'A') === 'A';
     }
 
     private function formatAddress(array $addr): string

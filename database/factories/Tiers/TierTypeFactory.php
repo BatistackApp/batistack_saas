@@ -14,8 +14,8 @@ class TierTypeFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => $this->faker->word(),
-            'is_primary' => $this->faker->boolean(),
+            'type' => $this->faker->randomElement(\App\Enums\Tiers\TierType::cases()),
+            'is_primary' => false,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
 
