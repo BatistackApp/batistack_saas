@@ -33,7 +33,7 @@ class ProjectController extends Controller
 
         $this->managementService->transitionToStatus($project, ProjectStatus::Study);
 
-        return response()->json($project);
+        return response()->json($project, 201);
     }
 
     public function show(Project $project): JsonResponse

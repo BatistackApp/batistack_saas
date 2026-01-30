@@ -9,8 +9,8 @@ class ProjectUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'project_id' => ['required', 'exists:projects'],
-            'user_id' => ['required', 'exists:users'],
+            'project_id' => ['required', 'exists:projects,id'],
+            'user_id' => ['required', 'exists:users,id'],
             'role' => ['required'],
         ];
     }
