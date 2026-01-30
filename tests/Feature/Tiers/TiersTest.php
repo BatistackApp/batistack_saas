@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\Tiers\TierComplianceStatus;
 use App\Enums\Tiers\TierDocumentStatus;
 use App\Enums\Tiers\TierStatus;
 use App\Enums\Tiers\TierType as TierTypeEnum;
@@ -128,7 +129,7 @@ describe('Tier Model', function () {
             'file_path' => 'doc.pdf',
         ]);
 
-        expect($tier->getComplianceStatus())->toBe('en_attente_verification');
+        expect($tier->getComplianceStatus())->toBe(TierComplianceStatus::PendingVerification);
     });
 
     test('le job détecte une entreprise cessée et la passe en inactive', function () {

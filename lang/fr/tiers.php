@@ -36,4 +36,12 @@ return [
         'end_of_month_30' => 'Fin de mois + 30 jours',
         'end_of_month_60' => 'Fin de mois + 60 jours',
     ],
+    'compliance_status' => [
+        'compliant' => 'Conforme',
+        'to_renew' => 'À renouveler',
+        'non_compliant_missing' => 'Non conforme - Documents manquants',
+        'non_compliant_expired' => 'Non conforme - Documents expirés',
+        'pending_verification' => 'En attente de vérification',
+        'qualification_expired' => 'Qualification expirée',
+    ],
 ];

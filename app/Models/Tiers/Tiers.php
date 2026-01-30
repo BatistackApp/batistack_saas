@@ -2,12 +2,13 @@
 
 namespace App\Models\Tiers;
 
-use App\Enums\Tiers\TierDocumentStatus;
+use App\Enums\Tiers\TierComplianceStatus;
 use App\Enums\Tiers\TierPaymentTerm;
 use App\Enums\Tiers\TierStatus;
 use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Observers\Tiers\TierObserver;
+use App\Services\Tiers\TierComplianceService;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -80,55 +81,14 @@ class Tiers extends Model
      */
     public function getComplianceStatus(): string
     {
-        $tierTypes = $this->types()->pluck('type')->toArray();
-
-        // 1. Vérification des documents obligatoires manquants
-        $mandatoryTypes = TierDocumentRequirement::whereIn('tier_type', $tierTypes)
-            ->where('is_mandatory', true)
-            ->pluck('document_type')
-            ->toArray();
-
-        $presentTypes = $this->documents()->pluck('type')->toArray();
-        $missingMandatory = array_diff($mandatoryTypes, $presentTypes);
-
-        if (! empty($missingMandatory)) {
-            return 'non_conforme_manquant';
-        }
-
-        // 2. Vérification de la validation humaine (Pending Verification)
-        $hasPending = $this->documents()
-            ->whereIn('type', $mandatoryTypes)
-            ->where('status', TierDocumentStatus::Pending_verification)
-            ->exists();
-
-        if ($hasPending) {
-            return 'en_attente_verification';
-        }
-
-        // 3. Vérification des expirations
-        $hasExpired = $this->documents()->where('status', TierDocumentStatus::Expired)->exists();
-        if ($hasExpired) {
-            return 'non_conforme_expire';
-        }
-
-        // 4. Intégration des qualifications à la conformité (Recommandation 3)
-        $hasExpiredQualif = $this->qualifications()
-            ->where('valid_until', '<', now())
-            ->exists();
-        if ($hasExpiredQualif) {
-            return 'qualification_expiree';
-        }
-
-        $hasToRenew = $this->documents()->where('status', TierDocumentStatus::ToRenew)->exists();
-        if ($hasToRenew) {
-            return 'a_renouveler';
-        }
-
-        return 'conforme';
+        return app(TierComplianceService::class)->getComplianceStatus($this);
     }
 
     public function isCompliant(): bool
     {
-        return in_array($this->getComplianceStatus(), ['conforme', 'a_renouveler']);
+        return in_array($this->getComplianceStatus(), [
+            TierComplianceStatus::Compliant,
+            TierComplianceStatus::ToRenew,
+        ]);
     }
 }
