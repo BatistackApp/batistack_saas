@@ -11,4 +11,6 @@ Pour chaque module:
     - Jobs
     - Notifications
     - Schedules (Si Besoin)
-- Etape 6: Etablissement des Tests Unitaires/Features en corrélation avec le Module dans le format PESTPHP.
+- Etape 6: Génération des FormRequest associé
+- Etape 7: Génération des REST-API Controller permettant et préparant les intéractions basiques du module.
+- Etape 8: Etablissement des Tests Unitaires/Features en corrélation avec le Module dans le format PESTPHP.
