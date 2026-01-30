@@ -20,4 +20,9 @@ return [
         'document_expiration_subject' => 'Notification d\'expiration de document',
         'document_expiration_message' => 'Le document de :name est sur le point d\'expirer. Veuillez le renouveler dès que possible.',
     ],
+    'tier_document_status' => [
+        'valid' => 'Valide',
+        'to_renew' => 'À renouveler',
+        'expired' => 'Expiré',
+    ],
 ];

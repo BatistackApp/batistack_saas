@@ -2,6 +2,7 @@
 
 use App\Enums\Tiers\TierStatus;
 use App\Enums\Tiers\TierType as TierTypeEnum;
+use App\Models\Tiers\TierDocument;
 use App\Models\Tiers\Tiers;
 use App\Models\Tiers\TierType;
 use App\Services\Tiers\TierCodeGenerator;
@@ -23,6 +24,24 @@ describe('Tier Model', function () {
         expect($tier)->toBeInstanceOf(Tiers::class)
             ->and($tier->raison_social)->toBe('Test Company')
             ->and($tier->status)->toBe(TierStatus::Active);
+    });
+
+    it('la retenue de garantie est de 5% par défaut', function () {
+        $tier = Tiers::factory()->create(['retenue_garantie_pct' => 5.00]);
+        expect($tier->retenue_garantie_pct)->toBe('5.00');
+    });
+
+    it('un tiers devient non-conforme si un document expire', function () {
+        $tier = Tiers::factory()->create();
+        TierDocument::create([
+            'tiers_id' => $tier->id,
+            'type' => 'URSSAF',
+            'expires_at' => now()->subDay(),
+            'status' => 'expired',
+            'file_path' => 'test.pdf',
+        ]);
+
+        expect($tier->isCompliant())->toBeFalse();
     });
 
     it('generates unique code_tiers automatically', function () {

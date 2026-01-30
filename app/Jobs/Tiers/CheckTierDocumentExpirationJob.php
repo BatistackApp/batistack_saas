@@ -2,8 +2,11 @@
 
 namespace App\Jobs\Tiers;
 
+use App\Enums\Tiers\TierDocumentStatus;
+use App\Models\Tiers\TierDocument;
 use App\Models\Tiers\Tiers;
 use App\Notifications\Tiers\DocumentExpirationNotification;
+use App\Services\Tiers\TierComplianceService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -16,21 +19,26 @@ class CheckTierDocumentExpirationJob implements ShouldQueue
 
     public function __construct() {}
 
-    public function handle(): void
+    public function handle(TierComplianceService $service): void
     {
-        // Récupération des documents proches de l'expiration (GED)
-        $tiersWithExpiringDocs = Tiers::query()
-            ->with('tenant')
-            ->get()
-            ->filter(function (Tiers $tier) {
-                // Logique de vérification via GED
-                // À adapter selon implémentation GED
-                // TODO: Implémenter la logique de connexion à la GED
-                return false;
-            })
-            ->each(function (Tiers $tier) {
-                $tier->notify(new DocumentExpirationNotification($tier));
-            });
+        TierDocument::where('expires_at', '<', now())
+            ->where('status', '!=', TierDocumentStatus::Expired)
+            ->update(['status' => TierDocumentStatus::Expired]);
+
+        // 2. Notification proactive (30 jours avant)
+        $expiringDocs = TierDocument::with('tier')
+            ->where('expires_at', '<=', now()->addDays(30))
+            ->where('status', '!=', TierDocumentStatus::Expired)
+            ->get();
+
+        foreach ($expiringDocs as $doc) {
+            // Notifier le Tiers concerné
+            $doc->tier->notify(new DocumentExpirationNotification($doc->tier));
+
+            // Note : L'envoi aux utilisateurs internes (Admin/Compta)
+            // se fera via le système de notification global de l'application.
+        }
+
 
     }
 }

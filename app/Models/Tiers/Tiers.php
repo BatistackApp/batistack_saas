@@ -14,12 +14,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Str;
 
 #[ObservedBy([TierObserver::class])]
 class Tiers extends Model
 {
-    use HasFactory, SoftDeletes, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     protected $guarded = [];
 
@@ -28,6 +27,8 @@ class Tiers extends Model
         return [
             'status' => TierStatus::class,
             'metadata' => 'array',
+            'has_compte_prorata' => 'boolean',
+            'retenue_garantie_pct' => 'decimal:2',
         ];
     }
 
@@ -46,13 +47,25 @@ class Tiers extends Model
         return $this->hasMany(User::class);
     }
 
+    public function documents(): HasMany
+    {
+        return $this->hasMany(TierDocument::class, 'tiers_id');
+    }
+
     // Accessors
     protected function displayName(): Attribute
     {
         return Attribute::get(
             fn () => $this->type_entite === 'personne_morale'
-                ? $this->raison_sociale
-                : "{$this->prenom} {$this->nom}"
+                ? mb_strtoupper($this->raison_social ?? '')
+                : "{$this->prenom} ".mb_strtoupper($this->nom ?? '')
         );
+    }
+
+    public function isCompliant(): bool
+    {
+        return ! $this->documents()
+            ->whereIn('status', ['expired', 'missing'])
+            ->exists();
     }
 }
