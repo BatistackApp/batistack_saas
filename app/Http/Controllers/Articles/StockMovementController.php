@@ -58,6 +58,13 @@ class StockMovementController extends Controller
                         $data['project_phase_id'] ?? null
                 ),
 
+                StockMovementType::Adjustment->value => $this->movementService->recordAdjustment(
+                    $article,
+                    $warehouse,
+                    $data['quantity'], // Note: Dans une UI réelle, prévoir un champ pour le signe ou le motif
+                    $data['notes'] ?? 'Régularisation d\'inventaire'
+                ),
+
                 StockMovementType::Transfer->value => $this->movementService->transfer(
                     $article,
                     $warehouse,

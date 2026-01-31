@@ -95,6 +95,30 @@ class StockMovementService
     }
 
     /**
+     * Enregistre un ajustement d'inventaire (Gain ou Perte).
+     * @param float $qty Delta de stock (positif pour un gain, négatif pour une perte)
+     */
+    public function recordAdjustment(Article $article, Warehouse $warehouse, float $qty, ?string $notes = null): StockMovement
+    {
+        return DB::transaction(function () use ($article, $warehouse, $qty, $notes) {
+            // Mise à jour physique
+            $this->updateArticleWarehouseStock($article, $warehouse, $qty);
+
+            // Création du mouvement de régularisation
+            return StockMovement::create([
+                'tenants_id' => Auth::user()->tenants_id,
+                'article_id' => $article->id,
+                'warehouse_id' => $warehouse->id,
+                'type' => StockMovementType::Adjustment,
+                'quantity' => abs($qty), // On stocke la valeur absolue, le signe est déduit du type/notes
+                'unit_cost_ht' => $article->cump_ht, // Valorisé au coût actuel
+                'notes' => ($qty > 0 ? "[Gain] " : "[Perte] ") . $notes,
+                'user_id' => Auth::id()
+            ]);
+        });
+    }
+
+    /**
      * Effectue un transfert atomique entre deux dépôts.
      */
     public function transfer(Article $article, Warehouse $from, Warehouse $to, float $qty): StockMovement
