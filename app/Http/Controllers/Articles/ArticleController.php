@@ -11,21 +11,30 @@ class ArticleController extends Controller
 {
     public function index(): JsonResponse
     {
-        $articles = Article::with(['category', 'warehouses'])
+        $articles = Article::with(['category'])
+            // On calcule la somme des quantités dans la table pivot directement via SQL
+            ->withSum('warehouses as total_stock_calculated', 'article_warehouse.quantity')
             ->latest()
-            ->get()
-            ->map(function ($article) {
-                return [
-                    'id' => $article->id,
-                    'sku' => $article->sku,
-                    'name' => $article->name,
-                    'unit' => $article->unit,
-                    'cump_ht' => $article->cump_ht,
-                    'total_stock' => $article->total_stock,
-                    'alert_level' => $article->alert_stock,
-                    'is_low_stock' => $article->total_stock <= $article->alert_stock,
-                ];
-            });
+            ->paginate(20);
+
+        // On transforme la collection paginée pour formater la réponse API
+        $articles->getCollection()->transform(function ($article) {
+            $totalStock = (float) ($article->total_stock_calculated ?? 0);
+
+            return [
+                'id' => $article->id,
+                'sku' => $article->sku,
+                'name' => $article->name,
+                'unit' => $article->unit,
+                'cump_ht' => $article->cump_ht,
+                'total_stock' => $totalStock,
+                'alert_level' => $article->alert_stock,
+                'is_low_stock' => $totalStock <= (float) $article->alert_stock,
+                'barcode' => $article->barcode,
+                'poids' => $article->poids,
+                'volume' => $article->volume,
+            ];
+        });
 
         return response()->json($articles);
     }
