@@ -5,7 +5,9 @@ namespace App\Observers\Projects;
 use App\Enums\Projects\ProjectStatus;
 use App\Jobs\Projects\RecalculateProjectBudgetJob;
 use App\Models\Projects\Project;
+use App\Models\Projects\ProjectStatusHistory;
 use App\Notifications\Projects\ProjectSuspendedNotification;
+use Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -49,6 +51,14 @@ class ProjectObserver
         }
 
         if ($project->wasChanged('status')) {
+            ProjectStatusHistory::create([
+                'project_id' => $project->id,
+                'old_status' => $project->getOriginal('status'),
+                'new_status' => $project->status,
+                'changed_by_user_id' => Auth::id(),
+                'reason' => $project->status === ProjectStatus::Suspended ? $project->suspension_reason->value : null,
+                'changed_at' => now(),
+            ]);
             // Notification spécifique pour le statut 'Accepted'
             if ($project->status === ProjectStatus::Accepted) {
                 // Notifier Achats & Planification
