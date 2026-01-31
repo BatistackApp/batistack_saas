@@ -6,6 +6,7 @@ use App\Models\Articles\ArticleCategory;
 use App\Models\Core\Tenants;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class ArticleCategoryFactory extends Factory
 {
@@ -13,13 +14,12 @@ class ArticleCategoryFactory extends Factory
 
     public function definition(): array
     {
+        $name = $this->faker->unique()->words(2, true);
         return [
-            'name' => $this->faker->name(),
-            'slug' => $this->faker->slug(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'tenants_id' => Tenants::factory(),
+            'parent_id' => null, // Peut être surchargé pour créer des sous-catégories
+            'name' => ucfirst($name),
+            'slug' => Str::slug($name),
         ];
     }
 }

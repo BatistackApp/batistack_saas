@@ -17,5 +17,12 @@ return [
         'transfer' => 'Transfert inter-dépôts',
         'adj' => 'Correction d\'inventaire',
         'return' => 'Retour de chantier',
+    ],
+    'number_status' => [
+        'in_stock' => 'En stock',
+        'assigned' => 'Affecté',
+        'maintenance' => 'En maintenance',
+        'lost' => 'Perdu',
+        'sold' => 'Vendu',
     ]
 ];

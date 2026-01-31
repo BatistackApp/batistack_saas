@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Articles;
 
+use App\Enums\Articles\StockMovementType;
 use App\Models\Articles\Article;
 use App\Models\Articles\StockMovement;
 use App\Models\Articles\Warehouse;
@@ -19,21 +20,29 @@ class StockMovementFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => $this->faker->word(),
-            'quantity' => $this->faker->randomFloat(),
-            'unit_cost_ht' => $this->faker->randomFloat(),
-            'reference' => $this->faker->word(),
-            'notes' => $this->faker->word(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'tenants_id' => Tenants::factory(),
             'article_id' => Article::factory(),
             'warehouse_id' => Warehouse::factory(),
-            'project_id' => Project::factory(),
-            'project_phase_id' => ProjectPhase::factory(),
-            'target_warehouse_id' => Warehouse::factory(),
+            'type' => $this->faker->randomElement(StockMovementType::cases()),
+            'quantity' => $this->faker->randomFloat(3, 1, 100),
+            'unit_cost_ht' => $this->faker->randomFloat(2, 5, 200),
+            'reference' => 'REF-' . strtoupper($this->faker->bothify('??###')),
+            'notes' => $this->faker->sentence(),
             'user_id' => User::factory(),
         ];
+    }
+
+    public function entry(): static
+    {
+        return $this->state(fn () => ['type' => StockMovementType::Entry]);
+    }
+
+    public function exit(): static
+    {
+        return $this->state(fn () => [
+            'type' => StockMovementType::Exit,
+            'project_id' => Project::factory(),
+            'project_phase_id' => ProjectPhase::factory(),
+        ]);
     }
 }
