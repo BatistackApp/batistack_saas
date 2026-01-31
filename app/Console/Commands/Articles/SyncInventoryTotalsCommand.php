@@ -57,28 +57,35 @@ class SyncInventoryTotalsCommand extends Command
                 ")
             )
             ->groupBy('article_id', 'effective_warehouse_id')
-            ->get();
+            ->get()
+            ->keyBy(function ($row) {
+                // Clé unique pour un accès rapide
+                return "{$row->article_id}-{$row->effective_warehouse_id}";
+            });
 
-        // Mise à jour par lot avec une seule requête UPDATE par changement détecté
-        DB::table('article_warehouse')->chunkById(500, function ($pivotEntries) use ($totals) {
-            $updates = [];
+        $this->info("Totaux calculés. Démarrage de la mise à jour des stocks...");
+        $bar = $this->output->createProgressBar(DB::table('article_warehouse')->count());
 
-            foreach ($pivotEntries as $entry) {
-                $key = "{$entry->article_id}-{$entry->warehouse_id}";
-                $calculated = $totals->firstWhere(function ($row) use ($key) {
-                    return "{$row->article_id}-{$row->effective_warehouse_id}" === $key;
-                });
+        DB::transaction(function () use ($totals, $bar) {
+            // Remise à zéro de toutes les quantités en une seule fois
+            DB::table('article_warehouse')->update(['quantity' => 0]);
 
-                $newQty = (float) ($calculated?->total_qty ?? 0);
+            // Mise à jour ciblée
+            foreach ($totals as $key => $calculated) {
+                [$articleId, $warehouseId] = explode('-', $key);
 
-                // Accumuler les mises à jour pour une exécution batch si possible
-                if ((float) $entry->quantity !== $newQty) {
-                    DB::table('article_warehouse')
-                        ->where('id', $entry->id)
-                        ->update(['quantity' => $newQty, 'updated_at' => now()]);
-                }}
+                DB::table('article_warehouse')
+                    ->where('article_id', $articleId)
+                    ->where('warehouse_id', $warehouseId)
+                    ->update([
+                        'quantity' => (float) $calculated->total_qty,
+                        'updated_at' => now()
+                    ]);
+                $bar->advance(); // Optionnel : pour le suivi
+            }
         });
 
-        $this->info("Synchronisation terminée avec succès.");
+        $bar->finish();
+        $this->info("\nSynchronisation terminée avec succès.");
     }
 }
