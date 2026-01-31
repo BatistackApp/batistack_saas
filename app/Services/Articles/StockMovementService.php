@@ -72,6 +72,29 @@ class StockMovementService
     }
 
     /**
+     * Enregistre un retour de chantier.
+     * Logique : Incrémentation du stock, valorisation au CUMP actuel, lien projet obligatoire.
+     */
+    public function recordReturn(Article $article, Warehouse $warehouse, float $qty, int $projectId, ?int $phaseId = null): StockMovement
+    {
+        return DB::transaction(function () use ($article, $warehouse, $qty, $projectId, $phaseId) {
+            $this->updateArticleWarehouseStock($article, $warehouse, $qty);
+
+            return StockMovement::create([
+                'tenants_id' => Auth::user()->tenants_id,
+                'article_id' => $article->id,
+                'warehouse_id' => $warehouse->id,
+                'project_id' => $projectId,
+                'project_phase_id' => $phaseId,
+                'type' => StockMovementType::Return,
+                'quantity' => $qty,
+                'unit_cost_ht' => $article->cump_ht,
+                'user_id' => Auth::id()
+            ]);
+        });
+    }
+
+    /**
      * Effectue un transfert atomique entre deux dépôts.
      */
     public function transfer(Article $article, Warehouse $from, Warehouse $to, float $qty): StockMovement

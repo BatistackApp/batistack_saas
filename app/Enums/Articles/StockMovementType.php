@@ -12,6 +12,7 @@ enum StockMovementType: string implements HasLabel, HasColor
     case Exit = 'exit';         // Consommation chantier
     case Transfer = 'transfer'; // Transfert inter-dépôts
     case Adjustment = 'adj';    // Correction d'inventaire / Perte
+    case Return = 'return';
 
     public function getColor(): string|array|null
     {
@@ -20,6 +21,7 @@ enum StockMovementType: string implements HasLabel, HasColor
             self::Exit => 'red',
             self::Transfer => 'amber',
             self::Adjustment => 'blue',
+            self::Return => 'gray',
         };
     }
 
@@ -30,6 +32,7 @@ enum StockMovementType: string implements HasLabel, HasColor
             self::Exit => __('articles.movement.exit'),
             self::Transfer => __('articles.movement.transfer'),
             self::Adjustment => __('articles.movement.adj'),
+            self::Return => __('articles.movement.return'),
         };
     }
 }

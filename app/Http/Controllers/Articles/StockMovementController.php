@@ -13,7 +13,9 @@ use Illuminate\Http\JsonResponse;
 
 class StockMovementController extends Controller
 {
-    public function __construct(protected StockMovementService $movementService) {}
+    public function __construct(protected StockMovementService $movementService)
+    {
+    }
 
     public function index(): JsonResponse
     {
@@ -46,6 +48,14 @@ class StockMovementController extends Controller
                     $data['quantity'],
                     $data['project_id'],
                     $data['project_phase_id'] ?? null
+                ),
+
+                StockMovementType::Return->value => $this->movementService->recordReturn(
+                    $article,
+                    $warehouse,
+                    $data['quantity'],
+                    $data['project_id'],
+                        $data['project_phase_id'] ?? null
                 ),
 
                 StockMovementType::Transfer->value => $this->movementService->transfer(

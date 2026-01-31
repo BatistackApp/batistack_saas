@@ -20,7 +20,7 @@ class StockMovementRequest extends FormRequest
             'notes' => ['nullable', 'string'],
 
             'project_id' => [
-                Rule::requiredIf(fn () => $this->type === StockMovementType::Exit->value),
+                Rule::requiredIf(fn () => in_array($this->type, [StockMovementType::Exit->value, StockMovementType::Return->value])),
                 'nullable',
                 'exists:projects,id'
             ],
@@ -45,7 +45,7 @@ class StockMovementRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'project_id.required_if' => 'Un projet doit être sélectionné pour une sortie de stock chantier.',
+            'project_id.required_if' => 'Un projet doit être sélectionné pour ce type de mouvement chantier (Sortie ou Retour).',
             'target_warehouse_id.required_if' => 'Un dépôt de destination est requis pour un transfert.',
             'target_warehouse_id.different' => 'Le dépôt de destination doit être différent du dépôt d\'origine.',
             'unit_cost_ht.required_if' => 'Le prix d\'achat unitaire est requis pour valoriser l\'entrée en stock.',

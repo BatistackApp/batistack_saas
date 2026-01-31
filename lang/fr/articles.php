@@ -16,5 +16,6 @@ return [
         'exit' => 'Consommation chantier',
         'transfer' => 'Transfert inter-dépôts',
         'adj' => 'Correction d\'inventaire',
+        'return' => 'Retour de chantier',
     ]
 ];
