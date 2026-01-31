@@ -74,7 +74,7 @@ class StockMovementService
     /**
      * Effectue un transfert atomique entre deux dépôts.
      */
-    public function transfer(Article $article, Warehouse $from, Warehouse $to, float $qty): void
+    public function transfer(Article $article, Warehouse $from, Warehouse $to, float $qty): StockMovement
     {
         if (!$this->inventoryService->hasEnoughStock($article, $from, $qty)) {
             throw new Exception("Transfert impossible : Stock source insuffisant.");
@@ -84,7 +84,7 @@ class StockMovementService
             $this->updateArticleWarehouseStock($article, $from, -$qty);
             $this->updateArticleWarehouseStock($article, $to, $qty);
 
-            StockMovement::create([
+            return StockMovement::create([
                 'tenants_id' => Auth::user()->tenants_id,
                 'article_id' => $article->id,
                 'warehouse_id' => $from->id,

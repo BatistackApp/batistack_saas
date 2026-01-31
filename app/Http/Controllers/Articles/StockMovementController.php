@@ -2,38 +2,66 @@
 
 namespace App\Http\Controllers\Articles;
 
+use App\Enums\Articles\StockMovementType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Articles\StockMovementRequest;
+use App\Models\Articles\Article;
 use App\Models\Articles\StockMovement;
+use App\Models\Articles\Warehouse;
+use App\Services\Articles\StockMovementService;
+use Illuminate\Http\JsonResponse;
 
 class StockMovementController extends Controller
 {
-    public function index()
+    public function __construct(protected StockMovementService $movementService) {}
+
+    public function index(): JsonResponse
     {
-        return StockMovement::all();
+        $movements = StockMovement::with(['article', 'warehouse', 'project', 'user'])
+            ->latest()
+            ->paginate(20);
+
+        return response()->json($movements);
     }
 
-    public function store(StockMovementRequest $request)
+    public function store(StockMovementRequest $request): JsonResponse
     {
-        return StockMovement::create($request->validated());
-    }
+        $data = $request->validated();
+        $article = Article::findOrFail($data['article_id']);
+        $warehouse = Warehouse::findOrFail($data['warehouse_id']);
 
-    public function show(StockMovement $stockMovement)
-    {
-        return $stockMovement;
-    }
+        try {
+            $movement = match ($data['type']) {
+                StockMovementType::Entry->value => $this->movementService->recordEntry(
+                    $article,
+                    $warehouse,
+                    $data['quantity'],
+                    $data['unit_cost_ht'],
+                    $data['reference'] ?? null
+                ),
 
-    public function update(StockMovementRequest $request, StockMovement $stockMovement)
-    {
-        $stockMovement->update($request->validated());
+                StockMovementType::Exit->value => $this->movementService->recordExit(
+                    $article,
+                    $warehouse,
+                    $data['quantity'],
+                    $data['project_id'],
+                    $data['project_phase_id'] ?? null
+                ),
 
-        return $stockMovement;
-    }
+                StockMovementType::Transfer->value => $this->movementService->transfer(
+                    $article,
+                    $warehouse,
+                    Warehouse::findOrFail($data['target_warehouse_id']),
+                    $data['quantity']
+                ),
 
-    public function destroy(StockMovement $stockMovement)
-    {
-        $stockMovement->delete();
+                default => throw new \Exception("Type de mouvement non supporté."),
+            };
 
-        return response()->json();
+            return response()->json($movement, 201);
+
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 }
