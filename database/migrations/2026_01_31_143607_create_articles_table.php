@@ -21,6 +21,12 @@ return new class extends Migration {
             $table->text('description')->nullable();
             $table->string('unit')->default(\App\Enums\Articles\ArticleUnit::Unit->value);
 
+            $table->string('barcode')->nullable()->index()->comment("EAN/UPC");
+            $table->string('qr_code_base')->nullable()->unique()->comment("Etiquette QR Code interne");
+
+            $table->decimal('poids', 12, 3)->nullable(); // Poids en kg
+            $table->decimal('volume', 12, 3)->nullable(); // Volume en m3
+
             $table->decimal('purchase_price_ht', 15, 2)->default(0)->comment('Dernier prix d\'achat HT');
             $table->decimal('cump_ht', 15, 2)->default(0)->comment('Coût Unitaire Moyen Pondéré');
             $table->decimal('sale_price_ht', 15, 2)->default(0);

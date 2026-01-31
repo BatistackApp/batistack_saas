@@ -15,6 +15,7 @@ class WarehouseRequest extends FormRequest
             'latitude' => ['nullable', 'numeric', 'min:0'],
             'longitude' => ['nullable', 'numeric', 'min:0'],
             'is_active' => ['boolean'],
+            'responsible_user_id' => ['nullable', 'exists:users,id'],
         ];
     }
 

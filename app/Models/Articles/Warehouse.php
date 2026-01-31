@@ -3,6 +3,7 @@
 namespace App\Models\Articles;
 
 use App\Models\Core\Tenants;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -16,6 +17,10 @@ class Warehouse extends Model
     public function tenants(): BelongsTo
     {
         return $this->belongsTo(Tenants::class);
+    }
+
+    public function responsibleUser(): BelongsTo {
+        return $this->belongsTo(User::class, 'responsible_user_id');
     }
 
     public function articles(): BelongsToMany {

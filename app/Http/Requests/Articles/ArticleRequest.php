@@ -25,6 +25,19 @@ class ArticleRequest extends FormRequest
             'description' => ['nullable', 'string'],
             'unit' => ['required', Rule::enum(ArticleUnit::class)],
 
+            // Nouveaux identifiants (Recommandation ProBTP)
+            'barcode' => ['nullable', 'string', 'max:100'],
+            'qr_code_base' => [
+                'nullable',
+                'string',
+                'max:100',
+                Rule::unique('articles', 'qr_code_base')->ignore($articleId)
+            ],
+
+            // Propriétés physiques (Recommandation ProBTP)
+            'poids' => ['nullable', 'numeric', 'min:0'],
+            'volume' => ['nullable', 'numeric', 'min:0'],
+
             'purchase_price_ht' => ['required', 'numeric', 'min:0'],
             'cump_ht' => ['required', 'numeric', 'min:0'],
             'sale_price_ht' => ['required', 'numeric', 'min:0'],
@@ -39,6 +52,7 @@ class ArticleRequest extends FormRequest
         return [
             'sku.unique' => 'Cette référence (SKU) est déjà utilisée par un autre article.',
             'unit.Illuminate\Validation\Rules\Enum' => 'L\'unité de mesure sélectionnée est invalide.',
+            'qr_code_base.unique' => 'Cet identifiant QR Code est déjà assigné.',
         ];
     }
 

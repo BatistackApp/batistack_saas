@@ -25,6 +25,8 @@ class Article extends Model
             'sale_price_ht' => 'decimal:2',
             'min_stock' => 'decimal:3',
             'alert_stock' => 'decimal:3',
+            'poids' => 'decimal:3',
+            'volume' => 'decimal:3',
         ];
     }
 

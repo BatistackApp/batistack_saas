@@ -11,6 +11,7 @@ return new class extends Migration {
         Schema::create('warehouses', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Tenants::class)->constrained()->cascadeOnDelete();
+            $table->foreignId('responsible_user_id')->nullable()->constrained('users')->nullOnDelete();
             $table->string('name');
             $table->string('location')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();
