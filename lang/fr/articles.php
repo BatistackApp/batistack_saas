@@ -24,5 +24,12 @@ return [
         'maintenance' => 'En maintenance',
         'lost' => 'Perdu',
         'sold' => 'Vendu',
+    ],
+    'inventory_status' => [
+        'open' => 'Ouvert',
+        'counting' => 'Comptage',
+        'closed' => 'Fermé',
+        'validated' => 'Validé',
+        'cancelled' => 'Annulé',
     ]
 ];
