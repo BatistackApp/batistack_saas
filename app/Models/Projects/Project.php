@@ -3,6 +3,7 @@
 namespace App\Models\Projects;
 
 use App\Enums\Projects\ProjectStatus;
+use App\Enums\Projects\ProjectSuspensionReason;
 use App\Models\Core\Tenants;
 use App\Models\Tiers\Tiers;
 use App\Models\User;
@@ -24,7 +25,8 @@ class Project extends Model
         'tenants_id', 'customer_id', 'code_project', 'name',
         'description', 'address', 'latitude', 'longitude',
         'initial_budget_ht', 'status', 'planned_start_at',
-        'planned_end_at', 'actual_start_at', 'actual_end_at'
+        'planned_end_at', 'actual_start_at', 'actual_end_at',
+        'suspension_reason', 'internal_target_budget_ht'
     ];
 
     public function tenants(): BelongsTo
@@ -53,11 +55,13 @@ class Project extends Model
     {
         return [
             'status' => ProjectStatus::class,
+            'suspension_reason' => ProjectSuspensionReason::class,
             'planned_start_at' => 'date',
             'planned_end_at' => 'date',
             'actual_start_at' => 'date',
             'actual_end_at' => 'date',
             'initial_budget_ht' => 'decimal:2',
+            'internal_target_budget_ht' => 'decimal:2',
         ];
     }
 }

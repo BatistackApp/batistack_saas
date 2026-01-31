@@ -23,7 +23,9 @@ return new class extends Migration {
             $table->decimal('longitude', 10, 8)->nullable();
 
             $table->decimal('initial_budget_ht', 15, 2)->default(0);
+            $table->decimal('internal_target_budget_ht', 15, 2)->default(0);
             $table->string('status')->default(\App\Enums\Projects\ProjectStatus::Study->value);
+            $table->string('suspension_reason')->nullable();
 
             $table->date('planned_start_at')->nullable();
             $table->date('planned_end_at')->nullable();

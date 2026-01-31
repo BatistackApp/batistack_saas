@@ -11,6 +11,7 @@ use Illuminate\Contracts\Support\Htmlable;
 enum ProjectStatus: string implements HasLabel, HasColor, HasIcon
 {
     case Study = 'study';       // En phase d'étude / Devis
+    case Accepted = 'accepted';   // Accepté
     case InProgress = 'in_progress'; // Chantier ouvert
     case Suspended = 'suspended';   // Chantier à l'arrêt
     case Finished = 'finished';     // Réceptionné
@@ -21,9 +22,9 @@ enum ProjectStatus: string implements HasLabel, HasColor, HasIcon
     {
         return match ($this) {
             self::Study => 'purple',
+            self::Accepted, self::Finished => 'green',
             self::InProgress => 'blue',
             self::Suspended => 'yellow',
-            self::Finished => 'green',
             self::Archived => 'gray',
             self::Cancelled => 'red',
         };
@@ -33,9 +34,9 @@ enum ProjectStatus: string implements HasLabel, HasColor, HasIcon
     {
         return match ($this) {
             self::Study => 'heroicon-o-eye',
+            self::Accepted, self::Finished => 'heroicon-o-check-circle',
             self::InProgress => 'heroicon-o-building-2',
             self::Suspended => 'heroicon-o-pause',
-            self::Finished => 'heroicon-o-check-circle',
             self::Archived => 'heroicon-o-archive',
             self::Cancelled => 'heroicon-o-x-circle',
         };
@@ -45,6 +46,7 @@ enum ProjectStatus: string implements HasLabel, HasColor, HasIcon
     {
         return match ($this) {
             self::Study => __('projects.status.study'),
+            self::Accepted => __('projects.status.accepted'),
             self::InProgress => __('projects.status.in_progress'),
             self::Suspended => __('projects.status.suspended'),
             self::Finished => __('projects.status.finished'),

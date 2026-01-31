@@ -3,6 +3,7 @@
 return [
     'status' => [
         'study' => "En phase d'étude / Devis",
+        'accepted' => "Accepté",
         'in_progress' => "Chantier ouvert",
         'suspended' => "Chantier à l'arrêt",
         'finished' => "Réceptionné",
@@ -22,5 +23,12 @@ return [
             'on_hold' => "En pause / Aléa technique",
             'finished' => "Terminé / Réceptionné"
         ]
-    ]
+    ],
+    'suspension_reasons' => [
+        'weather' => "Météo",
+        'client_decision' => "Décision du client",
+        'supply_issue' => "Problème de fourniture",
+        'technical_issue' => "Problème technique",
+        'administrative' => "Administratif"
+    ],
 ];

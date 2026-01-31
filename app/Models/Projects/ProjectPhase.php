@@ -13,15 +13,22 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProjectPhase extends Model
 {
     use HasFactory;
-    protected $fillable = ['project_id', 'name', 'budget_allocated_ht', 'order', 'status'];
+
+    protected $fillable = ['project_id', 'name', 'budget_allocated_ht', 'order', 'status', 'allocated_budget', 'progress_percentage'];
 
     protected $casts = [
         'budget_allocated_ht' => 'decimal:2',
         'status' => ProjectPhaseStatus::class,
+        'progress_percentage' => 'decimal:2',
     ];
 
     public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
+    }
+
+    public function dependency(): BelongsTo
+    {
+        return $this->belongsTo(ProjectPhase::class, 'depends_on_phase_id');
     }
 }

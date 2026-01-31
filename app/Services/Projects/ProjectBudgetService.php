@@ -6,10 +6,6 @@ use App\Models\Projects\Project;
 
 class ProjectBudgetService
 {
-    public function __construct()
-    {
-    }
-
     /**
      * Calcule la synthèse financière complète d'un projet.
      * Inclut le total dépensé, le reste à dépenser (RAD) et la marge.
@@ -20,43 +16,40 @@ class ProjectBudgetService
         // Pointage (Heures), Commerce (Achats/Factures) et Flottes.
         // Pour l'instant, nous préparons la structure.
 
-        $totalAllocated = $project->phases()->sum('allocated_budget');
-        $actualCosts = $this->calculateActualCosts($project);
+        $costs = $this->calculateDetailedCosts($project);
+        $internalBudget = $project->internal_target_budget_ht;
 
-        $rad = max(0, $totalAllocated - $actualCosts);
-        $margin = $project->initial_budget_ht - $actualCosts;
+        $totalSpent = array_sum($costs);
+        $physicalProgress = $this->calculateWeightedProgress($project);
 
         return [
-            'initial_budget' => $project->initial_budget_ht,
-            'allocated_budget' => $totalAllocated,
-            'actual_costs' => $actualCosts,
-            'remaining_budget' => $rad, // RAD
-            'margin' => $margin,
-            'health_index' => $this->calculateHealthIndex($project, $actualCosts),
+            'sales_budget' => $project->initial_budget_ht,
+            'internal_budget' => $internalBudget,
+            'costs_breakdown' => $costs,
+            'total_spent' => $totalSpent,
+            'progress_physical' => $physicalProgress,
+            'health_index' => $physicalProgress - ($internalBudget > 0 ? ($totalSpent / $internalBudget) * 100 : 0),
+            'margin_projection' => $project->initial_budget_ht - $totalSpent
         ];
     }
 
-    /**
-     * Calcule les coûts réels agrégés (Main d'oeuvre + Achats + Locations).
-     */
-    private function calculateActualCosts(Project $project): float
-    {
-        // TODO: Jointures avec les tables de pointage et factures fournisseurs
-        // return $project->laborCosts()->sum('total') + $project->purchaseCosts()->sum('total');
-        return 0.0; // Placeholder
+    private function calculateDetailedCosts(Project $project): array {
+        return [
+            'labor' => 0, // Mock: Liaison Pointage
+            'materials' => 0, // Mock: Liaison Achats
+            'subcontracting' => 0, // Mock: Liaison Tiers (Sub)
+            'rentals' => 0 // Mock: Liaison Flotte
+        ];
     }
 
-    /**
-     * Calcule l'indice de santé (Avancement budgétaire vs Avancement physique).
-     */
-    private function calculateHealthIndex(Project $project, float $actualCosts): float
-    {
-        if ($project->initial_budget_ht <= 0) return 0;
+    private function calculateWeightedProgress(Project $project): float {
+        $totalBudget = $project->phases()->sum('allocated_budget');
+        if ($totalBudget <= 0) return 0;
 
-        $budgetConsumptionRatio = ($actualCosts / $project->initial_budget_ht) * 100;
-        // L'avancement physique sera calculé via une moyenne pondérée des phases.
-        $physicalProgress = $project->phases()->avg('progress_percentage') ?? 0;
+        $weightedProgress = $project->phases->sum(function ($phase) {
+            return ($phase->progress_percentage / 100) * $phase->allocated_budget;
+        });
 
-        return $physicalProgress - $budgetConsumptionRatio;
+        return ($weightedProgress / $totalBudget) * 100;
     }
 }

@@ -16,7 +16,21 @@ class ProjectPhaseRequest extends FormRequest
             'allocated_budget' => ['required', 'numeric', 'min:0'],
             'order' => ['required', 'integer', 'min:0'],
             'status' => ['required', Rule::enum(ProjectPhaseStatus::class)],
+            'depends_on_phase_id' => 'nullable|exists:project_phases,id',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $project = \App\Models\Projects\Project::find($this->project_id);
+            if ($project) {
+                $currentTotal = $project->phases()->sum('allocated_budget');
+                if (($currentTotal + $this->allocated_budget) > $project->internal_target_budget_ht) {
+                    $validator->errors()->add('allocated_budget', 'Dépassement du budget interne global du chantier.');
+                }
+            }
+        });
     }
 
     public function authorize(): bool

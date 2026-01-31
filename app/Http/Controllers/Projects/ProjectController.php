@@ -36,7 +36,7 @@ class ProjectController extends Controller
         return response()->json($project, 201);
     }
 
-    public function show(Project $project): JsonResponse
+    public function show(Project $project, ProjectBudgetService $budgetService): JsonResponse
     {
         $project->load(['customer', 'phases', 'members']);
 
@@ -45,6 +45,8 @@ class ProjectController extends Controller
         return response()->json([
             'project' => $project,
             'financial_summary' => $summary,
+            'data' => $project->load('phases.dependency'),
+            'analytics' => $budgetService->getFinancialSummary($project)
         ]);
     }
 

@@ -21,6 +21,10 @@ class ProjectManagementService
      */
     public function transitionToStatus(Project $project, ProjectStatus $newStatus): void
     {
+        if ($project->customer && $project->customer->status === TierStatus::Suspended) {
+            throw new Exception("Le client est suspendu ou non conforme");
+        }
+
         try {
             $this->validateTransition($project, $newStatus);
         } catch (Exception $e) {
@@ -69,7 +73,7 @@ class ProjectManagementService
      */
     private function validateTransition(Project $project, ProjectStatus $newStatus): void
     {
-        if (in_array($newStatus, [ProjectStatus::InProgress, ProjectStatus::Study])) {
+        if (in_array($newStatus, [ProjectStatus::InProgress->value, ProjectStatus::Study->value])) {
             if (!$this->checkCustomerCompliance($project)) {
                 throw new Exception("Action impossible : Le client est suspendu ou non conforme.");
             }
