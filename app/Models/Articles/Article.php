@@ -3,6 +3,7 @@
 namespace App\Models\Articles;
 
 use App\Enums\Articles\ArticleUnit;
+use App\Enums\Articles\TrackingType;
 use App\Models\Core\Tenants;
 use App\Models\Tiers\Tiers;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -29,6 +30,7 @@ class Article extends Model
             'total_stock' => 'decimal:3',
             'poids' => 'decimal:3',
             'volume' => 'decimal:3',
+            'tracking_type' => TrackingType::class,
         ];
     }
 
@@ -61,6 +63,11 @@ class Article extends Model
         return $this->belongsToMany(Warehouse::class, 'article_warehouse')
             ->withPivot('quantity', 'bin_location')
             ->withTimestamps();
+    }
+
+    public function serialNumbers(): HasMany
+    {
+        return $this->hasMany(ArticleSerialNumber::class);
     }
 
     public function movements(): HasMany
