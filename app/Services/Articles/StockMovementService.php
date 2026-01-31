@@ -2,6 +2,7 @@
 
 namespace App\Services\Articles;
 
+use App\Enums\Articles\AdjustementType;
 use App\Enums\Articles\StockMovementType;
 use App\Models\Articles\Article;
 use App\Models\Articles\StockMovement;
@@ -101,18 +102,18 @@ class StockMovementService
     public function recordAdjustment(Article $article, Warehouse $warehouse, float $qty, ?string $notes = null): StockMovement
     {
         return DB::transaction(function () use ($article, $warehouse, $qty, $notes) {
-            // Mise à jour physique
+            // Mise à jour physique (qty déjà signée)
             $this->updateArticleWarehouseStock($article, $warehouse, $qty);
 
-            // Création du mouvement de régularisation
+            // Création du mouvement avec quantité SIGNÉE
             return StockMovement::create([
                 'tenants_id' => Auth::user()->tenants_id,
                 'article_id' => $article->id,
                 'warehouse_id' => $warehouse->id,
                 'type' => StockMovementType::Adjustment,
-                'quantity' => abs($qty), // On stocke la valeur absolue, le signe est déduit du type/notes
-                'unit_cost_ht' => $article->cump_ht, // Valorisé au coût actuel
-                'notes' => ($qty > 0 ? "[Gain] " : "[Perte] ") . $notes,
+                'quantity' => $qty, // Persistance du signe directement en base
+                'unit_cost_ht' => $article->cump_ht,
+                'notes' => $notes,
                 'user_id' => Auth::id()
             ]);
         });

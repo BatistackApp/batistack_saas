@@ -14,7 +14,13 @@ class StockMovementRequest extends FormRequest
             'article_id' => ['required', 'exists:articles,id'],
             'warehouse_id' => ['required', 'exists:warehouses,id'],
             'type' => ['required', Rule::enum(StockMovementType::class)],
-            'quantity' => ['required', 'numeric', 'gt:0'], // Toujours positif, le sens est donné par le type
+            'quantity' => [
+                'required',
+                'numeric',
+                Rule::when($this->type !== StockMovementType::Adjustment->value, ['gt:0']),
+                Rule::when($this->type === StockMovementType::Adjustment->value, ['not_in:0']),
+            ],
+            'adjustment_type' => ['required_if:type,' . StockMovementType::Adjustment->value, 'in:gain,loss'],
 
             'reference' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string'],

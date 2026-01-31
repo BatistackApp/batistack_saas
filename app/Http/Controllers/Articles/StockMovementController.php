@@ -55,9 +55,10 @@ class StockMovementController extends Controller
                     $warehouse,
                     $data['quantity'],
                     $data['project_id'],
-                        $data['project_phase_id'] ?? null
+                    $data['project_phase_id'] ?? null
                 ),
 
+                // AJOUT : Gestion explicite des ajustements d'inventaire
                 StockMovementType::Adjustment->value => $this->movementService->recordAdjustment(
                     $article,
                     $warehouse,
@@ -72,7 +73,7 @@ class StockMovementController extends Controller
                     $data['quantity']
                 ),
 
-                default => throw new \Exception("Type de mouvement non supporté."),
+                default => throw new \Exception("Type de mouvement non pris en charge par le système."),
             };
 
             return response()->json($movement, 201);

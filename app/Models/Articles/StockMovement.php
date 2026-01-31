@@ -2,6 +2,7 @@
 
 namespace App\Models\Articles;
 
+use App\Enums\Articles\AdjustementType;
 use App\Enums\Articles\StockMovementType;
 use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
@@ -24,7 +25,8 @@ class StockMovement extends Model
         return [
             'type' => StockMovementType::class,
             'quantity' => 'decimal:3',
-            'unit_cost_ht' => 'decimal:2'
+            'unit_cost_ht' => 'decimal:2',
+            'adjustement_type' => AdjustementType::class,
         ];
     }
 
