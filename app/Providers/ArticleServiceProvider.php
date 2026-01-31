@@ -27,7 +27,7 @@ class ArticleServiceProvider extends ServiceProvider
                 ->weekdays();
 
             $schedule->command('inventory:sync-totals')
-                ->weeklyOn(7, '23:00');
+                ->dailyAt('01:00');
         });
     }
 }

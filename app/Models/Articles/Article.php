@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Article extends Model
@@ -25,6 +26,7 @@ class Article extends Model
             'sale_price_ht' => 'decimal:2',
             'min_stock' => 'decimal:3',
             'alert_stock' => 'decimal:3',
+            'total_stock' => 'decimal:3',
             'poids' => 'decimal:3',
             'volume' => 'decimal:3',
         ];
@@ -52,10 +54,8 @@ class Article extends Model
             ->withTimestamps();
     }
 
-    /**
-     * Calcul du stock total (somme de tous les dépôts)
-     */
-    public function getTotalStockAttribute(): float {
-        return (float) $this->warehouses()->sum('quantity');
+    public function movements(): HasMany
+    {
+        return $this->hasMany(StockMovement::class);
     }
 }

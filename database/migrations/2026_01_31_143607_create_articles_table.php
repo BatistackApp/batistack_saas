@@ -33,6 +33,7 @@ return new class extends Migration {
 
             $table->decimal('min_stock', 15, 3)->default(0);
             $table->decimal('alert_stock', 15, 3)->default(0);
+            $table->decimal('total_stock', 15, 3)->default(0);
 
             $table->timestamps();
             $table->softDeletes();

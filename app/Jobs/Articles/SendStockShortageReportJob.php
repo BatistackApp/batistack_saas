@@ -17,10 +17,9 @@ class SendStockShortageReportJob implements ShouldQueue
 
     public function handle(): void
     {
-        // On récupère tous les articles dont le stock total est sous l'alerte
-        $shortageArticles = Article::all()->filter(function ($article) {
-            return $article->total_stock <= $article->alert_stock;
-        });
+        $shortageArticles = Article::whereColumn('total_stock', '<=', 'alert_stock')
+            ->where('alert_stock', '>', 0) // Évite les alertes si le seuil est à 0
+            ->get();
 
         if ($shortageArticles->isNotEmpty()) {
             $recipients = User::role('logistics_manager')->get();

@@ -29,7 +29,7 @@ return new class extends Migration {
             $table->string('reference')->nullable();
             $table->text('notes')->nullable();
 
-            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(User::class)->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
         });
     }
