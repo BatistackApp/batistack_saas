@@ -5,7 +5,10 @@ namespace App\Observers\Projects;
 use App\Enums\Projects\ProjectStatus;
 use App\Jobs\Projects\RecalculateProjectBudgetJob;
 use App\Models\Projects\Project;
+use App\Notifications\Projects\ProjectSuspendedNotification;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ProjectObserver
 {
@@ -18,10 +21,31 @@ class ProjectObserver
         }
     }
 
+    /**
+     * Gère la validation avant la mise à jour en base de données.
+     * * @throws ValidationException
+     */
+    public function updating(Project $project): void
+    {
+        // Recommandation : Forcer la raison de suspension
+        if ($project->isDirty('status') && $project->status === ProjectStatus::Suspended) {
+            if (empty($project->suspension_reason)) {
+                throw ValidationException::withMessages([
+                    'suspension_reason' => 'Action bloquée : Un motif de suspension doit obligatoirement être renseigné pour mettre le chantier à l\'arrêt.',
+                ]);
+            }
+        }
+    }
+
     public function updated(Project $project): void
     {
         if ($project->wasChanged(['initial_budget_ht', 'status'])) {
             RecalculateProjectBudgetJob::dispatch($project);
+        }
+
+        // Si le statut a bien été changé en "Suspendu"
+        if ($project->wasChanged('status') && $project->status === ProjectStatus::Suspended) {
+            $this->notifyManagement($project);
         }
 
         if ($project->wasChanged('status')) {
@@ -34,6 +58,21 @@ class ProjectObserver
             if ($project->status === ProjectStatus::Suspended && !$project->suspension_reason) {
                 // Logique d'alerte ou rollback
             }
+        }
+    }
+
+    /**
+     * Envoie une notification urgente aux responsables du projet.
+     */
+    protected function notifyManagement(Project $project): void
+    {
+        // On récupère les conducteurs de travaux et les admins liés
+        $managers = $project->members()
+            ->wherePivot('role', \App\Enums\Projects\ProjectUserRole::ProjectManager->value)
+            ->get();
+
+        if ($managers->isNotEmpty()) {
+            Notification::send($managers, new ProjectSuspendedNotification($project));
         }
     }
 }

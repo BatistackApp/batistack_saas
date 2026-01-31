@@ -3,14 +3,19 @@
 use App\Enums\Projects\ProjectAmendmentStatus;
 use App\Enums\Projects\ProjectPhaseStatus;
 use App\Enums\Projects\ProjectStatus;
+use App\Enums\Projects\ProjectSuspensionReason;
+use App\Enums\Projects\ProjectUserRole;
 use App\Enums\Tiers\TierStatus;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectAmendment;
 use App\Models\Projects\ProjectPhase;
 use App\Models\Tiers\Tiers;
+use App\Models\User;
+use App\Notifications\Projects\ProjectSuspendedNotification;
 use App\Services\Projects\ProjectBudgetService;
 use App\Services\Projects\ProjectManagementService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
@@ -81,6 +86,78 @@ describe("Service du module: Chantiers", function () {
         expect($summary['sales_budget_total'])->toBe(110000.0)
             ->and($summary['total_rad'])->toBe(20000.0)
             ->and($summary['forecast_margin'])->toBe(90000.0);
+    });
+
+    it('bloque la suspension d\'un chantier si aucun motif n\'est renseigné', function () {
+        $project = Project::factory()->create([
+            'status' => ProjectStatus::InProgress,
+        ]);
+
+        // Tentative de suspension sans motif
+        expect(fn () => $project->update(['status' => ProjectStatus::Suspended]))
+            ->toThrow(ValidationException::class);
+
+        $project->refresh();
+        expect($project->status)->toBe(ProjectStatus::InProgress);
+    });
+
+    it('autorise la suspension d\'un chantier si un motif est renseigné', function () {
+        $project = Project::factory()->create([
+            'status' => ProjectStatus::InProgress,
+        ]);
+
+        $project->update([
+            'status' => ProjectStatus::Suspended,
+            'suspension_reason' => ProjectSuspensionReason::Weather,
+        ]);
+
+        $project->refresh();
+        expect($project->status)->toBe(ProjectStatus::Suspended)
+            ->and($project->suspension_reason)->toBe(ProjectSuspensionReason::Weather);
+    });
+
+    it('envoie une notification aux conducteurs de travaux lors d\'une suspension', function () {
+        Notification::fake();
+
+        $project = Project::factory()->create([
+            'status' => ProjectStatus::InProgress,
+        ]);
+
+        // Affectation d'un conducteur de travaux
+        $manager = User::factory()->create();
+        $project->members()->attach($manager, ['role' => ProjectUserRole::ProjectManager]);
+
+        $project->update([
+            'status' => ProjectStatus::Suspended,
+            'suspension_reason' => ProjectSuspensionReason::TechnicalIssue,
+        ]);
+
+        Notification::assertSentTo(
+            $manager,
+            ProjectSuspendedNotification::class,
+            function ($notification) use ($project) {
+                return $notification->project->id === $project->id;
+            }
+        );
+    });
+
+    it('contient les données correctes dans le tableau de notification (toArray)', function () {
+        $project = Project::factory()->create([
+            'code_project' => 'CH-2026-TEST',
+            'status' => ProjectStatus::Suspended,
+            'suspension_reason' => ProjectSuspensionReason::SupplyIssue,
+        ]);
+
+        $notification = new ProjectSuspendedNotification($project);
+        $data = $notification->toArray(new User());
+
+        expect($data)->toMatchArray([
+            'project_id' => $project->id,
+            'project_code' => 'CH-2026-TEST',
+            'reason' => ProjectSuspensionReason::SupplyIssue->value,
+            'reason_label' => ProjectSuspensionReason::SupplyIssue->getLabel(),
+            'message' => "Le chantier CH-2026-TEST est suspendu.",
+        ]);
     });
 
 });

@@ -29,7 +29,9 @@ class ProjectBudgetService
             'forecast_final_cost' => $forecastFinalCost,
             'forecast_margin' => $totalSales - $forecastFinalCost,
             'progress_physical' => $physicalProgress,
-            'health_index' => $physicalProgress - ($totalSales > 0 ? ($totalSpent / $totalSales) * 100 : 0)
+            'health_index' => $physicalProgress - ($totalSales > 0 ? ($totalSpent / $totalSales) * 100 : 0),
+            'allocated_budget' => $project->phases->sum('allocated_budget'),
+            'actual_cost' => $totalSpent,
         ];
     }
 
