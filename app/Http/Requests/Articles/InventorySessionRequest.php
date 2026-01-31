@@ -8,17 +8,35 @@ class InventorySessionRequest extends FormRequest
 {
     public function rules(): array
     {
+        if ($this->isMethod('post') && !$this->route('inventory_session')) {
+            return [
+                'warehouse_id' => [
+                    'required',
+                    'exists:warehouses,id',
+                ],
+                'notes' => ['nullable', 'string', 'max:1000'],
+            ];
+        }
+
+        // Si nous sommes sur l'enregistrement d'un comptage (InventoryLine)
+        if ($this->has('article_id')) {
+            return [
+                'article_id' => ['required', 'exists:articles,id'],
+                'counted_quantity' => ['required', 'numeric', 'min:0'],
+            ];
+        }
+
+        return [];
+    }
+
+    public function messages(): array
+    {
         return [
-            'tenants_id' => ['required', 'exists:tenants'],
-            'warehouse_id' => ['required', 'exists:warehouses'],
-            'reference' => ['required'],
-            'status' => ['required'],
-            'opened_at' => ['required', 'date'],
-            'closed_at' => ['nullable', 'date'],
-            'validated_at' => ['nullable', 'date'],
-            'created_by' => ['required', 'exists:users'],
-            'validated_by' => ['nullable', 'exists:users'],
-            'notes' => ['nullable'],
+            'warehouse_id.required' => 'Le dépôt est obligatoire pour ouvrir un inventaire.',
+            'warehouse_id.exists' => 'Le dépôt sélectionné est invalide.',
+            'article_id.required' => 'L\'article est requis pour le comptage.',
+            'counted_quantity.required' => 'La quantité comptée est obligatoire.',
+            'counted_quantity.numeric' => 'La quantité doit être un nombre valide.',
         ];
     }
 
