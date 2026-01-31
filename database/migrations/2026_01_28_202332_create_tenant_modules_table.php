@@ -22,10 +22,17 @@ return new class extends Migration {
             $table->unique(['tenants_id', 'module_id']);
             $table->index(['tenants_id', 'status']);
         });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreignId('tenants_id')->nullable()->constrained()->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('tenant_modules');
+        Schema::table('users', function (Blueprint $table) {
+            $table->removeColumn('tenants_id');
+        });
     }
 };
