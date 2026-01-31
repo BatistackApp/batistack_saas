@@ -7,10 +7,13 @@ use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use App\Models\User;
+use App\Observers\Articles\StockMovementObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([StockMovementObserver::class])]
 class StockMovement extends Model
 {
     use HasFactory;
