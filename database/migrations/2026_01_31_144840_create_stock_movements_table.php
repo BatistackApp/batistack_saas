@@ -21,7 +21,7 @@ return new class extends Migration {
 
             $table->foreignIdFor(Project::class)->nullable()->constrained()->nullOnDelete();
             $table->foreignIdFor(ProjectPhase::class)->nullable()->constrained()->nullOnDelete();
-            $table->foreignIdFor(Warehouse::class, 'target_warehouse_id')->nullable()->constrained('warehouse')->nullOnDelete();
+            $table->foreignIdFor(Warehouse::class, 'target_warehouse_id')->nullable()->constrained('warehouses')->nullOnDelete();
 
             $table->string('type')->default(\App\Enums\Articles\StockMovementType::Adjustment->value);
             $table->decimal('quantity', 15, 3)->default(0);
