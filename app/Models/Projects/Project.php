@@ -65,6 +65,7 @@ class Project extends Model
             'budget_materials' => 'decimal:2',
             'budget_subcontracting' => 'decimal:2',
             'budget_site_overheads' => 'decimal:2',
+            'allocated_phases_ceiling_ht' => 'decimal:2',
         ];
     }
 
@@ -79,5 +80,17 @@ class Project extends Model
     // Accesseur pour le Budget Interne Total (Somme des déboursés)
     public function totalInternalBudget(): float {
         return (float) ($this->budget_labor + $this->budget_materials + $this->budget_subcontracting + $this->budget_site_overheads);
+    }
+
+    /**
+     * Vérifie si l'enveloppe des phases est cohérente avec le plafond
+     */
+    public function getPhasesBudgetIntegrity(): array {
+        $allocated = $this->phases()->sum('allocated_budget');
+        return [
+            'allocated' => (float) $allocated,
+            'ceiling' => (float) $this->allocated_phases_ceiling_ht,
+            'remaining' => (float) ($this->allocated_phases_ceiling_ht - $allocated)
+        ];
     }
 }

@@ -9,8 +9,6 @@ class ProjectPhaseObserver
 {
     public function saved(ProjectPhase $phase): void
     {
-        if ($phase->wasChanged('allocated_budget')) {
-            RecalculateProjectBudgetJob::dispatch($phase->project);
-        }
+        RecalculateProjectBudgetJob::dispatch($phase->project);
     }
 }

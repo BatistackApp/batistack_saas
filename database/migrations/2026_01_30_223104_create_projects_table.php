@@ -23,10 +23,12 @@ return new class extends Migration {
             $table->decimal('longitude', 10, 8)->nullable();
 
             $table->decimal('initial_budget_ht', 15, 2)->default(0);
+            $table->decimal('allocated_phases_ceiling_ht', 15, 2)->default(0);
             $table->decimal('budget_labor', 15, 2)->default(0);
             $table->decimal('budget_materials', 15, 2)->default(0);
             $table->decimal('budget_subcontracting', 15, 2)->default(0);
             $table->decimal('budget_site_overheads', 15, 2)->default(0);
+
             $table->string('status')->default(\App\Enums\Projects\ProjectStatus::Study->value);
             $table->string('suspension_reason')->nullable();
 

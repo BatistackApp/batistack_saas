@@ -14,12 +14,17 @@ return new class extends Migration {
             $table->foreignId('depends_on_phase_id')->nullable()->constrained('project_phases')->nullOnDelete();
             $table->string('name');
             $table->decimal('allocated_budget', 15, 2)->default(0);
-            $table->integer('order')->default(0);
-            $table->string('status')->default(\App\Enums\Projects\ProjectPhaseStatus::Pending->value);
             $table->decimal('progress_percentage', 5, 2)->default(0);
+
             $table->decimal('rad_labor', 15, 2)->default(0);
             $table->decimal('rad_materials', 15, 2)->default(0);
             $table->decimal('rad_subcontracting', 15, 2)->default(0);
+
+            $table->string('dependency_type')->default(\App\Enums\Projects\ProjectPhaseDependencyType::FS->value);
+
+            $table->integer('order')->default(0);
+            $table->string('status')->default(\App\Enums\Projects\ProjectPhaseStatus::Pending->value);
+
             $table->timestamps();
         });
     }
