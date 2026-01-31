@@ -25,6 +25,10 @@ class ProjectRequest extends FormRequest
                 'date',
                 'after_or_equal:planned_start_at' // Cohérence temporelle
             ],
+            'budget_labor' => 'required|numeric|min:0',
+            'budget_materials' => 'required|numeric|min:0',
+            'budget_subcontracting' => 'required|numeric|min:0',
+            'budget_site_overheads' => 'required|numeric|min:0',
         ];
     }
 

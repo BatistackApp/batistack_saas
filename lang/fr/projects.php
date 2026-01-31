@@ -31,4 +31,9 @@ return [
         'technical_issue' => "Problème technique",
         'administrative' => "Administratif"
     ],
+    'amendments_status' => [
+        'pending' => "En attente",
+        'accepted' => "Accepté",
+        'refused' => "Refusé",
+    ]
 ];

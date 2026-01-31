@@ -2,6 +2,7 @@
 
 namespace App\Models\Projects;
 
+use App\Enums\Projects\ProjectAmendmentStatus;
 use App\Enums\Projects\ProjectStatus;
 use App\Enums\Projects\ProjectSuspensionReason;
 use App\Models\Core\Tenants;
@@ -21,13 +22,7 @@ class Project extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected $fillable = [
-        'tenants_id', 'customer_id', 'code_project', 'name',
-        'description', 'address', 'latitude', 'longitude',
-        'initial_budget_ht', 'status', 'planned_start_at',
-        'planned_end_at', 'actual_start_at', 'actual_end_at',
-        'suspension_reason', 'internal_target_budget_ht'
-    ];
+    protected $guarded = [];
 
     public function tenants(): BelongsTo
     {
@@ -51,6 +46,11 @@ class Project extends Model
             ->withTimestamps();
     }
 
+    public function amendments(): HasMany
+    {
+        return $this->hasMany(ProjectAmendment::class);
+    }
+
     protected function casts(): array
     {
         return [
@@ -61,7 +61,23 @@ class Project extends Model
             'actual_start_at' => 'date',
             'actual_end_at' => 'date',
             'initial_budget_ht' => 'decimal:2',
-            'internal_target_budget_ht' => 'decimal:2',
+            'budget_labor' => 'decimal:2',
+            'budget_materials' => 'decimal:2',
+            'budget_subcontracting' => 'decimal:2',
+            'budget_site_overheads' => 'decimal:2',
         ];
+    }
+
+    // Accesseur pour le Budget de Vente Total (Initial + Avenants Acceptés)
+    public function totalSalesBudget(): float {
+        $amendmentsAmount = $this->amendments()
+            ->where('status', ProjectAmendmentStatus::Accepted)
+            ->sum('amount_ht');
+        return (float) $this->initial_budget_ht + $amendmentsAmount;
+    }
+
+    // Accesseur pour le Budget Interne Total (Somme des déboursés)
+    public function totalInternalBudget(): float {
+        return (float) ($this->budget_labor + $this->budget_materials + $this->budget_subcontracting + $this->budget_site_overheads);
     }
 }

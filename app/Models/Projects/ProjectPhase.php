@@ -13,13 +13,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProjectPhase extends Model
 {
     use HasFactory;
-
-    protected $fillable = ['project_id', 'name', 'budget_allocated_ht', 'order', 'status', 'allocated_budget', 'progress_percentage'];
+    protected $guarded = [];
 
     protected $casts = [
         'budget_allocated_ht' => 'decimal:2',
         'status' => ProjectPhaseStatus::class,
         'progress_percentage' => 'decimal:2',
+        'allocated_budget' => 'decimal:2',
+        'rad_labor' => 'decimal:2',
+        'rad_materials' => 'decimal:2',
+        'rad_subcontracting' => 'decimal:2'
     ];
 
     public function project(): BelongsTo
@@ -30,5 +33,9 @@ class ProjectPhase extends Model
     public function dependency(): BelongsTo
     {
         return $this->belongsTo(ProjectPhase::class, 'depends_on_phase_id');
+    }
+
+    public function totalRad(): float {
+        return (float) ($this->rad_labor + $this->rad_materials + $this->rad_subcontracting);
     }
 }
