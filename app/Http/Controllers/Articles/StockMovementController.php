@@ -39,7 +39,7 @@ class StockMovementController extends Controller
                     $warehouse,
                     $data['quantity'],
                     $data['unit_cost_ht'],
-                    $data['reference'] ?? null
+                    $data ?? []
                 ),
 
                 StockMovementType::Exit->value => $this->movementService->recordExit(
@@ -47,7 +47,7 @@ class StockMovementController extends Controller
                     $warehouse,
                     $data['quantity'],
                     $data['project_id'],
-                    $data['project_phase_id'] ?? null
+                    $data ?? []
                 ),
 
                 StockMovementType::Return->value => $this->movementService->recordReturn(
@@ -55,7 +55,7 @@ class StockMovementController extends Controller
                     $warehouse,
                     $data['quantity'],
                     $data['project_id'],
-                    $data['project_phase_id'] ?? null
+                    $data ?? []
                 ),
 
                 // AJOUT : Gestion explicite des ajustements d'inventaire
@@ -63,14 +63,16 @@ class StockMovementController extends Controller
                     $article,
                     $warehouse,
                     $data['quantity'], // Note: Dans une UI réelle, prévoir un champ pour le signe ou le motif
-                    $data['notes'] ?? 'Régularisation d\'inventaire'
+                    $data['notes'] ?? 'Régularisation d\'inventaire',
+                    $data ?? []
                 ),
 
                 StockMovementType::Transfer->value => $this->movementService->transfer(
                     $article,
                     $warehouse,
                     Warehouse::findOrFail($data['target_warehouse_id']),
-                    $data['quantity']
+                    $data['quantity'],
+                    $data ?? []
                 ),
 
                 default => throw new \Exception("Type de mouvement non pris en charge par le système."),
