@@ -38,8 +38,8 @@ class ArticleRequest extends FormRequest
             'poids' => ['nullable', 'numeric', 'min:0'],
             'volume' => ['nullable', 'numeric', 'min:0'],
 
-            'purchase_price_ht' => ['required', 'numeric', 'min:0'],
-            'cump_ht' => ['required', 'numeric', 'min:0'],
+            'purchase_price_ht' => ['nullable', 'numeric', 'min:0'],
+            'cump_ht' => ['nullable', 'numeric', 'min:0'],
             'sale_price_ht' => ['required', 'numeric', 'min:0'],
 
             'min_stock' => ['required', 'numeric', 'min:0'],
