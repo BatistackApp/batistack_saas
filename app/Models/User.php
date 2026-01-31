@@ -59,6 +59,11 @@ class User extends Authenticatable
         return $this->belongsTo(Tenants::class, 'tenants_id');
     }
 
+    public function isTenantAdmin(): bool
+    {
+        return $this->hasRole('tenant_admin');
+    }
+
     /**
      * Get the user's initials
      */
