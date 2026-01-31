@@ -38,15 +38,12 @@ class ProjectController extends Controller
 
     public function show(Project $project): JsonResponse
     {
-        $project->load(['customer', 'phases', 'members']);
-
-        $summary = $this->budgetService->getFinancialSummary($project);
+        $project->load(['customer', 'phases.dependency', 'members']); // Consolider le chargement
+        $financialSummary = $this->budgetService->getFinancialSummary($project);
 
         return response()->json([
             'project' => $project,
-            'financial_summary' => $summary,
-            'data' => $project->load('phases.dependency'),
-            'analytics' => $this->budgetService->getFinancialSummary($project)
+            'financial_summary' => $financialSummary,
         ]);
     }
 

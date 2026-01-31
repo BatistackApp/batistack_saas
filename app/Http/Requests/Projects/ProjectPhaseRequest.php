@@ -40,7 +40,7 @@ class ProjectPhaseRequest extends FormRequest
                 $finalTotal = $currentTotal + $newAllocatedBudget;
             }
 
-            if ($finalTotal > $project->internal_target_budget_ht) {
+            if ($finalTotal > $project->allocated_phases_ceiling_ht) {
                 $validator->errors()->add('allocated_budget', 'Dépassement du budget interne global du chantier.');
             }
         });

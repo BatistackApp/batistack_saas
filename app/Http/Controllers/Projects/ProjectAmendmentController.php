@@ -34,6 +34,6 @@ class ProjectAmendmentController extends Controller
     {
         $projectAmendment->delete();
 
-        return response()->json();
+        return response()->json(null, 204);
     }
 }
