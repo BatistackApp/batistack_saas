@@ -9,11 +9,11 @@ class WarehouseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tenants_id' => ['required', 'exists:tenants'],
-            'name' => ['required'],
-            'location' => ['required'],
-            'latitude' => ['nullable', 'numeric'],
-            'longitude' => ['nullable', 'numeric'],
+            'tenants_id' => ['required', 'exists:tenants,id'],
+            'name' => ['required', 'string', 'max:255'],
+            'location' => ['nullable', 'string', 'max:255'],
+            'latitude' => ['nullable', 'numeric', 'min:0'],
+            'longitude' => ['nullable', 'numeric', 'min:0'],
             'is_active' => ['boolean'],
         ];
     }
