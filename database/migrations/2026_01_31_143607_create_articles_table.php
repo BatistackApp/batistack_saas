@@ -38,7 +38,7 @@ return new class extends Migration {
             $table->timestamps();
             $table->softDeletes();
 
-            $table->unique(['sku']);
+            $table->unique(['tenants_id', 'sku']);
         });
     }
 

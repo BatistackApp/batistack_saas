@@ -58,6 +58,11 @@ class ArticleRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        // Pour la création
+        if ($this->isMethod('POST')) {
+            return $this->user()->can('inventory.manage');
+        }
+        // Pour la mise à jour
+        return $this->user()->can('inventory.manage') && $this->route('article')->tenants_id === $this->user()->tenants_id;
     }
 }
