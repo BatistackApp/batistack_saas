@@ -24,11 +24,24 @@ class ProjectPhaseRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $project = \App\Models\Projects\Project::find($this->project_id);
-            if ($project) {
-                $currentTotal = $project->phases()->sum('allocated_budget');
-                if (($currentTotal + $this->allocated_budget) > $project->internal_target_budget_ht) {
-                    $validator->errors()->add('allocated_budget', 'Dépassement du budget interne global du chantier.');
-                }
+            if (!$project) {
+                return;
+            }
+
+            $currentTotal = $project->phases()->sum('allocated_budget');
+            $newAllocatedBudget = (float) $this->allocated_budget;
+
+            // Si c'est une mise à jour (le modèle ProjectPhase est injecté dans la route)
+            if ($this->route('projectPhase')) {
+                $phaseBeingUpdated = $this->route('projectPhase');
+                $budgetWithoutCurrentPhase = $currentTotal - $phaseBeingUpdated->allocated_budget;
+                $finalTotal = $budgetWithoutCurrentPhase + $newAllocatedBudget;
+            } else { // Si c'est une création
+                $finalTotal = $currentTotal + $newAllocatedBudget;
+            }
+
+            if ($finalTotal > $project->internal_target_budget_ht) {
+                $validator->errors()->add('allocated_budget', 'Dépassement du budget interne global du chantier.');
             }
         });
     }
