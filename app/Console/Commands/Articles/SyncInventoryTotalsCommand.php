@@ -29,63 +29,67 @@ class SyncInventoryTotalsCommand extends Command
      */
     public function handle()
     {
-        $this->info("Démarrage de la synchronisation des stocks...");
+        $this->info("🔄 Démarrage de la synchronisation des stocks...");
 
-        DB::table('article_warehouse')->update(['quantity' => 0]);
+        // 1. Calcul de l'impact net de tous les mouvements.
+        // Utilisation d'un UNION ALL pour traiter un transfert comme deux lignes d'impact (Source et Cible).
+        $movementsQuery = DB::table('stock_movements')
+            ->select('article_id', 'warehouse_id', DB::raw("
+                CASE
+                    WHEN type IN ('" . StockMovementType::Entry->value . "', '" . StockMovementType::Return->value . "', '" . StockMovementType::Adjustment->value . "') THEN quantity
+                    WHEN type IN ('" . StockMovementType::Exit->value . "', '" . StockMovementType::Transfer->value . "') THEN -quantity
+                    ELSE 0
+                END as impact
+            "))
+            ->unionAll(
+                DB::table('stock_movements')
+                    ->select('article_id', 'target_warehouse_id as warehouse_id', 'quantity as impact')
+                    ->where('type', StockMovementType::Transfer->value)
+                    ->whereNotNull('target_warehouse_id')
+            );
 
-        // Calcul atomique de tous les totaux en une seule requête
-        $totals = DB::table('stock_movements')
-            ->select(
-                'article_id',
-                DB::raw("
-                    CASE
-                        WHEN type = '" . StockMovementType::Transfer->value . "' THEN target_warehouse_id
-                        ELSE warehouse_id
-                    END as effective_warehouse_id
-                "),
-                DB::raw("
-                    SUM(
-                        CASE
-                            WHEN type IN ('" . StockMovementType::Entry->value . "', '" . StockMovementType::Return->value . "', '" . StockMovementType::Adjustment->value . "')
-                                AND target_warehouse_id IS NULL THEN quantity
-                            WHEN type = '" . StockMovementType::Exit->value . "' THEN -quantity
-                            WHEN type = '" . StockMovementType::Transfer->value . "' AND target_warehouse_id IS NULL THEN -quantity
-                            WHEN type = '" . StockMovementType::Transfer->value . "' AND target_warehouse_id IS NOT NULL THEN quantity
-                            ELSE 0
-                        END
-                    ) as total_qty
-                ")
-            )
-            ->groupBy('article_id', 'effective_warehouse_id')
-            ->get()
-            ->keyBy(function ($row) {
-                // Clé unique pour un accès rapide
-                return "{$row->article_id}-{$row->effective_warehouse_id}";
-            });
+        // 2. Agrégation des résultats par article et dépôt
+        $totals = DB::table(DB::raw("({$movementsQuery->toSql()}) as combined_movements"))
+            ->mergeBindings($movementsQuery)
+            ->select('article_id', 'warehouse_id', DB::raw('SUM(impact) as total_qty'))
+            ->groupBy('article_id', 'warehouse_id')
+            ->get();
 
-        $this->info("Totaux calculés. Démarrage de la mise à jour des stocks...");
-        $bar = $this->output->createProgressBar(DB::table('article_warehouse')->count());
+        $this->info("📊 Totaux calculés. Mise à jour de la base de données...");
+
+        $bar = $this->output->createProgressBar($totals->count());
 
         DB::transaction(function () use ($totals, $bar) {
-            // Remise à zéro de toutes les quantités en une seule fois
+            // Remise à zéro propre des stocks avant ré-injection
             DB::table('article_warehouse')->update(['quantity' => 0]);
 
-            // Mise à jour ciblée
-            foreach ($totals as $key => $calculated) {
-                [$articleId, $warehouseId] = explode('-', $key);
+            $articleGlobalTotals = [];
 
+            foreach ($totals as $row) {
+                if (!$row->warehouse_id) continue;
+
+                // Mise à jour de la table pivot par dépôt
                 DB::table('article_warehouse')
-                    ->where('article_id', $articleId)
-                    ->where('warehouse_id', $warehouseId)
-                    ->update([
-                        'quantity' => (float) $calculated->total_qty,
-                        'updated_at' => now()
-                    ]);
-                $bar->advance(); // Optionnel : pour le suivi
+                    ->updateOrInsert(
+                        ['article_id' => $row->article_id, 'warehouse_id' => $row->warehouse_id],
+                        ['quantity' => $row->total_qty, 'updated_at' => now()]
+                    );
+
+                // Accumulation pour la mise à jour du total global sur l'article
+                $articleGlobalTotals[$row->article_id] = ($articleGlobalTotals[$row->article_id] ?? 0) + $row->total_qty;
+
+                $bar->advance();
+            }
+
+            // 3. Mise à jour de la colonne dénormalisée total_stock sur la table articles
+            foreach ($articleGlobalTotals as $articleId => $total) {
+                Article::where('id', $articleId)->update(['total_stock' => $total]);
             }
         });
 
         $bar->finish();
-        $this->info("\nSynchronisation terminée avec succès.");
+        $this->info("\n✅ Synchronisation terminée avec succès.");
+
+        return Command::SUCCESS;
     }
 }
