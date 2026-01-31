@@ -3,7 +3,9 @@
 namespace App\Observers\Projects;
 
 use App\Enums\Projects\ProjectStatus;
+use App\Jobs\Projects\InitializeProjectProcurementJob;
 use App\Jobs\Projects\RecalculateProjectBudgetJob;
+use App\Jobs\Projects\TriggerProjectPlanningJob;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectStatusHistory;
 use App\Notifications\Projects\ProjectSuspendedNotification;
@@ -62,6 +64,8 @@ class ProjectObserver
             // Notification spécifique pour le statut 'Accepted'
             if ($project->status === ProjectStatus::Accepted) {
                 // Notifier Achats & Planification
+                dispatch(new TriggerProjectPlanningJob($project));
+                dispatch(new InitializeProjectProcurementJob($project));
             }
 
             // Si suspendu, vérifier que la raison est renseignée
