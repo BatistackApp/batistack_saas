@@ -25,6 +25,16 @@ class ProjectManagementService
             throw new Exception("Le client est suspendu ou non conforme");
         }
 
+        // Vérifier s'il existe des phases dépendantes non terminées
+        $incompleteDependencies = $project->phases()
+            ->whereNotNull('depends_on_phase_id')
+            ->where('status', '!=', ProjectPhaseStatus::Finished)
+            ->exists();
+
+        if ($incompleteDependencies) {
+            throw new Exception("La phase dépendante ne peut pas démarrer tant que la phase précédente n'est pas terminée");
+        }
+
         try {
             $this->validateTransition($project, $newStatus);
         } catch (Exception $e) {

@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Notification;
 
 class RecalculateProjectBudgetJob implements ShouldQueue
 {
@@ -29,12 +30,13 @@ class RecalculateProjectBudgetJob implements ShouldQueue
 
             if ($consumption >= 90) {
                 // On récupère le conducteur de travaux (CT) affecté
-                $manager = $this->project->members()
+                // Proposition si plusieurs managers sont possibles
+                $managers = $this->project->members()
                     ->wherePivot('role', \App\Enums\Projects\ProjectUserRole::ProjectManager->value)
-                    ->first();
+                    ->get();
 
-                if ($manager) {
-                    $manager->notify(new BudgetThresholdReachedNotification($this->project, $consumption));
+                if ($managers->isNotEmpty()) {
+                    Notification::send($managers, new BudgetThresholdReachedNotification($this->project, $consumption));
                 }
             }
         }

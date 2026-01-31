@@ -62,15 +62,4 @@ describe("Service du module: Chantiers", function () {
         expect($validator->fails())->toBeTrue();
     });
 
-    it('respecte les dépendances entre phases', function () {
-        $phaseA = ProjectPhase::factory()->create(['status' => ProjectPhaseStatus::InProgress]);
-        $phaseB = ProjectPhase::factory()->create([
-            'depends_on_phase_id' => $phaseA->id,
-            'status' => ProjectPhaseStatus::Pending
-        ]);
-
-        // Tentative de passer B en InProgress alors que A n'est pas fini
-        // Cette logique serait dans le ProjectManagementService
-        expect(true)->toBeTrue();
-    });
 });
