@@ -32,6 +32,15 @@ class Article extends Model
         ];
     }
 
+    protected static function booted(): void
+    {
+        static::addGlobalScope('tenancy', function ($builder) {
+            if (auth()->check()) {
+                $builder->where('tenants_id', auth()->user()->tenants_id);
+            }
+        });
+    }
+
     public function tenants(): BelongsTo
     {
         return $this->belongsTo(Tenants::class);

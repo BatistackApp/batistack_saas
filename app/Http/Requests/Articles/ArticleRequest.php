@@ -12,7 +12,7 @@ class ArticleRequest extends FormRequest
     {
         $articleId = $this->route('article')?->id;
         return [
-            'tenants_id' => ['required', 'exists:tenants, id'],
+            'tenants_id' => ['required', 'exists:tenants,id'],
             'category_id' => ['nullable', 'exists:article_categories,id'],
             'default_supplier_id' => ['nullable', 'exists:tiers,id'],
             'sku' => [

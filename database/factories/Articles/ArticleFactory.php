@@ -26,6 +26,7 @@ class ArticleFactory extends Factory
             'sale_price_ht' => $this->faker->randomFloat(),
             'min_stock' => $this->faker->randomFloat(),
             'alert_stock' => $this->faker->randomFloat(),
+            'total_stock' => $this->faker->randomFloat(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
 

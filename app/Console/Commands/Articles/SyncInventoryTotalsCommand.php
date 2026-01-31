@@ -30,40 +30,41 @@ class SyncInventoryTotalsCommand extends Command
     public function handle()
     {
         $this->info("Démarrage de la synchronisation des stocks...");
-        $warehouses = Warehouse::all();
-        Article::chunk(100, function ($articles) use ($warehouses) {
-            foreach ($articles as $article) {
-                foreach ($warehouses as $warehouse) {
-                    $warehouseId = $warehouse->id;
-                    // Calcul de la somme algébrique complexe :
-                    // 1. Entrées, Retours et Ajustements (si warehouse_id est la source) -> Positif
-                    // 2. Sorties (si warehouse_id est la source) -> Négatif
-                    // 3. Transferts :
-                    //    - Si warehouse_id est la SOURCE (warehouse_id) -> Négatif
-                    //    - Si warehouse_id est la CIBLE (target_warehouse_id) -> Positif
 
-                    $calculatedQty = DB::table('stock_movements')
-                        ->where('article_id', $article->id)
-                        ->where(function ($q) use ($warehouseId) {
-                            $q->where('warehouse_id', $warehouseId)
-                                ->orWhere('target_warehouse_id', $warehouseId);
-                        })
-                        ->selectRaw("SUM(
-                    CASE
-                        WHEN type IN ('" . StockMovementType::Entry->value . "', '" . StockMovementType::Return->value . "', '" . StockMovementType::Adjustment->value . "') AND warehouse_id = ? THEN quantity
-                        WHEN type = '" . StockMovementType::Exit->value . "' AND warehouse_id = ? THEN -quantity
-                        WHEN type = '" . StockMovementType::Transfer->value . "' AND warehouse_id = ? THEN -quantity
-                        WHEN type = '" . StockMovementType::Transfer->value . "' AND target_warehouse_id = ? THEN quantity
-                        ELSE 0
-                    END
-                ) as total", [$warehouseId, $warehouseId, $warehouseId, $warehouseId])
-                        ->value('total') ?? 0;
+        // 1. Calculer tous les totaux en une seule requête
+        $totals = DB::table('stock_movements')
+            ->select('article_id',
+                DB::raw("CASE
+                        WHEN type = '".StockMovementType::Transfer->value."' THEN target_warehouse_id
+                        ELSE warehouse_id
+                     END as effective_warehouse_id"),
+                DB::raw("SUM(
+                CASE
+                    WHEN type IN ('".StockMovementType::Entry->value."', '".StockMovementType::Return->value."', '".StockMovementType::Adjustment->value."') AND target_warehouse_id IS NULL THEN quantity
+                    WHEN type = '".StockMovementType::Exit->value."' THEN -quantity
+                    WHEN type = '".StockMovementType::Transfer->value."' THEN -quantity
+                    WHEN type = '".StockMovementType::Transfer->value."' AND target_warehouse_id IS NOT NULL THEN quantity
+                    ELSE 0
+                END
+            ) as total_qty")
+            )
+            ->groupBy('article_id', 'effective_warehouse_id')
+            ->get()
+            ->keyBy(fn($row) => $row->article_id . '-' . $row->effective_warehouse_id);
 
-                    // Mise à jour de la table pivot
-                    // Note : On utilise syncWithoutDetaching ou updateExistingPivot pour préserver l'intégrité
-                    $article->warehouses()->syncWithoutDetaching([
-                        $warehouseId => ['quantity' => $calculatedQty]
-                    ]);
+        // 2. Mettre à jour la table pivot
+        // Il est préférable de le faire par chunk pour éviter les problèmes de mémoire sur de grandes tables
+        DB::table('article_warehouse')->orderBy('id')->chunk(200, function ($pivotEntries) use ($totals) {
+            $updates = [];
+            foreach ($pivotEntries as $entry) {
+                $key = $entry->article_id . '-' . $entry->warehouse_id;
+                $newQty = $totals->get($key)?->total_qty ?? 0;
+
+                if ((float)$entry->quantity !== (float)$newQty) {
+                    // Utiliser une requête UPDATE groupée si possible ou une par une
+                    DB::table('article_warehouse')
+                        ->where('id', $entry->id)
+                        ->update(['quantity' => $newQty]);
                 }
             }
         });

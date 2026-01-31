@@ -7,6 +7,14 @@ Route::post('/stripe/webhook', \App\Http\Controllers\Api\StripeWebhookController
     ->name('stripe.webhook')
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
+Route::prefix('articles')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Articles\ArticleController::class, 'index']);
+    Route::post('/', [\App\Http\Controllers\Articles\ArticleController::class, 'store']);
+    Route::get('{id}', [\App\Http\Controllers\Articles\ArticleController::class, 'show']);
+    Route::put('{id}', [\App\Http\Controllers\Articles\ArticleController::class, 'update']);
+    Route::delete('{id}', [\App\Http\Controllers\Articles\ArticleController::class, 'destroy']);
+});
+
 Route::prefix('stock')->group(function () {
     Route::post('/movements', [\App\Http\Controllers\Articles\StockMovementController::class, 'store']);
 });
