@@ -16,7 +16,6 @@ class InventoryLine extends Model
         return [
             'theoretical_quantity' => 'decimal:3',
             'counted_quantity' => 'decimal:3',
-            'difference' => 'decimal:3',
         ];
     }
 

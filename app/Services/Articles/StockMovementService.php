@@ -43,7 +43,6 @@ class StockMovementService
             $session = InventorySession::create([
                 'tenants_id' => Auth::user()->tenants_id,
                 'warehouse_id' => $warehouse->id,
-                'reference' => 'INV-' . date('Ymd') . '-' . strtoupper(substr(uniqid(), -4)),
                 'status' => InventorySessionStatus::Open,
                 'opened_at' => now(),
                 'created_by' => Auth::id(),
