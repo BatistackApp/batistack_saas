@@ -3,11 +3,14 @@
 namespace App\Services\Articles;
 
 use App\Enums\Articles\AdjustementType;
+use App\Enums\Articles\InventorySessionStatus;
 use App\Enums\Articles\SerialNumberStatus;
 use App\Enums\Articles\StockMovementType;
 use App\Enums\Articles\TrackingType;
 use App\Models\Articles\Article;
 use App\Models\Articles\ArticleSerialNumber;
+use App\Models\Articles\InventoryLine;
+use App\Models\Articles\InventorySession;
 use App\Models\Articles\StockMovement;
 use App\Models\Articles\Warehouse;
 use DB;
@@ -20,6 +23,104 @@ use Illuminate\Support\Facades\Auth;
 class StockMovementService
 {
     public function __construct(protected InventoryService $inventoryService) {}
+
+    /**
+     * Ouvre une session d'inventaire pour un dépôt spécifique.
+     * Cette action fige l'état théorique actuel (Snapshot).
+     */
+    public function openInventorySession(Warehouse $warehouse, ?string $notes = null): InventorySession
+    {
+        return DB::transaction(function () use ($warehouse, $notes) {
+            // On vérifie si une session n'est pas déjà active pour ce dépôt
+            $activeSession = InventorySession::where('warehouse_id', $warehouse->id)
+                ->whereIn('status', [InventorySessionStatus::Open, InventorySessionStatus::Counting])
+                ->exists();
+
+            if ($activeSession) {
+                throw new Exception("Une session d'inventaire est déjà en cours pour le dépôt {$warehouse->name}.");
+            }
+
+            $session = InventorySession::create([
+                'tenants_id' => Auth::user()->tenants_id,
+                'warehouse_id' => $warehouse->id,
+                'status' => InventorySessionStatus::Open,
+                'opened_at' => now(),
+                'created_by' => Auth::id(),
+                'notes' => $notes
+            ]);
+
+            // Snapshot du stock théorique actuel pour ce dépôt
+            $stockItems = DB::table('article_warehouse')
+                ->where('warehouse_id', $warehouse->id)
+                ->get();
+
+            foreach ($stockItems as $item) {
+                InventoryLine::create([
+                    'inventory_session_id' => $session->id,
+                    'article_id' => $item->article_id,
+                    'theoretical_quantity' => $item->quantity,
+                    'counted_quantity' => null, // En attente de saisie
+                ]);
+            }
+
+            return $session;
+        });
+    }
+
+    /**
+     * Enregistre la quantité comptée physiquement pour un article.
+     */
+    public function recordInventoryCount(InventorySession $session, Article $article, float $countedQty): void
+    {
+        if (!in_array($session->status, [InventorySessionStatus::Open, InventorySessionStatus::Counting])) {
+            throw new Exception("La saisie est verrouillée pour cette session.");
+        }
+
+        InventoryLine::updateOrCreate(
+            ['inventory_session_id' => $session->id, 'article_id' => $article->id],
+            ['counted_quantity' => $countedQty]
+        );
+
+        // Si c'est le premier comptage, on passe au statut 'Counting'
+        if ($session->status === InventorySessionStatus::Open) {
+            $session->update(['status' => InventorySessionStatus::Counting]);
+        }
+    }
+
+    /**
+     * Valide la session d'inventaire et génère les ajustements automatiques.
+     */
+    public function validateInventorySession(InventorySession $session): void
+    {
+        DB::transaction(function () use ($session) {
+            if ($session->status === InventorySessionStatus::Validated) {
+                throw new Exception("Cette session a déjà été validée.");
+            }
+
+            // On récupère les lignes présentant une différence
+            $linesToAdjust = $session->lines()
+                ->where('difference', '!=', 0)
+                ->get();
+
+            foreach ($linesToAdjust as $line) {
+                if ($line->counted_quantity !== null) {
+                    $this->recordAdjustment(
+                        $line->article,
+                        $session->warehouse,
+                        (float) $line->difference,
+                        "Régularisation Inventaire : {$session->reference}"
+                    );
+                }
+            }
+
+            $session->update([
+                'status' => InventorySessionStatus::Validated,
+                'validated_at' => now(),
+                'validated_by' => Auth::id(),
+                'closed_at' => now()
+            ]);
+        });
+    }
 
     /**
      * Résout un article à partir d'un code scanné (Barcode, QR ou SKU).
@@ -57,11 +158,26 @@ class StockMovementService
     }
 
     /**
+     * Empêche les mouvements si un inventaire est en cours.
+     */
+    protected function ensureWarehouseIsNotFrozen(Warehouse $warehouse): void
+    {
+        $isFrozen = InventorySession::where('warehouse_id', $warehouse->id)
+            ->whereIn('status', [InventorySessionStatus::Open, InventorySessionStatus::Counting])
+            ->exists();
+
+        if ($isFrozen) {
+            throw new Exception("Action impossible : Le dépôt {$warehouse->name} est gelé pour inventaire.");
+        }
+    }
+
+    /**
      * ENTRÉE / RÉCEPTION FOURNISSEUR
      * Gère la valorisation CUMP et l'enregistrement unitaire du matériel.
      */
     public function recordEntry(Article $article, Warehouse $warehouse, float $qty, float $priceHt, array $options = []): StockMovement
     {
+        $this->ensureWarehouseIsNotFrozen($warehouse);
         return DB::transaction(function () use ($article, $warehouse, $qty, $priceHt, $options) {
             $snId = null;
 
@@ -113,6 +229,10 @@ class StockMovementService
      */
     public function recordExit(Article $article, Warehouse $warehouse, float $qty, int $projectId, array $options = []): StockMovement
     {
+        $this->ensureWarehouseIsNotFrozen($warehouse);
+        if (!$this->inventoryService->hasEnoughStock($article, $warehouse, $qty)) {
+            throw new Exception("Stock insuffisant dans le dépôt {$warehouse->name} pour l'article {$article->sku}.");
+        }
         return DB::transaction(function () use ($article, $warehouse, $qty, $projectId, $options) {
             $snId = $options['serial_number_id'] ?? null;
 
@@ -168,6 +288,7 @@ class StockMovementService
      */
     public function recordReturn(Article $article, Warehouse $warehouse, float $qty, int $projectId, array $options = []): StockMovement
     {
+        $this->ensureWarehouseIsNotFrozen($warehouse);
         return DB::transaction(function () use ($article, $warehouse, $qty, $projectId, $options) {
             $snId = $options['serial_number_id'] ?? null;
 
@@ -244,6 +365,12 @@ class StockMovementService
      */
     public function transfer(Article $article, Warehouse $from, Warehouse $to, float $qty, array $options = []): void
     {
+        $this->ensureWarehouseIsNotFrozen($from);
+        $this->ensureWarehouseIsNotFrozen($to);
+
+        if (!$this->inventoryService->hasEnoughStock($article, $from, $qty)) {
+            throw new Exception("Transfert impossible : Stock source insuffisant.");
+        }
         DB::transaction(function () use ($article, $from, $to, $qty, $options) {
             $snId = $options['serial_number_id'] ?? null;
 
