@@ -57,7 +57,7 @@ class InventorySessionController extends Controller
     /**
      * Enregistrement d'un comptage (Saisie manuelle ou Scan).
      */
-    public function recordCount(InventoryLineRequest $request, InventorySession $inventorySession): JsonResponse
+    public function recordCount(InventorySessionRequest $request, InventorySession $inventorySession): JsonResponse
     {
         try {
             // Résolution de l'article (soit par ID, soit par code scanné)

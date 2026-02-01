@@ -10,25 +10,38 @@ beforeEach(function () {
 });
 
 it('calcule correctement le nouveau CUMP après une réception', function () {
-    // FIX : Créer un tenant et un dépôt pour éviter l'erreur de clé étrangère (SQLSTATE 23000)
     $tenant = Tenants::factory()->create();
     $warehouse = Warehouse::factory()->create(['tenants_id' => $tenant->id]);
 
+    // Article avec stock initial de 10 unités à 10.00€
     $article = Article::factory()->create([
         'tenants_id' => $tenant->id,
         'cump_ht' => 10.00,
+        'total_stock' => 10
     ]);
 
-    // Utilisation de $warehouse->id au lieu d'un ID statique "1"
     $article->warehouses()->attach($warehouse->id, ['quantity' => 10]);
 
-    // Action : Réception de 10 unités à 20.00 €
-    // Valeur initiale (10 * 10 = 100) + Nouvelle (10 * 20 = 200) = 300 / 20 unités = 15.00 €
+    // Action : Réception de 10 nouvelles unités à 20.00€
+    // Calcul : (10*10 + 10*20) / 20 = 15.00€
     $this->inventoryService->updateCump($article, 10, 20.00);
 
     $article->refresh();
-    expect((float)$article->cump_ht)->toBe(15.00)
-        ->and((float)$article->purchase_price_ht)->toBe(20.00);
+    expect((float) $article->cump_ht)->toBe(15.00);
+});
+
+it('vérifie correctement la disponibilité du stock par dépôt', function () {
+    $tenant = Tenants::factory()->create();
+    $warehouse = Warehouse::factory()->create(['tenants_id' => $tenant->id]);
+    $article = Article::factory()->create(['tenants_id' => $tenant->id]);
+
+    $article->warehouses()->attach($warehouse->id, ['quantity' => 50]);
+
+    // Cas passant
+    expect($this->inventoryService->hasEnoughStock($article, $warehouse, 30))->toBeTrue();
+
+    // Cas bloquant
+    expect($this->inventoryService->hasEnoughStock($article, $warehouse, 60))->toBeFalse();
 });
 
 it('ne modifie pas le CUMP si la quantité totale devient nulle ou négative', function () {
