@@ -19,7 +19,7 @@ class PurchaseOrderRequest extends FormRequest
                 'required',
                 'string',
                 'max:50',
-                Rule::unique('purchase_orders')->ignore($orderId),
+                Rule::unique('purchase_orders')->where('tenants_id', $this->tenants_id)->ignore($orderId),
             ],
             'status' => ['required', Rule::enum(PurchaseOrderStatus::class)],
             'order_date' => ['required', 'date'],

@@ -17,11 +17,11 @@ enum InvoiceType: string implements HasLabel
     public function getLabel(): string|Htmlable|null
     {
         return match ($this) {
-            self::Deposit => __('commerce::invoices.deposit'),
-            self::Progress => __('commerce::invoices.progress'),
-            self::Final => __('commerce::invoices.final'),
-            self::CreditNote => __('commerce::invoices.credit_note'),
-            self::Normal => __('commerce::invoices.normal'),
+            self::Deposit => __('commerce.invoice.types.deposit'),
+            self::Progress => __('commerce.invoice.types.progress'),
+            self::Final => __('commerce.invoice.types.final'),
+            self::CreditNote => __('commerce.invoice.types.credit_note'),
+            self::Normal => __('commerce.invoice.types.normal'),
         };
     }
 }

@@ -26,7 +26,7 @@ class InvoicesRequest extends FormRequest
                 // Unique par tenant pour respecter la migration
                 Rule::unique('invoices')->where('tenants_id', $this->tenants_id)->ignore($invoiceId),
             ],
-            'situation_number' => ['nullable', 'integer', 'min:1'],
+            'situation_number' => ['nullable', 'integer', 'min:1', Rule::requiredIf($this->type === \App\Enums\Commerce\InvoiceType::Progress)],
 
             // Calculs financiers (souvent pilotés par le serveur mais validables)
             'total_ht' => ['required', 'numeric', 'min:0'],

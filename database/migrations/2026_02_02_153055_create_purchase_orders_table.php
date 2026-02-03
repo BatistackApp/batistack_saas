@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->foreignIdFor(Tenants::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Tiers::class, 'supplier_id')->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Project::class)->nullable()->constrained()->nullOnDelete();
-            $table->string('reference')->unique();
+            $table->string('reference');
             $table->string('status')->default(\App\Enums\Commerce\PurchaseOrderStatus::Draft->value);
             $table->date('order_date');
             $table->date('expected_delivery_date')->nullable();
@@ -26,6 +26,8 @@ return new class extends Migration {
             $table->foreignIdFor(User::class, 'created_by')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->unique(['tenants_id', 'reference']);
         });
     }
 
