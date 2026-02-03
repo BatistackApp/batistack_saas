@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Commerce;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Commerce\PurchaseOrderReceiveRequest;
 use App\Http\Requests\Commerce\PurchaseOrderRequest;
 use App\Models\Articles\Warehouse;
 use App\Models\Commerce\PurchaseOrder;
@@ -43,14 +44,9 @@ class PurchaseOrderController extends Controller
      * RÉCEPTION DE MARCHANDISE
      * Fait le pont entre la commande et le stock réel.
      */
-    public function receive(Request $request, PurchaseOrder $order): JsonResponse
+    public function receive(PurchaseOrderReceiveRequest $request, PurchaseOrder $order): JsonResponse
     {
-        $request->validate([
-            'warehouse_id' => 'required|exists:warehouses,id',
-            'items' => 'required|array',
-            'items.*.item_id' => 'required|exists:purchase_order_items,id',
-            'items.*.quantity' => 'required|numeric|gt:0',
-        ]);
+        $request->validated();
 
         try {
             $warehouse = Warehouse::findOrFail($request->warehouse_id);

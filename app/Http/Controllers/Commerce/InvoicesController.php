@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Commerce;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Commerce\CreateProgressStatementRequest;
 use App\Http\Requests\Commerce\InvoicesRequest;
 use App\Models\Commerce\Invoices;
 use App\Models\Commerce\Quote;
@@ -44,15 +45,9 @@ class InvoicesController extends Controller
      * CRÉATION DE SITUATION (Spécificité BTP)
      * Utilise le service pour calculer l'avancement cumulé.
      */
-    public function createProgress(Request $request): JsonResponse
+    public function createProgress(CreateProgressStatementRequest $request): JsonResponse
     {
-        $request->validate([
-            'quote_id' => 'required|exists:quotes,id',
-            'situation_number' => 'required|integer',
-            'progress_data' => 'required|array',
-            'progress_data.*.quote_item_id' => 'required|exists:quote_items,id',
-            'progress_data.*.progress_percentage' => 'required|numeric|between:0,100',
-        ]);
+        $request->validated();
 
         try {
             $quote = Quote::findOrFail($request->quote_id);

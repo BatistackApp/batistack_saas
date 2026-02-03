@@ -56,4 +56,17 @@ class Invoices extends Model
             'status' => InvoiceStatus::class,
         ];
     }
+
+    /**
+     * Calcule le montant Net à Payer.
+     * Formule : Total TTC - Retenue de Garantie - Compte de Prorata.
+     */
+    public function getNetToPayAttribute(): float
+    {
+        return (float) (
+            (float) $this->total_ttc -
+            (float) $this->retenue_garantie_amount -
+            (float) $this->compte_prorata_amount
+        );
+    }
 }
