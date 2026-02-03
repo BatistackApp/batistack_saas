@@ -3,10 +3,13 @@
 namespace App\Models\Commerce;
 
 use App\Models\Articles\Article;
+use App\Observers\Commerce\PurchaseOrderItemObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([PurchaseOrderItemObserver::class])]
 class PurchaseOrderItem extends Model
 {
     use HasFactory;

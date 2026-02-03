@@ -7,12 +7,15 @@ use App\Enums\Commerce\InvoiceType;
 use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Tiers\Tiers;
+use App\Observers\Commerce\InvoicesObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([InvoicesObserver::class])]
 class Invoices extends Model
 {
     use HasFactory, SoftDeletes;

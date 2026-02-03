@@ -3,10 +3,13 @@
 namespace App\Models\Commerce;
 
 use App\Models\Articles\Article;
+use App\Observers\Commerce\QuoteItemObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([QuoteItemObserver::class])]
 class QuoteItem extends Model
 {
     use HasFactory;

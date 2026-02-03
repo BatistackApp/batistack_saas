@@ -6,11 +6,14 @@ use App\Enums\Commerce\QuoteStatus;
 use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Tiers\Tiers;
+use App\Observers\Commerce\QuoteObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([QuoteObserver::class])]
 class Quote extends Model
 {
     use HasFactory, SoftDeletes;

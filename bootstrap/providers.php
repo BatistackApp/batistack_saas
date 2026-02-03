@@ -6,4 +6,5 @@ return [
     App\Providers\CoreServiceProvider::class,
     App\Providers\TierServiceProvider::class,
     App\Providers\ArticleServiceProvider::class,
+    App\Providers\CommerceServiceProvider::class,
 ];
