@@ -9,6 +9,7 @@ use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Observers\Tiers\TierObserver;
 use App\Services\Tiers\TierComplianceService;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -21,7 +22,7 @@ use Illuminate\Notifications\Notifiable;
 #[ObservedBy([TierObserver::class])]
 class Tiers extends Model
 {
-    use HasFactory, Notifiable, SoftDeletes;
+    use HasFactory, Notifiable, SoftDeletes, HasTenant;
 
     protected $guarded = [];
 
@@ -34,11 +35,6 @@ class Tiers extends Model
             'has_compte_prorata' => 'boolean',
             'retenue_garantie_pct' => 'decimal:2',
         ];
-    }
-
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenants::class);
     }
 
     public function types(): HasMany

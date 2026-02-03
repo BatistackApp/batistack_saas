@@ -6,19 +6,15 @@ use App\Enums\Articles\SerialNumberStatus;
 use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\User;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ArticleSerialNumber extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
     protected $guarded = [];
-
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenants::class);
-    }
 
     public function article(): BelongsTo
     {

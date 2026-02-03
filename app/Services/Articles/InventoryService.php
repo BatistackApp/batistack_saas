@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services\Articles;
+use App\Jobs\Articles\RecalculateOuvrageCostsJob;
 use App\Models\Articles\Article;
 use App\Models\Articles\Warehouse;
 
@@ -27,6 +28,10 @@ class InventoryService
                 'cump_ht' => round($newCump, 2),
                 'purchase_price_ht' => $purchasePriceHt // Mise à jour du dernier prix d'achat
             ]);
+            // DÉCLENCHEUR : Si le prix a changé, on lance le recalcul des ouvrages impactés
+            if ($currentCump != $newCump) {
+                RecalculateOuvrageCostsJob::dispatch($article, $currentCump);
+            }
         }
     }
 

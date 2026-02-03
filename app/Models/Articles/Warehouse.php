@@ -4,6 +4,7 @@ namespace App\Models\Articles;
 
 use App\Models\Core\Tenants;
 use App\Models\User;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,13 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Warehouse extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
     protected $guarded = [];
-
-    public function tenants(): BelongsTo
-    {
-        return $this->belongsTo(Tenants::class);
-    }
 
     public function responsibleUser(): BelongsTo {
         return $this->belongsTo(User::class, 'responsible_user_id');

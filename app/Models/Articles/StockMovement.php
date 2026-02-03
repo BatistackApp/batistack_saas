@@ -9,6 +9,7 @@ use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use App\Models\User;
 use App\Observers\Articles\StockMovementObserver;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ObservedBy([StockMovementObserver::class])]
 class StockMovement extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
     protected $guarded = [];
 
     protected function casts(): array
@@ -28,11 +29,6 @@ class StockMovement extends Model
             'unit_cost_ht' => 'decimal:2',
             'adjustement_type' => AdjustementType::class,
         ];
-    }
-
-    public function tenants(): BelongsTo
-    {
-        return $this->belongsTo(Tenants::class);
     }
 
     public function article(): BelongsTo
