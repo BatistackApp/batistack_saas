@@ -4,36 +4,66 @@ namespace App\Http\Controllers\Commerce;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Commerce\PurchaseOrderRequest;
+use App\Models\Articles\Warehouse;
 use App\Models\Commerce\PurchaseOrder;
+use App\Services\Commerce\PurchaseOrderService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PurchaseOrderController extends Controller
 {
-    public function index()
+    public function __construct(protected PurchaseOrderService $purchaseService)
     {
-        return PurchaseOrder::all();
     }
 
-    public function store(PurchaseOrderRequest $request)
+    public function index(): JsonResponse
     {
-        return PurchaseOrder::create($request->validated());
+        $orders = PurchaseOrder::with(['supplier', 'project', 'createdBy'])
+            ->latest()
+            ->paginate(15);
+
+        return response()->json($orders);
     }
 
-    public function show(PurchaseOrder $purchaseOrder)
+    /**
+     * Création d'un bon de commande avec ses lignes.
+     */
+    public function store(PurchaseOrderRequest $request): JsonResponse
     {
-        return $purchaseOrder;
+        $order = PurchaseOrder::create($request->validated());
+
+        if ($request->has('items')) {
+            $order->items()->createMany($request->items);
+        }
+
+        return response()->json($order, 201);
     }
 
-    public function update(PurchaseOrderRequest $request, PurchaseOrder $purchaseOrder)
+    /**
+     * RÉCEPTION DE MARCHANDISE
+     * Fait le pont entre la commande et le stock réel.
+     */
+    public function receive(Request $request, PurchaseOrder $order): JsonResponse
     {
-        $purchaseOrder->update($request->validated());
+        $request->validate([
+            'warehouse_id' => 'required|exists:warehouses,id',
+            'items' => 'required|array',
+            'items.*.item_id' => 'required|exists:purchase_order_items,id',
+            'items.*.quantity' => 'required|numeric|gt:0',
+        ]);
 
-        return $purchaseOrder;
+        try {
+            $warehouse = Warehouse::findOrFail($request->warehouse_id);
+            $this->purchaseService->recordReception($order, $warehouse, $request->items);
+
+            return response()->json(['message' => 'Réception enregistrée et stocks mis à jour.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
-    public function destroy(PurchaseOrder $purchaseOrder)
+    public function show(PurchaseOrder $order): JsonResponse
     {
-        $purchaseOrder->delete();
-
-        return response()->json();
+        return response()->json($order->load(['items.article', 'supplier', 'project']));
     }
 }
