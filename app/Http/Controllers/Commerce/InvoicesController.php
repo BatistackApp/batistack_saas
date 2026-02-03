@@ -78,9 +78,16 @@ class InvoicesController extends Controller
      */
     public function validateInvoice(Invoices $invoice): JsonResponse
     {
-        // Logique de scellement (Status: Validated)
-        $invoice->update(['status' => \App\Enums\Commerce\InvoiceStatus::Validated]);
+        try {
+            $validatedInvoice = $this->invoicingService->validateInvoice($invoice);
 
-        return response()->json(['message' => 'Facture validée avec succès.']);
+            return response()->json([
+                'message' => 'Facture validée et scellée avec succès.',
+                'reference' => $validatedInvoice->reference,
+                'status' => $validatedInvoice->status->value
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 }

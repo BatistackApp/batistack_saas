@@ -57,17 +57,15 @@ class QuoteController extends Controller
      */
     public function duplicate(Quote $quote): JsonResponse
     {
-        $newQuote = $quote->replicate();
-        $newQuote->reference = $quote->reference.'-COPY';
-        $newQuote->status = \App\Enums\Commerce\QuoteStatus::Draft;
-        $newQuote->save();
+        try {
+            $newQuote = $this->quoteService->duplicateQuote($quote);
 
-        foreach ($quote->items as $item) {
-            $newItem = $item->replicate();
-            $newItem->quote_id = $newQuote->id;
-            $newItem->save();
+            return response()->json([
+                'message' => 'Devis dupliqué avec succès.',
+                'quote' => $newQuote->load('items')
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
         }
-
-        return response()->json($newQuote, 201);
     }
 }

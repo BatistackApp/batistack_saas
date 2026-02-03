@@ -9,6 +9,8 @@ use App\Models\Commerce\Invoices;
 use App\Models\Commerce\Quote;
 use App\Models\Commerce\QuoteItem;
 use DB;
+use Exception;
+use Log;
 
 class InvoicingService
 {
@@ -73,6 +75,33 @@ class InvoicingService
     }
 
     /**
+     * VALIDE ET SCELLE LA FACTURE (Action irréversible)
+     * Cette méthode centralise le passage au statut définitif.
+     */
+    public function validateInvoice(Invoices $invoice): Invoices
+    {
+        if ($invoice->status !== InvoiceStatus::Draft) {
+            throw new Exception("Seule une facture en brouillon peut être validée.");
+        }
+
+        return DB::transaction(function () use ($invoice) {
+            // 1. Scellement du numéro de facture (Séquence légale)
+            $invoice->reference = $this->generateFinalReference($invoice);
+
+            // 2. Mise à jour du statut
+            $invoice->status = InvoiceStatus::Validated;
+            $invoice->save();
+
+            // 3. Génération du PDF (Placeholder pour l'étape future)
+            $this->generatePdf($invoice);
+
+            Log::info("Facture scellée : {$invoice->reference} pour le client ID {$invoice->tiers_id}");
+
+            return $invoice;
+        });
+    }
+
+    /**
      * Récupère le montant total HT déjà facturé pour un item de devis.
      */
     public function getAmountInvoicedToDate(QuoteItem $quoteItem, ?int $excludeInvoiceId = null): float
@@ -105,5 +134,37 @@ class InvoicingService
             'total_ttc' => $ttc,
             'retenue_garantie_amount' => $rgAmount,
         ]);
+    }
+
+    /**
+     * Génère une référence définitive basée sur l'année et le type.
+     */
+    protected function generateFinalReference(Invoices $invoice): string
+    {
+        $prefix = $invoice->type === InvoiceType::Progress ? 'SIT' : 'FAC';
+        $year = now()->year;
+
+        // On cherche le dernier numéro pour l'année en cours
+        $lastInvoice = Invoices::where('reference', 'LIKE', "{$prefix}-{$year}-%")
+            ->where('status', '!=', InvoiceStatus::Draft)
+            ->orderBy('reference', 'desc')
+            ->first();
+
+        $nextNumber = 1;
+        if ($lastInvoice) {
+            $lastNumber = (int) substr($lastInvoice->reference, -5);
+            $nextNumber = $lastNumber + 1;
+        }
+
+        return "{$prefix}-{$year}-" . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+    }
+
+    /**
+     * Génère le fichier PDF de la facture.
+     */
+    protected function generatePdf(Invoices $invoice): void
+    {
+        // Logique de génération PDF via Browsershot ou DomPDF ici
+        // storage_path("app/public/invoices/{$invoice->reference}.pdf");
     }
 }
