@@ -11,6 +11,7 @@ use App\Models\Articles\Article;
 use App\Models\Articles\ArticleSerialNumber;
 use App\Models\Articles\InventoryLine;
 use App\Models\Articles\InventorySession;
+use App\Models\Articles\Ouvrage;
 use App\Models\Articles\StockMovement;
 use App\Models\Articles\Warehouse;
 use DB;
@@ -23,6 +24,49 @@ use Illuminate\Support\Facades\Auth;
 class StockMovementService
 {
     public function __construct(protected InventoryService $inventoryService) {}
+
+    /**
+     * Enregistre la consommation d'un ouvrage sur un chantier.
+     * Déclenche l'explosion de la nomenclature et le déstockage des composants.
+     * * @return array Liste des mouvements de stock générés
+     */
+    public function recordOuvrageExit(Ouvrage $ouvrage, Warehouse $warehouse, float $ouvrageQty, int $projectId, array $options = []): array
+    {
+        return DB::transaction(function () use ($ouvrage, $warehouse, $ouvrageQty, $projectId, $options) {
+            // Sécurité : Vérifier le gel du dépôt
+            $this->ensureWarehouseIsNotFrozen($warehouse);
+
+            $movements = [];
+
+            // On charge les composants de la recette
+            $ouvrage->load('components');
+
+            if ($ouvrage->components->isEmpty()) {
+                throw new Exception("L'ouvrage {$ouvrage->name} ne possède aucun composant dans sa nomenclature.");
+            }
+
+            foreach ($ouvrage->components as $component) {
+                // Calcul de la quantité à déstocker pour ce composant
+                // Formule : Ratio nomenclature * Quantité d'ouvrage réalisée
+                $neededQty = (float) $component->pivot->quantity_needed * $ouvrageQty;
+
+                // Génération de la sortie pour l'article composant
+                $movements[] = $this->recordExit(
+                    $component,
+                    $warehouse,
+                    $neededQty,
+                    $projectId,
+                    array_merge($options, [
+                        'notes' => "Consommation via Ouvrage : {$ouvrage->name} (SKU: {$ouvrage->sku})",
+                        'reference' => $options['reference'] ?? $ouvrage->sku,
+                        'ouvrage_id' => $ouvrage->id // Trace de l'origine pour l'audit
+                    ])
+                );
+            }
+
+            return $movements;
+        });
+    }
 
     /**
      * Ouvre une session d'inventaire pour un dépôt spécifique.

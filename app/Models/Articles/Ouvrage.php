@@ -4,12 +4,15 @@ namespace App\Models\Articles;
 
 use App\Enums\Articles\ArticleUnit;
 use App\Models\Core\Tenants;
+use App\Observers\Articles\OuvrageObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([OuvrageObserver::class])]
 class Ouvrage extends Model
 {
     use HasFactory, SoftDeletes;
