@@ -6,6 +6,7 @@ use App\Enums\Articles\ArticleUnit;
 use App\Enums\Articles\TrackingType;
 use App\Models\Core\Tenants;
 use App\Models\Tiers\Tiers;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Article extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTenant;
     protected $guarded = [];
 
     protected function casts(): array
@@ -32,20 +33,6 @@ class Article extends Model
             'volume' => 'decimal:3',
             'tracking_type' => TrackingType::class,
         ];
-    }
-
-    protected static function booted(): void
-    {
-        static::addGlobalScope('tenancy', function ($builder) {
-            if (auth()->check()) {
-                $builder->where('tenants_id', auth()->user()->tenants_id);
-            }
-        });
-    }
-
-    public function tenants(): BelongsTo
-    {
-        return $this->belongsTo(Tenants::class);
     }
 
     public function category(): BelongsTo

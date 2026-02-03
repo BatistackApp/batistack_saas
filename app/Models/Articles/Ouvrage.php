@@ -5,6 +5,7 @@ namespace App\Models\Articles;
 use App\Enums\Articles\ArticleUnit;
 use App\Models\Core\Tenants;
 use App\Observers\Articles\OuvrageObserver;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([OuvrageObserver::class])]
 class Ouvrage extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTenant;
     protected $guarded = [];
 
     protected function casts(): array
@@ -24,11 +25,6 @@ class Ouvrage extends Model
             'is_active' => 'boolean',
             'unit' => ArticleUnit::class,
         ];
-    }
-
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenants::class);
     }
 
     /**

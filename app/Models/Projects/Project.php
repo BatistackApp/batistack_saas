@@ -9,6 +9,7 @@ use App\Models\Core\Tenants;
 use App\Models\Tiers\Tiers;
 use App\Models\User;
 use App\Observers\Projects\ProjectObserver;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -20,14 +21,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([ProjectObserver::class])]
 class Project extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTenant;
 
     protected $guarded = [];
-
-    public function tenants(): BelongsTo
-    {
-        return $this->belongsTo(Tenants::class);
-    }
 
     public function customer(): BelongsTo
     {

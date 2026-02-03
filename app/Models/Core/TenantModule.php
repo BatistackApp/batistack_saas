@@ -4,6 +4,7 @@ namespace App\Models\Core;
 
 use App\Enums\Core\TenantModuleStatus;
 use App\Observers\Core\TenantModuleObserver;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -12,14 +13,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ObservedBy([TenantModuleObserver::class])]
 class TenantModule extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenant;
     protected $guarded = [];
     protected $foreignKey = 'tenants_id';
-
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenants::class, 'tenants_id');
-    }
 
     public function module(): BelongsTo
     {

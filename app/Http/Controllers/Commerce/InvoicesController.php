@@ -47,8 +47,6 @@ class InvoicesController extends Controller
      */
     public function createProgress(CreateProgressStatementRequest $request): JsonResponse
     {
-        $request->validated();
-
         try {
             $quote = Quote::findOrFail($request->quote_id);
             $invoice = $this->invoicingService->createProgressStatement(
