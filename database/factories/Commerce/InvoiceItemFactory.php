@@ -15,16 +15,13 @@ class InvoiceItemFactory extends Factory
     public function definition(): array
     {
         return [
-            'label' => $this->faker->word(),
-            'quantity' => $this->faker->randomFloat(),
-            'unit_price_ht' => $this->faker->randomFloat(),
-            'tax_rate' => $this->faker->randomFloat(),
-            'progress_percentage' => $this->faker->randomFloat(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'invoices_id' => Invoices::factory(),
             'quote_item_id' => QuoteItem::factory(),
+            'label' => $this->faker->sentence(4),
+            'quantity' => $this->faker->randomFloat(3, 1, 10),
+            'unit_price_ht' => $this->faker->randomFloat(2, 50, 200),
+            'tax_rate' => 20.00,
+            'progress_percentage' => $this->faker->randomFloat(2, 0, 100),
         ];
     }
 }

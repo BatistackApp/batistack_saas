@@ -15,15 +15,12 @@ class QuoteItemFactory extends Factory
     public function definition(): array
     {
         return [
-            'label' => $this->faker->word(),
-            'quantity' => $this->faker->randomFloat(),
-            'unit_price_ht' => $this->faker->randomFloat(),
-            'order' => $this->faker->randomNumber(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'quote_id' => Quote::factory(),
             'article_id' => Article::factory(),
+            'label' => $this->faker->sentence(3),
+            'quantity' => $this->faker->randomFloat(3, 1, 50),
+            'unit_price_ht' => $this->faker->randomFloat(2, 10, 1000),
+            'order' => 0,
         ];
     }
 }

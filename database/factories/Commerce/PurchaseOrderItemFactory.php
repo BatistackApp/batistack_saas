@@ -15,16 +15,13 @@ class PurchaseOrderItemFactory extends Factory
     public function definition(): array
     {
         return [
-            'description' => $this->faker->text(),
-            'quantity' => $this->faker->randomFloat(),
-            'received_quantity' => $this->faker->randomFloat(),
-            'unit_price_ht' => $this->faker->randomFloat(),
-            'tax_rate' => $this->faker->randomFloat(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'purchase_order_id' => PurchaseOrder::factory(),
             'article_id' => Article::factory(),
+            'description' => $this->faker->words(3, true),
+            'quantity' => $this->faker->randomFloat(3, 1, 100),
+            'received_quantity' => 0,
+            'unit_price_ht' => $this->faker->randomFloat(2, 5, 500),
+            'tax_rate' => 20.00,
         ];
     }
 }
