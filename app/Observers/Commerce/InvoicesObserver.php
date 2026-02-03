@@ -3,6 +3,7 @@
 namespace App\Observers\Commerce;
 
 use App\Models\Commerce\Invoices;
+use App\Services\Commerce\FinancialCalculatorService;
 
 class InvoicesObserver
 {
@@ -23,8 +24,6 @@ class InvoicesObserver
     public function saving(Invoices $invoice): void
     {
         // Recalcul de la retenue de garantie si le pourcentage change
-        if ($invoice->isDirty('total_ttc') || $invoice->isDirty('retenue_garantie_pct')) {
-            $invoice->retenue_garantie_amount = $invoice->total_ttc * ($invoice->retenue_garantie_pct / 100);
-        }
+        app(FinancialCalculatorService::class)->updateDocumentTotals($invoice);
     }
 }

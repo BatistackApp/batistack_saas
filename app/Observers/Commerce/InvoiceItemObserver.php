@@ -3,6 +3,7 @@
 namespace App\Observers\Commerce;
 
 use App\Models\Commerce\InvoiceItem;
+use App\Services\Commerce\FinancialCalculatorService;
 
 class InvoiceItemObserver
 {
@@ -18,20 +19,6 @@ class InvoiceItemObserver
 
     protected function updateParent(InvoiceItem $item): void
     {
-        $invoice = $item->invoices;
-        $totals = $invoice->items()
-            ->selectRaw('SUM(quantity * unit_price_ht) as ht, SUM(quantity * unit_price_ht * (tax_rate / 100)) as tva')
-            ->first();
-
-        $totalHt = (float) $totals->ht;
-        $totalTva = (float) $totals->tva;
-        $totalTtc = $totalHt + $totalTva;
-
-        $invoice->update([
-            'total_ht' => $totalHt,
-            'total_tva' => $totalTva,
-            'total_ttc' => $totalTtc,
-            // Le montant de la retenue sera mis à jour par le InvoicesObserver@saving
-        ]);
+        app(FinancialCalculatorService::class)->updateDocumentTotals($item->invoices);
     }
 }

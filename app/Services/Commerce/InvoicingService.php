@@ -14,6 +14,11 @@ use Log;
 
 class InvoicingService
 {
+
+    public function __construct(protected FinancialCalculatorService $calculator)
+    {
+    }
+
     /**
      * Génère une nouvelle situation de travaux à partir d'un devis.
      * Calcule automatiquement le montant de la période par rapport aux situations précédentes.
@@ -62,13 +67,11 @@ class InvoicingService
                         'tax_rate' => 20.00,
                         'progress_percentage' => $newTotalProgress,
                     ]);
-
-                    $totalHtPeriod += $amountPeriodHt;
                 }
             }
 
             // 3. Application des calculs finaux (Taxes, RG, Prorata)
-            $this->finalizeInvoiceTotals($invoice, $totalHtPeriod);
+            $this->calculator->updateDocumentTotals($invoice);
 
             return $invoice;
         });
@@ -112,28 +115,6 @@ class InvoicingService
                     ->when($excludeInvoiceId, fn ($query) => $query->where('id', '!=', $excludeInvoiceId));
             })
             ->sum(DB::raw('quantity * unit_price_ht'));
-    }
-
-    /**
-     * Calcule les totaux, TVA, Retenue de Garantie et Net à payer.
-     */
-    protected function finalizeInvoiceTotals(Invoices $invoice, float $totalHt): void
-    {
-        $tva = $totalHt * 0.20;
-        $ttc = $totalHt + $tva;
-
-        // Calcul de la Retenue de Garantie (5% du TTC)
-        $rgAmount = 0;
-        if ($invoice->retenue_garantie_pct > 0) {
-            $rgAmount = $ttc * ($invoice->retenue_garantie_pct / 100);
-        }
-
-        $invoice->update([
-            'total_ht' => $totalHt,
-            'total_tva' => $tva,
-            'total_ttc' => $ttc,
-            'retenue_garantie_amount' => $rgAmount,
-        ]);
     }
 
     /**
