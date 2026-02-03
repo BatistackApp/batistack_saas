@@ -15,7 +15,7 @@ class InvoicesRequest extends FormRequest
         return [
             'tenants_id' => ['required', 'exists:tenants,id'],
             'tiers_id' => ['required', 'exists:tiers,id'],
-            'project_id' => ['required', 'exists:projects,id'],
+            'project_id' => ['nullable', 'exists:projects,id'],
             'quote_id' => ['nullable', 'exists:quotes,id'],
 
             'type' => ['required', Rule::enum(InvoiceType::class)],

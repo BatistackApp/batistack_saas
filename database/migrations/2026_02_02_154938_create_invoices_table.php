@@ -20,7 +20,7 @@ return new class extends Migration {
 
             $table->string('type')->default(\App\Enums\Commerce\InvoiceType::Normal->value);
             $table->string('reference');
-            $table->string('situation_number')->nullable();
+            $table->integer('situation_number')->nullable();
 
             $table->decimal('total_ht', 15, 2)->default(0);
             $table->decimal('total_tva', 15, 2)->default(0);

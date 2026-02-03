@@ -18,7 +18,7 @@ class RecalculateOuvrageCostsJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(protected Article $article) {}
+    public function __construct(protected Article $article, protected float $oldCump) {}
 
     public function handle(): void
     {

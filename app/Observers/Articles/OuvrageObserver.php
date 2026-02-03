@@ -3,6 +3,7 @@
 namespace App\Observers\Articles;
 
 use App\Models\Articles\Ouvrage;
+use Illuminate\Support\Str;
 
 class OuvrageObserver
 {
