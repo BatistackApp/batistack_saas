@@ -6,6 +6,8 @@ use App\Enums\Commerce\QuoteStatus;
 use App\Models\Commerce\Quote;
 use DB;
 use Exception;
+use Illuminate\Support\Facades\Storage;
+use Spatie\Browsershot\Browsershot;
 
 class QuoteService
 {
@@ -54,18 +56,36 @@ class QuoteService
         });
     }
 
-    /**
-     * Calcule le total d'un devis à partir de ses items.
-     */
-    public function refreshQuoteTotals(Quote $quote): void
+    public function generatePdf(Quote $quote): string
     {
-        $totalHt = $quote->items->sum(fn ($item) => $item->quantity * $item->unit_price_ht);
-        $totalTva = $totalHt * 0.20;
+        $tenantId = $quote->tenants_id;
+        $fileName = "quotes/{$quote->reference}.pdf";
+        $directory = "tenants/{$tenantId}/commerce/documents";
+        $fullPath = storage_path("app/public/{$directory}/{$fileName}");
 
-        $quote->update([
-            'total_ht' => $totalHt,
-            'total_tva' => $totalTva,
-            'total_ttc' => $totalHt + $totalTva,
-        ]);
+        // S'assurer que le dossier existe
+        if (!Storage::disk('public')->exists($directory)) {
+            Storage::disk('public')->makeDirectory($directory);
+        }
+
+        // Rendu de la vue Blade en HTML
+        $html = View::make('pdf.commerce.quote', [
+            'quote' => $quote->load(['customer', 'items', 'project']),
+            'tenant' => $quote->tenant
+        ])->render();
+
+        // Génération du PDF via Browsershot
+        Browsershot::html($html)
+            ->setNodeBinary(config('services.browsershot.node_path', '/usr/bin/node'))
+            ->setNpmBinary(config('services.browsershot.npm_path', '/usr/bin/npm'))
+            ->format('A4')
+            ->margins(10, 10, 10, 10)
+            ->showBackground()
+            ->save($fullPath);
+
+        // Mise à jour du chemin dans le modèle (pour la future GED)
+        $quote->update(['pdf_path' => "{$directory}/{$fileName}"]);
+
+        return $fullPath;
     }
 }
