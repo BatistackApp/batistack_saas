@@ -41,11 +41,11 @@ enum QuoteStatus: string implements HasLabel, HasColor, HasIcon
     public function getLabel(): string|Htmlable|null
     {
         return match ($this) {
-            self::Draft => __('commerce::quote.statuses.draft'),
-            self::Sent => __('commerce::quote.statuses.sent'),
-            self::Accepted => __('commerce::quote.statuses.accepted'),
-            self::Rejected => __('commerce::quote.statuses.rejected'),
-            self::Lost => __('commerce::quote.statuses.lost'),
+            self::Draft => __('commerce.:quote.statuses.draft'),
+            self::Sent => __('commerce.:quote.statuses.sent'),
+            self::Accepted => __('commerce.:quote.statuses.accepted'),
+            self::Rejected => __('commerce.:quote.statuses.rejected'),
+            self::Lost => __('commerce.:quote.statuses.lost'),
         };
     }
 }

@@ -44,12 +44,12 @@ enum PurchaseOrderStatus: string implements HasColor, HasIcon, HasLabel
     public function getLabel(): string|Htmlable|null
     {
         return match ($this) {
-            self::Draft => __('commerce::purchase_order.statuses.draft'),
-            self::Sent => __('commerce::purchase_order.statuses.sent'),
-            self::PartiallyReceived => __('commerce::purchase_order.statuses.partially_received'),
-            self::Received => __('commerce::purchase_order.statuses.received'),
-            self::Invoiced => __('commerce::purchase_order.statuses.invoiced'),
-            self::Cancelled => __('commerce::purchase_order.statuses.cancelled'),
+            self::Draft => __('commerce.purchase_order.statuses.draft'),
+            self::Sent => __('commerce.purchase_order.statuses.sent'),
+            self::PartiallyReceived => __('commerce.purchase_order.statuses.partially_received'),
+            self::Received => __('commerce.purchase_order.statuses.received'),
+            self::Invoiced => __('commerce.purchase_order.statuses.invoiced'),
+            self::Cancelled => __('commerce.purchase_order.statuses.cancelled'),
         };
     }
 }

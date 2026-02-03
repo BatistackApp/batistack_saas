@@ -30,10 +30,10 @@ return [
         ],
         'statuses' => [
             'draft' => 'Brouillon',
-            'sent' => 'Envoyé',
-            'paid' => 'Payé',
+            'validated' => 'Validé',
             'partially_paid' => 'Partiellement payé',
-            'overdue' => 'En retard',
+            'paid' => 'Payé',
+            'overdue' => 'Impayé',
         ],
     ],
 ];
