@@ -3,6 +3,7 @@
 namespace App\Observers\Commerce;
 
 use App\Models\Commerce\QuoteItem;
+use DB;
 
 class QuoteItemObserver
 {
@@ -19,12 +20,15 @@ class QuoteItemObserver
     protected function updateParent(QuoteItem $item): void
     {
         $quote = $item->quote;
-        $totals = $quote->items()
-            ->selectRaw('SUM(quantity * unit_price_ht) as ht')
-            ->first();
+        $totals = DB::table('quote_items')
+            ->where('quote_id', $quote->id)
+            ->selectRaw('
+                SUM(quantity * unit_price_ht) as ht,
+                SUM(quantity * unit_price_ht * (tax_rate / 100)) as tva
+            ')->first();
 
-        $totalHt = (float) $totals->ht;
-        $totalTva = $totalHt * 0.20; // Hypothèse TVA standard, à ajuster si par ligne
+        $totalHt = (float) ($totals->ht ?? 0);
+        $totalTva = (float) ($totals->tva ?? 0);
 
         $quote->update([
             'total_ht' => $totalHt,

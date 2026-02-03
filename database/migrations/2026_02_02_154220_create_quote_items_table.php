@@ -16,6 +16,7 @@ return new class extends Migration {
             $table->string('label');
             $table->decimal('quantity', 15, 3);
             $table->decimal('unit_price_ht', 15, 2);
+            $table->decimal('tax_rate', 5, 2)->default(20.00);
             $table->integer('order')->default(0);
             $table->timestamps();
         });
