@@ -8,12 +8,15 @@ use App\Models\Commerce\InvoiceItem;
 use App\Models\Commerce\Invoices;
 use App\Models\Commerce\Quote;
 use App\Models\Commerce\QuoteItem;
+use App\Services\Core\DocumentManagementService;
 use DB;
 use Exception;
 use Log;
 
 class InvoicingService
 {
+    public function __construct(protected FinancialCalculatorService $calculator, protected DocumentManagementService $document) {}
+
     /**
      * Génère une nouvelle situation de travaux à partir d'un devis.
      * Calcule automatiquement le montant de la période par rapport aux situations précédentes.
@@ -62,13 +65,11 @@ class InvoicingService
                         'tax_rate' => 20.00,
                         'progress_percentage' => $newTotalProgress,
                     ]);
-
-                    $totalHtPeriod += $amountPeriodHt;
                 }
             }
 
             // 3. Application des calculs finaux (Taxes, RG, Prorata)
-            $this->finalizeInvoiceTotals($invoice, $totalHtPeriod);
+            $this->calculator->updateDocumentTotals($invoice);
 
             return $invoice;
         });
@@ -81,7 +82,7 @@ class InvoicingService
     public function validateInvoice(Invoices $invoice): Invoices
     {
         if ($invoice->status !== InvoiceStatus::Draft) {
-            throw new Exception("Seule une facture en brouillon peut être validée.");
+            throw new Exception('Seule une facture en brouillon peut être validée.');
         }
 
         return DB::transaction(function () use ($invoice) {
@@ -93,7 +94,7 @@ class InvoicingService
             $invoice->save();
 
             // 3. Génération du PDF (Placeholder pour l'étape future)
-            $this->generatePdf($invoice);
+            $this->document->generatePdf($invoice, 'pdf.commerce.invoices', 'invoices');
 
             Log::info("Facture scellée : {$invoice->reference} pour le client ID {$invoice->tiers_id}");
 
@@ -112,28 +113,6 @@ class InvoicingService
                     ->when($excludeInvoiceId, fn ($query) => $query->where('id', '!=', $excludeInvoiceId));
             })
             ->sum(DB::raw('quantity * unit_price_ht'));
-    }
-
-    /**
-     * Calcule les totaux, TVA, Retenue de Garantie et Net à payer.
-     */
-    protected function finalizeInvoiceTotals(Invoices $invoice, float $totalHt): void
-    {
-        $tva = $totalHt * 0.20;
-        $ttc = $totalHt + $tva;
-
-        // Calcul de la Retenue de Garantie (5% du TTC)
-        $rgAmount = 0;
-        if ($invoice->retenue_garantie_pct > 0) {
-            $rgAmount = $ttc * ($invoice->retenue_garantie_pct / 100);
-        }
-
-        $invoice->update([
-            'total_ht' => $totalHt,
-            'total_tva' => $tva,
-            'total_ttc' => $ttc,
-            'retenue_garantie_amount' => $rgAmount,
-        ]);
     }
 
     /**
@@ -156,15 +135,6 @@ class InvoicingService
             $nextNumber = $lastNumber + 1;
         }
 
-        return "{$prefix}-{$year}-" . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * Génère le fichier PDF de la facture.
-     */
-    protected function generatePdf(Invoices $invoice): void
-    {
-        // Logique de génération PDF via Browsershot ou DomPDF ici
-        // storage_path("app/public/invoices/{$invoice->reference}.pdf");
+        return "{$prefix}-{$year}-".str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 }

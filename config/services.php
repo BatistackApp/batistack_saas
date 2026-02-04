@@ -60,6 +60,11 @@ return [
     'portail_urssaf' => [
         'baseUrl' => env("PORTAIL_URSSAF_BASE_URL", 'https://api.urssaf.fr/api/v1/attestations/verification'),
         'token' => env("PORTAIL_URSSAF_TOKEN", ""),
-    ]
+    ],
+
+    'browsershot' => [
+        'node_path' => env('BROWSERSHOT_NODE_PATH'),
+        'npm_path' => env('BROWSERSHOT_NPM_PATH'),
+    ],
 
 ];
