@@ -116,6 +116,46 @@ class InvoicingService
     }
 
     /**
+     * LIBÉRATION DE LA RETENUE DE GARANTIE
+     *
+     * @param  string  $reportPath  Chemin du PV de réception ou de l'attestation
+     */
+    public function releaseRetenueGarantie(Invoices $invoice, string $reportPath): Invoices
+    {
+        if ($invoice->is_retenue_garantie_released) {
+            throw new Exception('La retenue de garantie a déjà été libérée pour cette facture.');
+        }
+
+        if ($invoice->status !== InvoiceStatus::Paid && $invoice->status !== InvoiceStatus::Validated) {
+            throw new Exception('La facture doit être validée ou payée (hors RG) pour libérer la garantie.');
+        }
+
+        return DB::transaction(function () use ($invoice, $reportPath) {
+            $invoice->update([
+                'is_retenue_garantie_released' => true,
+                'retenue_garantie_released_at' => now(),
+                'reception_report_path' => $reportPath,
+            ]);
+
+            // Si la facture était "Payée" (sous-entendu le net à payer),
+            // on peut la laisser en "Partially Paid" jusqu'à réception de la RG
+            // ou créer une écriture de règlement spécifique.
+
+            return $invoice;
+        });
+    }
+
+    /**
+     * Définit la date théorique de libération (ex: réception + 12 mois).
+     */
+    public function setTheoreticalReleaseDate(Invoices $invoice, \DateTime $receptionDate): void
+    {
+        $invoice->update([
+            'retenue_garantie_release_date' => $receptionDate->modify('+1 year')
+        ]);
+    }
+
+    /**
      * Génère une référence définitive basée sur l'année et le type.
      */
     protected function generateFinalReference(Invoices $invoice): string

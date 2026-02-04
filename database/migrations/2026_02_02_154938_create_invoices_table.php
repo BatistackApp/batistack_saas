@@ -34,6 +34,7 @@ return new class extends Migration {
             $table->string('reception_report_path')->nullable();
 
             $table->decimal('compte_prorata_amount', 15, 2)->default(0);
+            $table->decimal('compte_prorata_pct', 5, 2)->default(0);
             $table->boolean('is_autoliquidation')->default(false);
 
             $table->string('status')->default(\App\Enums\Commerce\InvoiceStatus::Draft->value);
