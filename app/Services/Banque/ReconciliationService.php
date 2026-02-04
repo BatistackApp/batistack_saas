@@ -20,7 +20,7 @@ class ReconciliationService
 
         $invoices = Invoices::where('tenants_id', $transaction->tenants_id)
             ->whereIn('status', [InvoiceStatus::Validated, InvoiceStatus::PartiallyPaid])
-            ->with(['customer'])
+            ->with(['tiers'])
             ->get();
 
         foreach ($invoices as $invoice) {
@@ -32,7 +32,7 @@ class ReconciliationService
                 if (str_contains($label, mb_strtolower($invoice->reference))) {
                     $score += 40;
                 }
-                if ($score < 100 && str_contains($label, mb_strtolower($invoice->customer->name))) {
+                if ($score < 100 && str_contains($label, mb_strtolower($invoice->tiers->name))) {
                     $score += 20;
                 }
 

@@ -14,7 +14,7 @@ return new class extends Migration {
 
             $table->string('name');
             $table->string('bank_name')->nullable();
-            $table->string('bank_iban')->nullable();
+            $table->string('iban')->nullable();
             $table->string('type')->default(\App\Enums\Banque\BankAccountType::Current->value);
 
             $table->string('bridge_id')->nullable();
