@@ -3,37 +3,40 @@
 namespace App\Http\Controllers\Banque;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Banque\BankTransactionRequest;
 use App\Models\Banque\BankTransaction;
+use App\Services\Banque\ReconciliationService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Request;
 
 class BankTransactionController extends Controller
 {
-    public function index()
+    public function __construct(protected ReconciliationService $reconciliationService) {}
+
+    /**
+     * Liste des transactions (filtrables par état de rapprochement).
+     */
+    public function index(Request $request): JsonResponse
     {
-        return BankTransaction::all();
+        $query = BankTransaction::with('account');
+
+        if ($request->has('reconciled')) {
+            $query->where('is_reconciled', $request->boolean('reconciled'));
+        }
+
+        return response()->json($query->latest('value_date')->paginate(50));
     }
 
-    public function store(BankTransactionRequest $request)
+    /**
+     * Récupère les suggestions de factures pour une transaction spécifique.
+     */
+    public function getMatches(BankTransaction $bankTransaction): JsonResponse
     {
-        return BankTransaction::create($request->validated());
-    }
+        if ($bankTransaction->is_reconciled) {
+            return response()->json(['message' => 'Cette transaction est déjà rapprochée.'], 422);
+        }
 
-    public function show(BankTransaction $bankTransaction)
-    {
-        return $bankTransaction;
-    }
+        $suggestions = $this->reconciliationService->suggestMatches($bankTransaction);
 
-    public function update(BankTransactionRequest $request, BankTransaction $bankTransaction)
-    {
-        $bankTransaction->update($request->validated());
-
-        return $bankTransaction;
-    }
-
-    public function destroy(BankTransaction $bankTransaction)
-    {
-        $bankTransaction->delete();
-
-        return response()->json();
+        return response()->json($suggestions);
     }
 }
