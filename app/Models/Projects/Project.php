@@ -5,6 +5,7 @@ namespace App\Models\Projects;
 use App\Enums\Projects\ProjectAmendmentStatus;
 use App\Enums\Projects\ProjectStatus;
 use App\Enums\Projects\ProjectSuspensionReason;
+use App\Models\Commerce\Invoices;
 use App\Models\Core\Tenants;
 use App\Models\Tiers\Tiers;
 use App\Models\User;
@@ -50,6 +51,11 @@ class Project extends Model
     public function statusHistory(): HasMany
     {
         return $this->hasMany(ProjectStatusHistory::class);
+    }
+
+    public function invoices(): HasMany
+    {
+        return $this->hasMany(Invoices::class, 'project_id');
     }
 
     protected function casts(): array

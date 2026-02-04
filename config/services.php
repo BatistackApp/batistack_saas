@@ -45,10 +45,10 @@ return [
     ],
 
     'ovh' => [
-        'api_url' => env("OVH_API_URL", "https://eu.api.ovh.com/1.0"),
-        'app_key' => env("OVH_APP_KEY"),
-        'consumer_key' => env("OVH_CONSUMER_KEY"),
-        'token' => env("OVH_TOKEN"),
+        'api_url' => env('OVH_API_URL', 'https://eu.api.ovh.com/1.0'),
+        'app_key' => env('OVH_APP_KEY'),
+        'consumer_key' => env('OVH_CONSUMER_KEY'),
+        'token' => env('OVH_TOKEN'),
         'base_domain' => env('OVH_BASE_DOMAIN', 'batistack.app'),
     ],
 
@@ -58,13 +58,19 @@ return [
     ],
 
     'portail_urssaf' => [
-        'baseUrl' => env("PORTAIL_URSSAF_BASE_URL", 'https://api.urssaf.fr/api/v1/attestations/verification'),
-        'token' => env("PORTAIL_URSSAF_TOKEN", ""),
+        'baseUrl' => env('PORTAIL_URSSAF_BASE_URL', 'https://api.urssaf.fr/api/v1/attestations/verification'),
+        'token' => env('PORTAIL_URSSAF_TOKEN', ''),
     ],
 
     'browsershot' => [
         'node_path' => env('BROWSERSHOT_NODE_PATH'),
         'npm_path' => env('BROWSERSHOT_NPM_PATH'),
+    ],
+
+    'bridge' => [
+        'client_id' => env('BRIDGE_CLIENT_ID'),
+        'client_secret' => env('BRIDGE_CLIENT_SECRET'),
+        'api_url' => env('BRIDGE_API_URL', 'https://api.bridgeapi.io/v3'),
     ],
 
 ];
