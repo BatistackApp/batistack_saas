@@ -13,7 +13,7 @@ return new class extends Migration {
     {
         Schema::create('article_serial_numbers', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(\App\Models\Core\Tenants::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(\App\Models\Core\Tenants::class, 'tenants_id')->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Article::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Warehouse::class)->nullable()->constrained()->nullOnDelete();
 
@@ -28,7 +28,10 @@ return new class extends Migration {
             $table->date('warranty_expiry')->nullable();
             $table->timestamps();
 
-            $table->unique(['article_id', 'serial_number', 'tenants_id']);
+            $table->unique(
+                ['article_id', 'serial_number', 'tenants_id'],
+                'art_sn_tenant_unique'
+            );
         });
 
         Schema::table('stock_movements', function (Blueprint $table) {
