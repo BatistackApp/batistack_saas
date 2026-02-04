@@ -64,7 +64,7 @@ class FinancialCalculatorService
         // 2. Gestion du Compte Prorata (sur HT - usage standard)
         $prorataPct = $invoice->compte_prorata_pct > 0
             ? $invoice->compte_prorata_pct
-            : TenantConfigService::get($tenant, 'commerce.invoices.retenue_garantie_default_pct', 0.00);
+            : TenantConfigService::get($tenant, 'commerce.invoices.compte_prorata_default_pct', 0.00);
 
         $invoice->update([
             'retenue_garantie_pct' => $rgPct,
