@@ -4,12 +4,15 @@ namespace App\Models\Banque;
 
 use App\Enums\Banque\BankAccountType;
 use App\Enums\Banque\BankSyncStatus;
+use App\Observers\BankAccountObserver;
 use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([BankAccountObserver::class])]
 class BankAccount extends Model
 {
     use HasFactory, HasTenant, SoftDeletes;
