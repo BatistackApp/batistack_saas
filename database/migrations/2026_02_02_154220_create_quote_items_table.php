@@ -18,6 +18,11 @@ return new class extends Migration {
             $table->decimal('unit_price_ht', 15, 2);
             $table->decimal('tax_rate', 5, 2)->default(20.00);
             $table->integer('order')->default(0);
+
+            $table->boolean('is_cost_outdated')->default(false);
+            $table->decimal('cost_variation_pct')->default(0);
+            $table->decimal('last_known_cost_ht', 15, 2)->nullable();
+
             $table->timestamps();
         });
     }
