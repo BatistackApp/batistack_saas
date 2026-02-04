@@ -2,7 +2,6 @@
 
 namespace App\Services\Articles;
 
-use App\Enums\Articles\AdjustementType;
 use App\Enums\Articles\InventorySessionStatus;
 use App\Enums\Articles\SerialNumberStatus;
 use App\Enums\Articles\StockMovementType;
@@ -28,6 +27,7 @@ class StockMovementService
     /**
      * Enregistre la consommation d'un ouvrage sur un chantier.
      * Déclenche l'explosion de la nomenclature et le déstockage des composants.
+     *
      * * @return array Liste des mouvements de stock générés
      */
     public function recordOuvrageExit(Ouvrage $ouvrage, Warehouse $warehouse, float $ouvrageQty, int $projectId, array $options = []): array
@@ -46,20 +46,25 @@ class StockMovementService
             }
 
             foreach ($ouvrage->components as $component) {
-                // Calcul de la quantité à déstocker pour ce composant
-                // Formule : Ratio nomenclature * Quantité d'ouvrage réalisée
-                $neededQty = (float) $component->pivot->quantity_needed * $ouvrageQty;
+                // 1. Quantité théorique pure
+                $theoreticalQty = (float) $component->pivot->quantity_needed * $ouvrageQty;
+
+                // 2. Application du facteur de perte (priorité : override > nomenclature > 0)
+                $wastageFactor = $globalWastageOverride ?? ($component->pivot->wastage_factor_pct ?? 0);
+
+                // Formule : Quantité réelle = Théorique * (1 + % perte)
+                $realQtyToExit = $theoreticalQty * (1 + ($wastageFactor / 100));
 
                 // Génération de la sortie pour l'article composant
                 $movements[] = $this->recordExit(
                     $component,
                     $warehouse,
-                    $neededQty,
+                    $realQtyToExit,
                     $projectId,
                     array_merge($options, [
                         'notes' => "Consommation via Ouvrage : {$ouvrage->name} (SKU: {$ouvrage->sku})",
                         'reference' => $options['reference'] ?? $ouvrage->sku,
-                        'ouvrage_id' => $ouvrage->id // Trace de l'origine pour l'audit
+                        'ouvrage_id' => $ouvrage->id, // Trace de l'origine pour l'audit
                     ])
                 );
             }
@@ -90,7 +95,7 @@ class StockMovementService
                 'status' => InventorySessionStatus::Open,
                 'opened_at' => now(),
                 'created_by' => Auth::id(),
-                'notes' => $notes
+                'notes' => $notes,
             ]);
 
             // Snapshot du stock théorique actuel pour ce dépôt
@@ -116,8 +121,8 @@ class StockMovementService
      */
     public function recordInventoryCount(InventorySession $session, Article $article, float $countedQty): void
     {
-        if (!in_array($session->status, [InventorySessionStatus::Open, InventorySessionStatus::Counting])) {
-            throw new Exception("La saisie est verrouillée pour cette session.");
+        if (! in_array($session->status, [InventorySessionStatus::Open, InventorySessionStatus::Counting])) {
+            throw new Exception('La saisie est verrouillée pour cette session.');
         }
 
         InventoryLine::updateOrCreate(
@@ -138,7 +143,7 @@ class StockMovementService
     {
         DB::transaction(function () use ($session) {
             if ($session->status === InventorySessionStatus::Validated) {
-                throw new Exception("Cette session a déjà été validée.");
+                throw new Exception('Cette session a déjà été validée.');
             }
 
             // On récupère les lignes présentant une différence
@@ -161,7 +166,7 @@ class StockMovementService
                 'status' => InventorySessionStatus::Validated,
                 'validated_at' => now(),
                 'validated_by' => Auth::id(),
-                'closed_at' => now()
+                'closed_at' => now(),
             ]);
         });
     }
@@ -177,7 +182,7 @@ class StockMovementService
             ->orWhere('sku', $code)
             ->first();
 
-        if (!$article) {
+        if (! $article) {
             throw new Exception("L'identifiant scanné ne correspond à aucun article du catalogue : {$code}");
         }
 
@@ -193,11 +198,11 @@ class StockMovementService
         $article = $this->resolveArticleByCode($scanData['scanned_code']);
 
         return match ($scanData['type']) {
-            StockMovementType::Entry->value      => $this->recordEntry($article, Warehouse::findOrFail($scanData['warehouse_id']), $scanData['quantity'], $scanData['unit_cost_ht'] ?? 0, $scanData),
-            StockMovementType::Exit->value       => $this->recordExit($article, Warehouse::findOrFail($scanData['warehouse_id']), $scanData['quantity'], $scanData['project_id'], $scanData),
-            StockMovementType::Return->value     => $this->recordReturn($article, Warehouse::findOrFail($scanData['warehouse_id']), $scanData['quantity'], $scanData['project_id'], $scanData),
+            StockMovementType::Entry->value => $this->recordEntry($article, Warehouse::findOrFail($scanData['warehouse_id']), $scanData['quantity'], $scanData['unit_cost_ht'] ?? 0, $scanData),
+            StockMovementType::Exit->value => $this->recordExit($article, Warehouse::findOrFail($scanData['warehouse_id']), $scanData['quantity'], $scanData['project_id'], $scanData),
+            StockMovementType::Return->value => $this->recordReturn($article, Warehouse::findOrFail($scanData['warehouse_id']), $scanData['quantity'], $scanData['project_id'], $scanData),
             StockMovementType::Adjustment->value => $this->recordAdjustment($article, Warehouse::findOrFail($scanData['warehouse_id']), $scanData['quantity'], $scanData['notes'] ?? null, $scanData),
-            default => throw new Exception("Action logistique non reconnue pour le mode scan."),
+            default => throw new Exception('Action logistique non reconnue pour le mode scan.'),
         };
     }
 
@@ -222,6 +227,7 @@ class StockMovementService
     public function recordEntry(Article $article, Warehouse $warehouse, float $qty, float $priceHt, array $options = []): StockMovement
     {
         $this->ensureWarehouseIsNotFrozen($warehouse);
+
         return DB::transaction(function () use ($article, $warehouse, $qty, $priceHt, $options) {
             $snId = null;
 
@@ -229,7 +235,7 @@ class StockMovementService
                 // Pour le matériel sérialisé, on force la quantité à 1 par scan
                 $snValue = $options['serial_number'] ?? ($options['scanned_code'] ?? null);
 
-                if (!$snValue) {
+                if (! $snValue) {
                     throw new Exception("Numéro de série manquant pour l'entrée du matériel.");
                 }
 
@@ -237,7 +243,7 @@ class StockMovementService
                     [
                         'tenants_id' => Auth::user()->tenants_id,
                         'article_id' => $article->id,
-                        'serial_number' => $snValue
+                        'serial_number' => $snValue,
                     ],
                     [
                         'warehouse_id' => $warehouse->id,
@@ -262,7 +268,7 @@ class StockMovementService
                 'quantity' => $qty,
                 'unit_cost_ht' => $priceHt,
                 'reference' => $options['reference'] ?? null,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
         });
     }
@@ -274,22 +280,23 @@ class StockMovementService
     public function recordExit(Article $article, Warehouse $warehouse, float $qty, int $projectId, array $options = []): StockMovement
     {
         $this->ensureWarehouseIsNotFrozen($warehouse);
-        if (!$this->inventoryService->hasEnoughStock($article, $warehouse, $qty)) {
+        if (! $this->inventoryService->hasEnoughStock($article, $warehouse, $qty)) {
             throw new Exception("Stock insuffisant dans le dépôt {$warehouse->name} pour l'article {$article->sku}.");
         }
+
         return DB::transaction(function () use ($article, $warehouse, $qty, $projectId, $options) {
             $snId = $options['serial_number_id'] ?? null;
 
             // Résolution automatique du SN si le code scanné correspond à un SN existant
-            if ($article->tracking_type === TrackingType::SerialNumber && !$snId) {
+            if ($article->tracking_type === TrackingType::SerialNumber && ! $snId) {
                 $snId = ArticleSerialNumber::where('serial_number', $options['scanned_code'] ?? '')
                     ->where('article_id', $article->id)
                     ->where('tenants_id', Auth::user()->tenants_id)
                     ->value('id');
             }
 
-            if ($article->tracking_type === TrackingType::SerialNumber && !$snId) {
-                throw new Exception("Veuillez flasher ou sélectionner un numéro de série valide pour ce matériel.");
+            if ($article->tracking_type === TrackingType::SerialNumber && ! $snId) {
+                throw new Exception('Veuillez flasher ou sélectionner un numéro de série valide pour ce matériel.');
             }
 
             if ($snId) {
@@ -304,7 +311,7 @@ class StockMovementService
                     'status' => SerialNumberStatus::Assigned,
                     'warehouse_id' => null,
                     'project_id' => $projectId,
-                    'assigned_user_id' => Auth::id()
+                    'assigned_user_id' => Auth::id(),
                 ]);
                 $qty = 1;
             }
@@ -321,7 +328,7 @@ class StockMovementService
                 'type' => StockMovementType::Exit,
                 'quantity' => $qty,
                 'unit_cost_ht' => $article->cump_ht,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
         });
     }
@@ -333,10 +340,11 @@ class StockMovementService
     public function recordReturn(Article $article, Warehouse $warehouse, float $qty, int $projectId, array $options = []): StockMovement
     {
         $this->ensureWarehouseIsNotFrozen($warehouse);
+
         return DB::transaction(function () use ($article, $warehouse, $qty, $projectId, $options) {
             $snId = $options['serial_number_id'] ?? null;
 
-            if ($article->tracking_type === TrackingType::SerialNumber && !$snId) {
+            if ($article->tracking_type === TrackingType::SerialNumber && ! $snId) {
                 $snId = ArticleSerialNumber::where('serial_number', $options['scanned_code'] ?? '')
                     ->where('article_id', $article->id)
                     ->value('id');
@@ -348,7 +356,7 @@ class StockMovementService
                     'status' => SerialNumberStatus::InStock,
                     'warehouse_id' => $warehouse->id,
                     'project_id' => null,
-                    'assigned_user_id' => null
+                    'assigned_user_id' => null,
                 ]);
                 $qty = 1;
             }
@@ -364,7 +372,7 @@ class StockMovementService
                 'type' => StockMovementType::Return,
                 'quantity' => $qty,
                 'unit_cost_ht' => $article->cump_ht,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
         });
     }
@@ -383,7 +391,7 @@ class StockMovementService
                 $sn->update([
                     'status' => $qty < 0 ? SerialNumberStatus::Lost : SerialNumberStatus::InStock,
                     'warehouse_id' => $qty < 0 ? null : $warehouse->id,
-                    'project_id' => null
+                    'project_id' => null,
                 ]);
             }
 
@@ -398,7 +406,7 @@ class StockMovementService
                 'quantity' => $qty,
                 'unit_cost_ht' => $article->cump_ht,
                 'notes' => $notes ?? 'Ajustement d\'inventaire scanné',
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
         });
     }
@@ -412,8 +420,8 @@ class StockMovementService
         $this->ensureWarehouseIsNotFrozen($from);
         $this->ensureWarehouseIsNotFrozen($to);
 
-        if (!$this->inventoryService->hasEnoughStock($article, $from, $qty)) {
-            throw new Exception("Transfert impossible : Stock source insuffisant.");
+        if (! $this->inventoryService->hasEnoughStock($article, $from, $qty)) {
+            throw new Exception('Transfert impossible : Stock source insuffisant.');
         }
         DB::transaction(function () use ($article, $from, $to, $qty, $options) {
             $snId = $options['serial_number_id'] ?? null;
@@ -435,7 +443,7 @@ class StockMovementService
                 'type' => StockMovementType::Transfer,
                 'quantity' => $qty,
                 'unit_cost_ht' => $article->cump_ht,
-                'user_id' => Auth::id()
+                'user_id' => Auth::id(),
             ]);
         });
     }
@@ -449,13 +457,13 @@ class StockMovementService
         if ($pivot) {
             $article->warehouses()->updateExistingPivot($warehouse->id, [
                 'quantity' => $pivot->pivot->quantity + $qtyDelta,
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
         } else {
             $article->warehouses()->attach($warehouse->id, [
                 'quantity' => $qtyDelta,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
         }
     }

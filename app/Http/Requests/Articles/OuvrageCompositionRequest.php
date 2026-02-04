@@ -11,6 +11,7 @@ class OuvrageCompositionRequest extends FormRequest
         return [
             'article_id' => ['required', 'exists:articles,id'],
             'quantity_needed' => ['required', 'numeric', 'gt:0'],
+            'wastage_factor_pct' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ];
     }
 

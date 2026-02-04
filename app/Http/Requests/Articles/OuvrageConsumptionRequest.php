@@ -15,6 +15,7 @@ class OuvrageConsumptionRequest extends FormRequest
             'project_id' => ['required', 'exists:projects,id'],
             'project_phase_id' => ['nullable', 'exists:project_phases,id'],
             'reference' => ['nullable', 'string', 'max:100'],
+            'wastage_factor_pct' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ];
     }
 

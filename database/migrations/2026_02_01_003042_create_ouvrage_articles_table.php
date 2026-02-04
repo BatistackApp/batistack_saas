@@ -15,6 +15,7 @@ return new class extends Migration {
             $table->foreignIdFor(Article::class)->constrained()->cascadeOnDelete();
 
             $table->decimal('quantity_needed', 15, 4);
+            $table->decimal('wastage_factor_pct', 5, 2)->default(5);
 
             $table->timestamps();
 
