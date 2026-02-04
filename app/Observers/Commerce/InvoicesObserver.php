@@ -40,7 +40,9 @@ class InvoicesObserver
 
     public function saving(Invoices $invoice): void
     {
-        // Recalcul de la retenue de garantie si le pourcentage change
-        app(FinancialCalculatorService::class)->updateDocumentTotals($invoice);
+        // On s'assure que les montants de retenues sont synchronisés avec les % et le total_ttc
+        if ($invoice->isDirty(['retenue_garantie_pct', 'compte_prorata_pct', 'total_ht', 'total_ttc'])) {
+            $this->calculator->applyInvoicingSpecifics($invoice);
+        }
     }
 }

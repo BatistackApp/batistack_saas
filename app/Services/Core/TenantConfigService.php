@@ -31,6 +31,7 @@ class TenantConfigService
                 'currency' => 'EUR',
                 'due_date_days' => 30,
                 'retenue_garantie_default_pct' => 5.00,
+                'compte_prorata_default_pct' => 80.00,
                 'quotes' => [
                     'validity_months' => 1,
                 ],
