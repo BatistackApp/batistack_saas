@@ -16,5 +16,11 @@ class QuoteObserver
             $count = Quote::whereYear('created_at', $year)->count() + 1;
             $quote->reference = "DEV-{$year}-".str_pad($count, 5, '0', STR_PAD_LEFT);
         }
+
+        // Validité par défaut (ex: 1 mois)
+        if (empty($quote->valid_until)) {
+            $months = TenantConfigService::get($quote->tenant, 'commerce.quotes.validity_months', 1);
+            $quote->valid_until = now()->addMonths($months);
+        }
     }
 }
