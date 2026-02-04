@@ -8,16 +8,14 @@ use App\Models\Commerce\InvoiceItem;
 use App\Models\Commerce\Invoices;
 use App\Models\Commerce\Quote;
 use App\Models\Commerce\QuoteItem;
+use App\Services\Core\DocumentManagementService;
 use DB;
 use Exception;
 use Log;
 
 class InvoicingService
 {
-
-    public function __construct(protected FinancialCalculatorService $calculator)
-    {
-    }
+    public function __construct(protected FinancialCalculatorService $calculator, protected DocumentManagementService $document) {}
 
     /**
      * Génère une nouvelle situation de travaux à partir d'un devis.
@@ -84,7 +82,7 @@ class InvoicingService
     public function validateInvoice(Invoices $invoice): Invoices
     {
         if ($invoice->status !== InvoiceStatus::Draft) {
-            throw new Exception("Seule une facture en brouillon peut être validée.");
+            throw new Exception('Seule une facture en brouillon peut être validée.');
         }
 
         return DB::transaction(function () use ($invoice) {
@@ -96,7 +94,7 @@ class InvoicingService
             $invoice->save();
 
             // 3. Génération du PDF (Placeholder pour l'étape future)
-            $this->generatePdf($invoice);
+            $this->document->generatePdf($invoice, 'pdf.commerce.invoices', 'invoices');
 
             Log::info("Facture scellée : {$invoice->reference} pour le client ID {$invoice->tiers_id}");
 
@@ -137,15 +135,6 @@ class InvoicingService
             $nextNumber = $lastNumber + 1;
         }
 
-        return "{$prefix}-{$year}-" . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * Génère le fichier PDF de la facture.
-     */
-    protected function generatePdf(Invoices $invoice): void
-    {
-        // Logique de génération PDF via Browsershot ou DomPDF ici
-        // storage_path("app/public/invoices/{$invoice->reference}.pdf");
+        return "{$prefix}-{$year}-".str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
 }

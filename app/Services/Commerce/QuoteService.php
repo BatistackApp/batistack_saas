@@ -55,37 +55,4 @@ class QuoteService
             return $newQuote;
         });
     }
-
-    public function generatePdf(Quote $quote): string
-    {
-        $tenantId = $quote->tenants_id;
-        $fileName = "quotes/{$quote->reference}.pdf";
-        $directory = "tenants/{$tenantId}/commerce/documents";
-        $fullPath = storage_path("app/public/{$directory}/{$fileName}");
-
-        // S'assurer que le dossier existe
-        if (!Storage::disk('public')->exists($directory)) {
-            Storage::disk('public')->makeDirectory($directory);
-        }
-
-        // Rendu de la vue Blade en HTML
-        $html = View::make('pdf.commerce.quote', [
-            'quote' => $quote->load(['customer', 'items', 'project']),
-            'tenant' => $quote->tenant
-        ])->render();
-
-        // Génération du PDF via Browsershot
-        Browsershot::html($html)
-            ->setNodeBinary(config('services.browsershot.node_path', '/usr/bin/node'))
-            ->setNpmBinary(config('services.browsershot.npm_path', '/usr/bin/npm'))
-            ->format('A4')
-            ->margins(10, 10, 10, 10)
-            ->showBackground()
-            ->save($fullPath);
-
-        // Mise à jour du chemin dans le modèle (pour la future GED)
-        $quote->update(['pdf_path' => "{$directory}/{$fileName}"]);
-
-        return $fullPath;
-    }
 }
