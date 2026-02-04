@@ -38,12 +38,19 @@ class Ouvrage extends Model
     }
 
     /**
-     * Coût de revient théorique de l'ouvrage.
-     * Basé sur le Coût Unitaire Moyen Pondéré (CUMP) actuel des articles composants.
+     * COÛT THÉORIQUE "PRUDENT"
+     * Calcule le coût en incluant les pertes et chutes définies dans la nomenclature.
      */
-    public function getTheoreticalCostAttribute(): float {
+    public function getTheoreticalCostAttribute(): float
+    {
         return (float) $this->components->sum(function($article) {
-            return (float) $article->pivot->quantity_needed * (float) $article->cump_ht;
+            $qty = (float) $article->pivot->quantity_needed;
+            $wastage = (float) ($article->pivot->wastage_factor_pct ?? 0);
+
+            // On valorise la quantité qui sera réellement déstockée
+            $realQty = $qty * (1 + ($wastage / 100));
+
+            return $realQty * (float) $article->cump_ht;
         });
     }
 }
