@@ -4,6 +4,7 @@ namespace App\Models\Commerce;
 
 use App\Enums\Commerce\InvoiceStatus;
 use App\Enums\Commerce\InvoiceType;
+use App\Models\Banque\Payment;
 use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Tiers\Tiers;
@@ -41,6 +42,11 @@ class Invoices extends Model
     public function items(): HasMany
     {
         return $this->hasMany(InvoiceItem::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 
     protected function casts(): array
