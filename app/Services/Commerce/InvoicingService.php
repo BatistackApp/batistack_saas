@@ -25,53 +25,95 @@ class InvoicingService
     {
         return DB::transaction(function () use ($quote, $situationNumber, $progressData) {
 
-            // 1. Création de l'entête de la facture
             $invoice = Invoices::create([
                 'tenants_id' => $quote->tenants_id,
                 'tiers_id' => $quote->customer_id,
                 'project_id' => $quote->project_id,
                 'quote_id' => $quote->id,
                 'type' => InvoiceType::Progress,
-                'reference' => 'SIT-'.$situationNumber.'-'.$quote->reference,
+                'reference' => 'TEMP-'.uniqid(),
                 'situation_number' => $situationNumber,
-                'due_date' => now()->addDays(30),
                 'status' => InvoiceStatus::Draft,
-                'retenue_garantie_pct' => 5.00, // Standard BTP
             ]);
 
-            $totalHtPeriod = 0;
-
-            // 2. Traitement des lignes d'avancement
             foreach ($progressData as $data) {
                 $quoteItem = QuoteItem::findOrFail($data['quote_item_id']);
-                $newTotalProgress = (float) $data['progress_percentage']; // Ex: 70%
+                $newTotalProgress = (float) $data['progress_percentage'];
 
-                // Calcul du montant déjà facturé sur cette ligne lors des situations précédentes
+                // Le montant déjà facturé inclura les avoirs éventuels
                 $alreadyInvoicedHt = $this->getAmountInvoicedToDate($quoteItem, $invoice->id);
 
-                // Calcul du montant brut cumulé souhaité
-                $cumulativeTotalHt = ($quoteItem->unit_price_ht * $quoteItem->quantity) * ($newTotalProgress / 100);
+                $targetCumulativeHt = ($quoteItem->unit_price_ht * $quoteItem->quantity) * ($newTotalProgress / 100);
+                $amountPeriodHt = $targetCumulativeHt - $alreadyInvoicedHt;
 
-                // Le montant de la période est la différence
-                $amountPeriodHt = $cumulativeTotalHt - $alreadyInvoicedHt;
-
-                if ($amountPeriodHt != 0) {
+                if (round($amountPeriodHt, 2) != 0) {
                     InvoiceItem::create([
                         'invoices_id' => $invoice->id,
                         'quote_item_id' => $quoteItem->id,
                         'label' => $quoteItem->label,
-                        'quantity' => 1, // Dans une situation, on raisonne souvent en montant
+                        'quantity' => 1,
                         'unit_price_ht' => $amountPeriodHt,
-                        'tax_rate' => 20.00,
+                        'tax_rate' => $quoteItem->tax_rate ?? 20.00,
                         'progress_percentage' => $newTotalProgress,
                     ]);
                 }
             }
 
-            // 3. Application des calculs finaux (Taxes, RG, Prorata)
             $this->calculator->updateDocumentTotals($invoice);
 
             return $invoice;
+        });
+    }
+
+    /**
+     * GÉNÉRATION D'UN AVOIR POUR SITUATION
+     * Crée un document qui annule financièrement une situation validée
+     * et réinitialise les droits à facturer sur le devis.
+     */
+    public function createCreditNoteFromSituation(Invoices $originalInvoice): Invoices
+    {
+        if ($originalInvoice->status === InvoiceStatus::Draft) {
+            throw new Exception('Impossible de créer un avoir pour une facture en brouillon. Supprimez-la simplement.');
+        }
+
+        if ($originalInvoice->type !== InvoiceType::Progress) {
+            throw new Exception('Ce workflow est réservé aux situations de travaux.');
+        }
+
+        return DB::transaction(function () use ($originalInvoice) {
+            // 1. Création de l'en-tête de l'Avoir
+            $creditNote = Invoices::create([
+                'tenants_id' => $originalInvoice->tenants_id,
+                'tiers_id' => $originalInvoice->tiers_id,
+                'project_id' => $originalInvoice->project_id,
+                'quote_id' => $originalInvoice->quote_id,
+                'type' => InvoiceType::CreditNote,
+                'reference' => 'AVO-'.$originalInvoice->reference,
+                'situation_number' => $originalInvoice->situation_number,
+                'status' => InvoiceStatus::Draft,
+                'due_date' => now(),
+                'notes' => "Avoir annulant et remplaçant la situation n°{$originalInvoice->situation_number} ({$originalInvoice->reference})",
+                'retenue_garantie_pct' => $originalInvoice->retenue_garantie_pct,
+                'compte_prorata_pct' => $originalInvoice->compte_prorata_pct,
+            ]);
+
+            // 2. Création des lignes négatives (Miroir)
+            foreach ($originalInvoice->items as $item) {
+                InvoiceItem::create([
+                    'invoices_id' => $creditNote->id,
+                    'quote_item_id' => $item->quote_item_id,
+                    'label' => 'Annulation : '.$item->label,
+                    'quantity' => $item->quantity,
+                    'unit_price_ht' => -$item->unit_price_ht, // Inversion du signe
+                    'tax_rate' => $item->tax_rate,
+                    'progress_percentage' => 0, // On remet l'avancement cumulé à zéro pour cette pièce
+                ]);
+            }
+
+            // 3. Calcul des totaux via le service centralisé
+            $this->calculator->updateDocumentTotals($creditNote);
+
+            return $creditNote;
         });
     }
 
@@ -107,9 +149,10 @@ class InvoicingService
      */
     public function getAmountInvoicedToDate(QuoteItem $quoteItem, ?int $excludeInvoiceId = null): float
     {
+        // La somme algébrique gère nativement les avoirs (positif + négatif = 0)
         return (float) InvoiceItem::where('quote_item_id', $quoteItem->id)
             ->whereHas('invoices', function ($q) use ($excludeInvoiceId) {
-                $q->where('status', '!=', InvoiceStatus::Draft) // On ne compte que le validé/payé
+                $q->whereIn('status', [InvoiceStatus::Validated, InvoiceStatus::Paid, InvoiceStatus::PartiallyPaid])
                     ->when($excludeInvoiceId, fn ($query) => $query->where('id', '!=', $excludeInvoiceId));
             })
             ->sum(DB::raw('quantity * unit_price_ht'));
@@ -151,7 +194,7 @@ class InvoicingService
     public function setTheoreticalReleaseDate(Invoices $invoice, \DateTime $receptionDate): void
     {
         $invoice->update([
-            'retenue_garantie_release_date' => $receptionDate->modify('+1 year')
+            'retenue_garantie_release_date' => $receptionDate->modify('+1 year'),
         ]);
     }
 
@@ -160,7 +203,11 @@ class InvoicingService
      */
     protected function generateFinalReference(Invoices $invoice): string
     {
-        $prefix = $invoice->type === InvoiceType::Progress ? 'SIT' : 'FAC';
+        $prefix = match ($invoice->type) {
+            InvoiceType::Progress => 'SIT',
+            InvoiceType::CreditNote => 'AVO',
+            default => 'FAC'
+        };
         $year = now()->year;
 
         // On cherche le dernier numéro pour l'année en cours
