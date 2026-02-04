@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\Commerce\InvoiceStatus;
+use App\Models\Commerce\Invoices;
 use App\Models\Commerce\Quote;
 use App\Models\Core\Tenants;
 use App\Models\User;
@@ -31,4 +33,25 @@ it('génère des références chronologiques distinctes par tenant', function ()
     // Les deux doivent avoir le numéro 00001 pour leur tenant respectif
     expect($quoteA->reference)->toContain('00001')
         ->and($quoteB->reference)->toContain('00001');
+});
+
+it('scelle la référence de facture uniquement lors de la validation', function () {
+    $tenant = Tenants::factory()->create();
+    $user = User::factory()->create(['tenants_id' => $tenant->id]);
+
+    $invoice = Invoices::factory()->create([
+        'tenants_id' => $tenant->id,
+        'status' => InvoiceStatus::Draft,
+        'reference' => 'TEMP-XYZ',
+    ]);
+
+    // Action : Validation via le contrôleur
+    $response = $this->actingAs($user)
+        ->postJson("/api/commerce/invoices/{$invoice->id}/validate");
+
+    $response->assertStatus(200);
+
+    $invoice->refresh();
+    expect($invoice->status)->toBe(InvoiceStatus::Validated)
+        ->and($invoice->reference)->toMatch('/SIT-\d{4}-\d{5}/');
 });

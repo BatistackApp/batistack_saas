@@ -22,3 +22,7 @@
 }
 
 @variant dark (&:where(.dark, .dark *));
+
+.page-break {
+    page-break-after: always;
+}
