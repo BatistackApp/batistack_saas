@@ -28,6 +28,11 @@ return new class extends Migration {
 
             $table->decimal('retenue_garantie_pct', 5, 2)->default(0);
             $table->decimal('retenue_garantie_amount', 15, 2)->default(0);
+            $table->date('retenue_garantie_release_date')->nullable();
+            $table->boolean('is_retenue_garantie_released')->default(false);
+            $table->timestamp('retenue_garantie_released_at')->nullable();
+            $table->string('reception_report_path')->nullable();
+
             $table->decimal('compte_prorata_amount', 15, 2)->default(0);
             $table->boolean('is_autoliquidation')->default(false);
 
