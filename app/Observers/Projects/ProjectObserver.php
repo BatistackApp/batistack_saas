@@ -9,6 +9,7 @@ use App\Jobs\Projects\TriggerProjectPlanningJob;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectStatusHistory;
 use App\Notifications\Projects\ProjectSuspendedNotification;
+use App\Services\Core\DocumentManagementService;
 use Auth;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
@@ -16,6 +17,8 @@ use Illuminate\Validation\ValidationException;
 
 class ProjectObserver
 {
+    public function __construct(protected DocumentManagementService $documentService) {}
+
     public function creating(Project $project): void
     {
         if (empty($project->code_project)) {
@@ -61,6 +64,7 @@ class ProjectObserver
                 'reason' => $project->status === ProjectStatus::Suspended ? $project->suspension_reason->value : null,
                 'changed_at' => now(),
             ]);
+
             // Notification spécifique pour le statut 'Accepted'
             if ($project->status === ProjectStatus::Accepted) {
                 // Notifier Achats & Planification
@@ -68,9 +72,13 @@ class ProjectObserver
                 dispatch(new InitializeProjectProcurementJob($project));
             }
 
-            // Si suspendu, vérifier que la raison est renseignée
-            if ($project->status === ProjectStatus::Suspended && !$project->suspension_reason) {
-                // Logique d'alerte ou rollback
+            // Note: On utilise ici un statut d'enum supposé "Completed"
+            if ($project->status === ProjectStatus::Finished) {
+                $this->documentService->generatePdf(
+                    $project,
+                    'pdf.projects.pv_reception',
+                    'projects/reports'
+                );
             }
         }
     }

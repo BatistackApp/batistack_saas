@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Enums\Commerce\QuoteStatus;
+use App\Jobs\Commerce\CheckRetenueGarantieReleaseJob;
 use App\Jobs\Commerce\ProcessOverdueInvoicesJob;
 use App\Models\Commerce\Quote;
 use Illuminate\Console\Scheduling\Schedule;
@@ -29,6 +30,11 @@ class CommerceServiceProvider extends ServiceProvider
                     ->where('valid_until', '<', now())
                     ->update(['status' => QuoteStatus::Lost]);
             })->dailyAt('01:00');
+
+            // Vérifie les retenues de garantie arrivant à échéance et envoie des notifications.
+            $schedule->job(new CheckRetenueGarantieReleaseJob)
+                ->dailyAt('09:00')
+                ->onOneServer();
         });
     }
 }

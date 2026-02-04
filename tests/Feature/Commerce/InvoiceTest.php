@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\Commerce\InvoiceStatus;
+use App\Enums\Commerce\InvoiceType;
 use App\Models\Commerce\Invoices;
 use App\Models\Commerce\Quote;
 use App\Models\Commerce\QuoteItem;
@@ -87,4 +88,51 @@ it('déduit correctement la retenue de garantie du net à payer', function () {
     expect((float) $invoice->total_ttc)->toBe(1200.0)
         ->and((float) $invoice->retenue_garantie_amount)->toBe(60.0)
         ->and((float) $invoice->net_to_pay)->toBe(1140.0);
+});
+
+it('permet de réinitialiser l\'avancement d\'un devis via un avoir', function () {
+    $tenant = Tenants::factory()->create();
+    $user = User::factory()->create(['tenants_id' => $tenant->id]);
+
+    // 1. Création d'un devis (10 000€)
+    $quote = Quote::factory()->create(['tenants_id' => $tenant->id]);
+    $item = QuoteItem::create([
+        'quote_id' => $quote->id,
+        'label' => 'Maçonnerie',
+        'quantity' => 1,
+        'unit_price_ht' => 10000,
+        'tax_rate' => 20
+    ]);
+
+    // 2. Création Situation n°1 (50% = 5000€)
+    $this->actingAs($user)->postJson('/api/commerce/invoices/progress', [
+        'quote_id' => $quote->id,
+        'situation_number' => 1,
+        'progress_data' => [['quote_item_id' => $item->id, 'progress_percentage' => 50]]
+    ]);
+
+    $sit1 = Invoices::where('situation_number', 1)->first();
+    // On valide la situation pour pouvoir créer l'avoir
+    $this->actingAs($user)->postJson("/api/commerce/invoices/{$sit1->id}/validate");
+    $sit1->refresh();
+
+    // 3. Création de l'Avoir pour annuler la Sit 1
+    $this->actingAs($user)->postJson("/api/commerce/invoices/{$sit1->id}/credit-note");
+
+    $avoir = Invoices::where('type', InvoiceType::CreditNote)->first();
+    expect((float) $avoir->total_ht)->toBe(-5000.0);
+
+    // Validation de l'avoir
+    $this->actingAs($user)->postJson("/api/commerce/invoices/{$avoir->id}/validate");
+
+    // 4. Vérification : Si je recrée une situation n°1 (rectifiée) à 30%
+    // Le montant facturé doit être 3000€ (car Cumul précédent = 5000 - 5000 = 0)
+    $response = $this->actingAs($user)->postJson('/api/commerce/invoices/progress', [
+        'quote_id' => $quote->id,
+        'situation_number' => 1,
+        'progress_data' => [['quote_item_id' => $item->id, 'progress_percentage' => 30]]
+    ]);
+
+    $sit1Bis = Invoices::where('situation_number', 1)->latest()->first();
+    expect((float) $sit1Bis->total_ht)->toBe(3000.0);
 });

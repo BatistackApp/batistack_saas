@@ -56,16 +56,21 @@ class FinancialCalculatorService
     {
         $tenant = $invoice->tenant;
 
-        // Récupération du taux de RG (soit celui du doc, soit défaut tenant)
+        // 1. Gestion de la Retenue de Garantie (sur TTC)
         $rgPct = $invoice->retenue_garantie_pct > 0
             ? $invoice->retenue_garantie_pct
-            : TenantConfigService::get($tenant, 'commerce.invoices.retenue_garantie_pct', 5.00);
+            : TenantConfigService::get($tenant, 'commerce.invoices.retenue_garantie_default_pct', 5.00);
 
-        $rgAmount = round($invoice->total_ttc * ($rgPct / 100), 2);
+        // 2. Gestion du Compte Prorata (sur HT - usage standard)
+        $prorataPct = $invoice->compte_prorata_pct > 0
+            ? $invoice->compte_prorata_pct
+            : TenantConfigService::get($tenant, 'commerce.invoices.compte_prorata_default_pct', 0.00);
 
         $invoice->update([
-            'retenue_garantie_amount' => $rgAmount,
-            // Note: net_to_pay est un accesseur dans le modèle, pas besoin de le persister ici
+            'retenue_garantie_pct' => $rgPct,
+            'retenue_garantie_amount' => round($invoice->total_ttc * ($rgPct / 100), 2),
+            'compte_prorata_pct' => $prorataPct,
+            'compte_prorata_amount' => round($invoice->total_ht * ($prorataPct / 100), 2),
         ]);
     }
 
