@@ -2,27 +2,57 @@
 
 namespace App\Models\Fleet;
 
-use App\Models\Core\Tenants;
+use App\Enums\Fleet\FuelType;
+use App\Enums\Fleet\VehicleType;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Vehicle extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasTenant, SoftDeletes;
 
-    public function tenants(): BelongsTo
-    {
-        return $this->belongsTo(Tenants::class);
-    }
+    protected $guarded = [];
 
     protected function casts(): array
     {
         return [
+            'type' => VehicleType::class,
+            'fuel_type' => FuelType::class,
+            'is_active' => 'boolean',
+            'current_odometer' => 'decimal:2',
             'purchase_date' => 'date',
             'last_external_sync_at' => 'datetime',
-            'is_active' => 'boolean',
         ];
+    }
+
+    public function assignments(): HasMany
+    {
+        return $this->hasMany(VehicleAssignment::class);
+    }
+
+    public function inspections(): HasMany
+    {
+        return $this->hasMany(VehicleInspection::class);
+    }
+
+    public function consumptions(): HasMany
+    {
+        return $this->hasMany(VehicleConsumption::class);
+    }
+
+    public function tolls(): HasMany
+    {
+        return $this->hasMany(VehicleToll::class);
+    }
+
+    public function currentAssignment(): BelongsTo
+    {
+        return $this->belongsTo(VehicleAssignment::class, 'id', 'vehicle_id')
+            ->whereNull('ended_at')
+            ->latest();
     }
 }
