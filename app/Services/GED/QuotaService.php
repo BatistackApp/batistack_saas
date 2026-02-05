@@ -3,59 +3,52 @@
 namespace App\Services\GED;
 
 use App\Models\Core\Tenants;
-use DB;
 
 class QuotaService
 {
-    const int BASE_QUOTA_BYTES = 1073741824;
-
-    /**
-     * Calcule l'utilisation actuelle du stockage pour un Tenant.
-     */
-    public function getUsedStorage(int $tenantId): int
+    public function canUpload(Tenants $tenant, int $fileSize): bool
     {
-        return (int) DB::table('documents')
-            ->where('tenant_id', $tenantId)
-            ->whereNull('deleted_at')
-            ->sum('size');
+        $limit = $this->getStorageLimit($tenant);
+        $used = $tenant->storage_used;
+
+        return ($used + $fileSize) <= $limit;
     }
 
-    /**
-     * Récupère la limite autorisée pour le Tenant.
-     * Intègre la logique de vérification des abonnements supplémentaires.
-     */
+    public function incrementUsedStorage(Tenants $tenant, int $amount): void
+    {
+        $tenant->increment('storage_used', $amount);
+    }
+
+    public function decrementUsedStorage(Tenants $tenant, int $amount): void
+    {
+        $tenant->decrement('storage_used', $amount);
+    }
+
     public function getStorageLimit(Tenants $tenant): int
     {
-        // Logique métier : On vérifie si le tenant possède une option "extra_storage"
-        // Ceci est un exemple d'intégration avec le module Core/SAAS
-        $extraLimit = 0;
-
-        if (isset($tenant->options['extra_storage_gb'])) {
-            $extraLimit = $tenant->options['extra_storage_gb'] * 1024 * 1024 * 1024;
-        }
-
-        return self::BASE_QUOTA_BYTES + $extraLimit;
+        return $tenant->plan->storage_limit ?? (5 * 1024 * 1024 * 1024); // 5 Go par défaut
     }
 
-    /**
-     * Vérifie si un nouveau fichier peut être ajouté.
-     */
-    public function canUpload(Tenants $tenant, int $newFileSize): bool
+    public function getUsageStats(Tenants $tenant): array
     {
-        $used = $this->getUsedStorage($tenant->id);
         $limit = $this->getStorageLimit($tenant);
+        $used = $tenant->storage_used;
 
-        return ($used + $newFileSize) <= $limit;
+        return [
+            'used_bytes' => $used,
+            'limit_bytes' => $limit,
+            'used_human' => $this->formatBytes($used),
+            'limit_human' => $this->formatBytes($limit),
+            'percentage' => $limit > 0 ? round(($used / $limit) * 100, 2) : 0,
+        ];
     }
 
-    /**
-     * Retourne le pourcentage d'utilisation.
-     */
-    public function getUsagePercentage(Tenants $tenant): float
+    private function formatBytes(int $bytes): string
     {
-        $limit = $this->getStorageLimit($tenant);
-        if ($limit === 0) return 0;
-
-        return round(($this->getUsedStorage($tenant->id) / $limit) * 100, 2);
+        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        $bytes /= (1 << (10 * $pow));
+        return round($bytes, 2) . ' ' . $units[$pow];
     }
 }

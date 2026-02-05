@@ -7,6 +7,7 @@ use App\Http\Controllers\Fleet\VehicleAssignmentController;
 use App\Http\Controllers\Fleet\VehicleConsumptionController;
 use App\Http\Controllers\Fleet\VehicleController;
 use App\Http\Controllers\Fleet\VehicleInspectionController;
+use App\Http\Controllers\GED\DocumentController;
 use App\Http\Controllers\HR\EmployeeController;
 use App\Http\Controllers\HR\TimeEntryController;
 use Illuminate\Http\Request;
@@ -96,6 +97,22 @@ Route::prefix('hr')->group(function () {
     Route::get('employees/{employee}/time-entries', function (\App\Models\HR\Employee $employee) {
         return response()->json($employee->timeEntries()->latest()->get());
     })->name('employees.time-entries');
+});
+
+Route::prefix('ged')->group(function () {
+    // Explorateur et recherche
+    Route::get('/', [DocumentController::class, 'index']);
+
+    // Documents
+    Route::post('/upload', [DocumentController::class, 'store']);
+    Route::get('/download/{document}', [DocumentController::class, 'download']);
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy']);
+
+    // Dossiers
+    Route::post('/folders', [DocumentController::class, 'storeFolder']);
+
+    // Actions de masse
+    Route::post('/bulk', [DocumentController::class, 'bulk']);
 });
 
 // Gestion des comptes bancaires

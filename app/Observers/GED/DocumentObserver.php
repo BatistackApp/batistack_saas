@@ -1,0 +1,41 @@
+<?php
+
+namespace App\Observers\GED;
+
+use App\Models\GED\Document;
+use App\Notifications\GED\QuotaWarningNotification;
+use App\Services\GED\QuotaService;
+use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
+
+class DocumentObserver
+{
+    public function __construct(protected QuotaService $quotaService) {}
+    public function created(Document $document): void
+    {
+        $tenant = $document->tenant;
+        $usage = $this->quotaService->getUsagePercentage($tenant);
+
+        // Si on dépasse 80%, on alerte les administrateurs du Tenant
+        if ($usage >= 80) {
+            $admins = $tenant->users()->where('role', 'admin')->get();
+            Notification::send($admins, new QuotaWarningNotification($tenant, $usage));
+        }
+
+        // Lancer le Job de génération de miniature
+        \App\Jobs\GED\GenerateThumbnailJob::dispatch($document);
+    }
+
+    public function forceDeleted(Document $document): void
+    {
+        if ($document->file_path && Storage::disk('private')->exists($document->file_path)) {
+            Storage::disk('private')->delete($document->file_path);
+        }
+
+        // Supprimer aussi la miniature si elle existe
+        $thumbPath = 'thumbnails/' . $document->file_name;
+        if (Storage::disk('private')->exists($thumbPath)) {
+            Storage::disk('private')->delete($thumbPath);
+        }
+    }
+}
