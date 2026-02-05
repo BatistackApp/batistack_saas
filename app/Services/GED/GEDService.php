@@ -26,7 +26,15 @@ class GEDService
     public function uploadForResource(UploadedFile $file, Model $resource, array $options = []): Document
     {
         $tenant = auth()->user()->tenant;
-        $this->checkQuota($tenant, $file->getSize());
+
+        // Vérifier le quota avant upload
+        if (!$this->quotaService->canUpload($tenant, $file->getSize())) {
+            throw new QuotaExceededException(
+                $tenant->storage_used,
+                $file->getSize(),
+                $this->quotaService->getStorageLimit($tenant)
+            );
+        }
 
         $resourceType = Str::plural(strtolower(class_basename($resource)));
         $path = "tenants/{$tenant->id}/{$resourceType}/{$resource->id}";
@@ -45,11 +53,14 @@ class GEDService
     {
         $tenant = auth()->user()->tenant;
         $fileSize = $file->getSize();
-        $fileName = $file->getClientOriginalName();
 
         // 1. Vérification du quota avant upload
         if (!$this->quotaService->canUpload($tenant, $fileSize)) {
-            throw new QuotaExceededException($tenant->storage_used, $fileSize, $this->quotaService->getStorageLimit($tenant));
+            throw new QuotaExceededException(
+                $tenant->storage_used,
+                $fileSize,
+                $this->quotaService->getStorageLimit($tenant)
+            );
         }
 
         // 2. Préparation du chemin de stockage (Partitionné par Tenant)
@@ -59,7 +70,7 @@ class GEDService
         }
 
         // 3. Stockage physique (S3 ou Local selon config)
-        $storedPath = $file->store($path, 'public'); // On force 's3' ou on utilise le driver par défaut
+        $storedPath = $file->store($path, 'public');
 
         // 4. Enregistrement en base de données
         $document = Document::create([
@@ -68,7 +79,7 @@ class GEDService
             'folder_id' => $data['folder_id'] ?? null,
             'name'      => $file->getClientOriginalName(),
             'file_path' => $storedPath,
-            'file_name' => $fileName,
+            'file_name' => $file->getClientOriginalName(),
             'size' => $fileSize,
             'mime_type' => $file->getMimeType(),
             'extension' => $file->getClientOriginalExtension(),
@@ -78,7 +89,7 @@ class GEDService
             ]
         ]);
 
-        // 5. Mise à jour du quota consommé
+        // 5. Mise à jour du quota consommé (UNIQUE SOURCE DE VÉRITÉ)
         $this->quotaService->incrementUsedStorage($tenant, $fileSize);
 
         return $document;
@@ -102,9 +113,9 @@ class GEDService
     }
 
     /**
-     * Supprime le dossier
+     * Supprime le dossier et tous ses documents
      */
-    public function deleteFolder(DocumentFolder $folder, Tenants $tenant):void
+    public function deleteFolder(DocumentFolder $folder, Tenants $tenant): void
     {
         // 1. Récupérer tous les documents du dossier
         $documents = $folder->documents()->get();
@@ -149,15 +160,12 @@ class GEDService
     public function getQuotaStats(): array
     {
         $tenant = auth()->user()->tenant;
-        return [
-            'used_bytes' => (int) $tenant->storage_used,
-            'limit_bytes' => 5 * 1024 * 1024 * 1024, // Exemple : 5Go, à lier à votre Plan SAAS
-            'percentage' => round(($tenant->storage_used / (5 * 1024 * 1024 * 1024)) * 100, 2)
-        ];
+        return $this->quotaService->getUsageStats($tenant);
     }
 
     /**
      * Logique commune de stockage et création d'entrée en DB
+     * La gestion du quota est externalisée à QuotaService
      */
     protected function processUpload(UploadedFile $file, Tenants $tenant, string $path, array $data): Document
     {
@@ -176,21 +184,10 @@ class GEDService
                 'extension' => $file->getExtension(),
             ], $data));
 
-            // Mise à jour du quota en temps réel
-            $tenant->increment('storage_used', $file->getSize());
+            // Mise à jour du quota via QuotaService (UNIQUE SOURCE DE VÉRITÉ)
+            $this->quotaService->incrementUsedStorage($tenant, $file->getSize());
 
             return $document;
         });
-    }
-
-    /**
-     * Vérifie si le tenant a encore de la place
-     */
-    protected function checkQuota(Tenants $tenant, int $newFileSize): void
-    {
-        $limit = 5 * 1024 * 1024 * 1024; // À récupérer depuis le Plan du Tenant
-        if (($tenant->storage_used + $newFileSize) > $limit) {
-            throw new QuotaExceededException($tenant->storage_used, $newFileSize, $limit);
-        }
     }
 }

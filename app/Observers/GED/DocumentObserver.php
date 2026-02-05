@@ -29,14 +29,14 @@ class DocumentObserver
 
     public function forceDeleted(Document $document): void
     {
-        if ($document->file_path && Storage::disk('private')->exists($document->file_path)) {
-            Storage::disk('private')->delete($document->file_path);
+        if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+            Storage::disk('public')->delete($document->file_path);
         }
 
         // Supprimer aussi la miniature si elle existe
         $thumbPath = 'thumbnails/' . $document->file_name;
-        if (Storage::disk('private')->exists($thumbPath)) {
-            Storage::disk('private')->delete($thumbPath);
+        if (Storage::disk('public')->exists($thumbPath)) {
+            Storage::disk('public')->delete($thumbPath);
         }
     }
 }
