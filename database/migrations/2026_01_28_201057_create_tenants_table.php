@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->json('settings')->nullable();
             $table->timestamp('activated_at')->nullable();
             $table->timestamp('suspended_at')->nullable();
+            $table->bigInteger('storage_used')->default(0);
             $table->timestamps();
             $table->softDeletes();
 
