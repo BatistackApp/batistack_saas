@@ -2,10 +2,15 @@
 
 namespace App\Services\GED;
 
+use App\Exceptions\GED\QuotaExceededException;
 use App\Models\Core\Tenants;
 use App\Models\GED\Document;
+use App\Models\GED\DocumentFolder;
+use DB;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GEDService
@@ -15,16 +20,36 @@ class GEDService
     ) {}
 
     /**
+     * Upload un document lié à une ressource spécifique (Projet, Employé, etc.)
+     * Respecte la structure : tenants/{tenant_id}/{resource_type}/{resource_id}/file
+     */
+    public function uploadForResource(UploadedFile $file, Model $resource, array $options = []): Document
+    {
+        $tenant = auth()->user()->tenant;
+        $this->checkQuota($tenant, $file->getSize());
+
+        $resourceType = Str::plural(strtolower(class_basename($resource)));
+        $path = "tenants/{$tenant->id}/{$resourceType}/{$resource->id}";
+
+        return $this->processUpload($file, $tenant, $path, [
+            'documentable_type' => get_class($resource),
+            'documentable_id'   => $resource->id,
+            'folder_id'         => $options['folder_id'] ?? null,
+        ]);
+    }
+
+    /**
      * Gère l'upload complet d'un document
      */
     public function uploadDocument(UploadedFile $file, array $data): Document
     {
         $tenant = auth()->user()->tenant;
         $fileSize = $file->getSize();
+        $fileName = $file->getClientOriginalName();
 
         // 1. Vérification du quota avant upload
         if (!$this->quotaService->canUpload($tenant, $fileSize)) {
-            throw new \Exception("Quota d'espace de stockage atteint pour votre entreprise.");
+            throw new QuotaExceededException($tenant->storage_used, $fileSize, $this->quotaService->getStorageLimit($tenant));
         }
 
         // 2. Préparation du chemin de stockage (Partitionné par Tenant)
@@ -38,15 +63,15 @@ class GEDService
 
         // 4. Enregistrement en base de données
         $document = Document::create([
-            'tenant_id' => $tenant->id,
+            'tenants_id' => $tenant->id,
             'user_id'   => auth()->id(),
             'folder_id' => $data['folder_id'] ?? null,
             'name'      => $file->getClientOriginalName(),
             'file_path' => $storedPath,
+            'file_name' => $fileName,
             'size' => $fileSize,
             'mime_type' => $file->getMimeType(),
             'extension' => $file->getClientOriginalExtension(),
-            'description' => $data['description'] ?? null,
             'metadata'  => [
                 'original_name' => $file->getClientOriginalName(),
                 'uploaded_at'   => now()->toIso8601String(),
@@ -77,6 +102,29 @@ class GEDService
     }
 
     /**
+     * Supprime le dossier
+     */
+    public function deleteFolder(DocumentFolder $folder, Tenants $tenant):void
+    {
+        // 1. Récupérer tous les documents du dossier
+        $documents = $folder->documents()->get();
+
+        // 2. Supprimer chaque document (fichier + DB + quota)
+        foreach ($documents as $document) {
+            $this->deleteDocument($document);
+        }
+
+        // 3. Supprimer le dossier physique S3 (s'il existe)
+        $folderPath = "tenants/{$tenant->id}/ged/folder-{$folder->id}";
+        if (Storage::disk('public')->exists($folderPath)) {
+            Storage::disk('public')->deleteDirectory($folderPath);
+        }
+
+        // 4. Supprimer le dossier de la base de données
+        $folder->delete();
+    }
+
+    /**
      * Génère une réponse de téléchargement sécurisée
      */
     public function downloadDocument(Document $document): StreamedResponse
@@ -93,5 +141,56 @@ class GEDService
     public function getTenantQuota(Tenants $tenant): array
     {
         return $this->quotaService->getUsageStats($tenant);
+    }
+
+    /**
+     * Récupère les statistiques de quota pour le tenant actuel
+     */
+    public function getQuotaStats(): array
+    {
+        $tenant = auth()->user()->tenant;
+        return [
+            'used_bytes' => (int) $tenant->storage_used,
+            'limit_bytes' => 5 * 1024 * 1024 * 1024, // Exemple : 5Go, à lier à votre Plan SAAS
+            'percentage' => round(($tenant->storage_used / (5 * 1024 * 1024 * 1024)) * 100, 2)
+        ];
+    }
+
+    /**
+     * Logique commune de stockage et création d'entrée en DB
+     */
+    protected function processUpload(UploadedFile $file, Tenants $tenant, string $path, array $data): Document
+    {
+        return DB::transaction(function () use ($file, $tenant, $path, $data) {
+            $fileName = $file->getClientOriginalName();
+            $storagePath = Storage::disk('public')->putFileAs($path, $file, $fileName);
+
+            $document = Document::create(array_merge([
+                'name' => $fileName,
+                'tenants_id' => $tenant->id,
+                'file_name' => $fileName,
+                'file_path' => $storagePath,
+                'size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'user_id' => auth()->id(),
+                'extension' => $file->getExtension(),
+            ], $data));
+
+            // Mise à jour du quota en temps réel
+            $tenant->increment('storage_used', $file->getSize());
+
+            return $document;
+        });
+    }
+
+    /**
+     * Vérifie si le tenant a encore de la place
+     */
+    protected function checkQuota(Tenants $tenant, int $newFileSize): void
+    {
+        $limit = 5 * 1024 * 1024 * 1024; // À récupérer depuis le Plan du Tenant
+        if (($tenant->storage_used + $newFileSize) > $limit) {
+            throw new QuotaExceededException($tenant->storage_used, $newFileSize, $limit);
+        }
     }
 }

@@ -15,6 +15,6 @@ class DocumentFolder extends Model
 
     public function documents(): HasMany
     {
-        return $this->hasMany(Document::class);
+        return $this->hasMany(Document::class, 'folder_id');
     }
 }

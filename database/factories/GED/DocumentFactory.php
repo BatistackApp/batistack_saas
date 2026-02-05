@@ -14,7 +14,7 @@ class DocumentFactory extends Factory
     public function definition(): array
     {
         return [
-            'tenant_id' => Tenants::factory(),
+            'tenants_id' => Tenants::factory(),
             'user_id' => User::factory(),
             'name' => $this->faker->word().'.pdf',
             'file_path' => 'documents/'.$this->faker->uuid(),

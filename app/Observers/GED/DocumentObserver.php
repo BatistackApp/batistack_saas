@@ -4,17 +4,18 @@ namespace App\Observers\GED;
 
 use App\Models\GED\Document;
 use App\Notifications\GED\QuotaWarningNotification;
+use App\Services\GED\GEDService;
 use App\Services\GED\QuotaService;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
 class DocumentObserver
 {
-    public function __construct(protected QuotaService $quotaService) {}
+    public function __construct(protected QuotaService $quotaService, protected GEDService $service) {}
     public function created(Document $document): void
     {
         $tenant = $document->tenant;
-        $usage = $this->quotaService->getUsagePercentage($tenant);
+        $usage = $this->service->getQuotaStats()['percentage'];
 
         // Si on dépasse 80%, on alerte les administrateurs du Tenant
         if ($usage >= 80) {
