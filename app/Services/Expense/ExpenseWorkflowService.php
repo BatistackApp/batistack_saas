@@ -7,8 +7,13 @@ use App\Exceptions\Expense\ApprovalExpenseException;
 use App\Exceptions\Expense\EmptyReportException;
 use App\Exceptions\Expense\ReportLockedException;
 use App\Exceptions\Expense\SubmitExpenseException;
+use App\Jobs\Expense\ProcessChantierImputationJob;
 use App\Models\Expense\ExpenseReport;
+use App\Models\User;
+use App\Notifications\Expense\ExpenseStatusChangedNotification;
+use App\Notifications\Expense\ExpenseSubmittedNotification;
 use DB;
+use Illuminate\Support\Facades\Notification;
 
 class ExpenseWorkflowService
 {
@@ -35,6 +40,9 @@ class ExpenseWorkflowService
             'status' => ExpenseStatus::Submitted,
             'submitted_at' => now(),
         ]);
+
+        $validators = User::permission('validate-expenses')->get();
+        Notification::send($validators, new ExpenseSubmittedNotification($report));
     }
 
     /**
@@ -43,7 +51,7 @@ class ExpenseWorkflowService
      */
     public function approve(ExpenseReport $report, int $validatorId): void
     {
-        if ($report->status !== ExpenseStatus::SUBMITTED) {
+        if ($report->status !== ExpenseStatus::Submitted) {
             throw new ApprovalExpenseException("Cette note de frais n'est pas en attente de validation.");
         }
 
@@ -53,8 +61,8 @@ class ExpenseWorkflowService
                 'validated_at' => now(),
                 'validated_by' => $validatorId,
             ]);
-
-            app(ChantierImputationService::class)->imputeReportToChantiers($report);
+            ProcessChantierImputationJob::dispatch($report);
+            $report->user->notify(new ExpenseStatusChangedNotification($report));
         });
     }
 
@@ -72,5 +80,7 @@ class ExpenseWorkflowService
             'status' => ExpenseStatus::Rejected,
             'submitted_at' => null,
         ]);
+
+        $report->user->notify(new ExpenseStatusChangedNotification($report));
     }
 }

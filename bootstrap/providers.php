@@ -10,4 +10,5 @@ return [
     App\Providers\BankServiceProvider::class,
     App\Providers\FleetServiceProvider::class,
     App\Providers\HumanResourceServiceProvider::class,
+    App\Providers\ExpenseServiceProvider::class,
 ];
