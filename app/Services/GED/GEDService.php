@@ -69,30 +69,7 @@ class GEDService
             $path .= "/folder-{$data['folder_id']}";
         }
 
-        // 3. Stockage physique (S3 ou Local selon config)
-        $storedPath = $file->store($path, 'public');
-
-        // 4. Enregistrement en base de données
-        $document = Document::create([
-            'tenants_id' => $tenant->id,
-            'user_id'   => auth()->id(),
-            'folder_id' => $data['folder_id'] ?? null,
-            'name'      => $file->getClientOriginalName(),
-            'file_path' => $storedPath,
-            'file_name' => $file->getClientOriginalName(),
-            'size' => $fileSize,
-            'mime_type' => $file->getMimeType(),
-            'extension' => $file->getClientOriginalExtension(),
-            'metadata'  => [
-                'original_name' => $file->getClientOriginalName(),
-                'uploaded_at'   => now()->toIso8601String(),
-            ]
-        ]);
-
-        // 5. Mise à jour du quota consommé (UNIQUE SOURCE DE VÉRITÉ)
-        $this->quotaService->incrementUsedStorage($tenant, $fileSize);
-
-        return $document;
+        return $this->processUpload($file, $tenant, $path, $data);
     }
 
     /**

@@ -54,19 +54,15 @@ class DocumentController extends Controller
      */
     public function store(StoreDocumentRequest $request)
     {
-        try {
-            $document = $this->gedService->uploadDocument(
-                $request->file('file'),
-                $request->validated()
-            );
+        $document = $this->gedService->uploadDocument(
+            $request->file('file'),
+            $request->validated()
+        );
 
-            return response()->json([
-                'message' => 'Document uploadé avec succès',
-                'document' => $document
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage()], 403);
-        }
+        return response()->json([
+            'message' => 'Document uploadé avec succès',
+            'document' => $document
+        ], 201);
     }
 
     /**
