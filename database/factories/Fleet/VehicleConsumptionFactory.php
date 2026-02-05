@@ -14,16 +14,14 @@ class VehicleConsumptionFactory extends Factory
     public function definition(): array
     {
         return [
-            'date' => Carbon::now(),
-            'quantity' => $this->faker->randomFloat(),
-            'amount_ht' => $this->faker->randomFloat(),
-            'odometer_reading' => $this->faker->randomFloat(),
-            'source' => $this->faker->word(),
-            'external_transaction_id' => $this->faker->word(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'vehicle_id' => Vehicle::factory(),
+            'date' => now(),
+            'quantity' => $this->faker->randomFloat(2, 20, 80), // Litres ou kWh
+            'total_amount_ht' => $this->faker->randomFloat(2, 30, 150),
+            'odometer_reading' => $this->faker->numberBetween(1000, 150000),
+            'is_full' => true,
+            'source' => 'manual', // ou 'api_total', 'api_as24'
+            'external_reference' => $this->faker->uuid(),
         ];
     }
 }

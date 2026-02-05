@@ -55,6 +55,7 @@ it('clôture automatiquement l\'affectation précédente lors d\'un nouveau mouv
         'vehicle_id' => $vehicle->id,
         'project_id' => $projectA->id,
         'started_at' => now()->subDays(5),
+        'tenants_id' => $this->tenant->id,
     ]);
 
     // Action : Nouvelle affectation au Projet B
@@ -63,6 +64,7 @@ it('clôture automatiquement l\'affectation précédente lors d\'un nouveau mouv
             'vehicle_id' => $vehicle->id,
             'project_id' => $projectB->id,
             'started_at' => now(),
+            'tenants_id' => $this->tenant->id,
         ]);
 
     $response->assertStatus(201);
@@ -122,7 +124,7 @@ it('interdit d\'avoir deux véhicules avec le même code interne dans la même e
     ]);
 
     $response = $this->actingAs($this->user)
-        ->postJson('/api/v1/fleet/vehicles', [
+        ->postJson('/api/fleet/vehicles', [
             'name' => 'Nouveau Camion',
             'internal_code' => 'CAMION-01', // Doublon
             'type' => VehicleType::Truck->value,

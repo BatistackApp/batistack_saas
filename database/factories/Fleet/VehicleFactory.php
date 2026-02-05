@@ -2,10 +2,11 @@
 
 namespace Database\Factories\Fleet;
 
+use App\Enums\Fleet\FuelType;
+use App\Enums\Fleet\VehicleType;
 use App\Models\Core\Tenants;
 use App\Models\Fleet\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class VehicleFactory extends Factory
 {
@@ -14,28 +15,17 @@ class VehicleFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'internal_code' => $this->faker->word(),
-            'type' => $this->faker->word(),
-            'license_plate' => $this->faker->word(),
-            'brand' => $this->faker->word(),
-            'model' => $this->faker->word(),
-            'vin' => $this->faker->word(),
-            'fuel_type' => $this->faker->word(),
-            'external_fuel_card_id' => $this->faker->word(),
-            'external_toll_tag_id' => $this->faker->word(),
-            'hourly_rate' => $this->faker->randomFloat(),
-            'km_rate' => $this->faker->randomFloat(),
-            'current_odometer' => $this->faker->randomFloat(),
-            'odometer_unit' => $this->faker->word(),
-            'purchase_date' => Carbon::now(),
-            'purchase_price' => $this->faker->randomFloat(),
-            'last_external_sync_at' => Carbon::now(),
-            'is_active' => $this->faker->boolean(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'tenants_id' => Tenants::factory(),
+            'name' => $this->faker->randomElement(['Renault Master', 'Caterpillar 320', 'Peugeot Partner', 'Iveco Daily']),
+            'internal_code' => 'MAT-'.$this->faker->unique()->bothify('####'),
+            'license_plate' => $this->faker->bothify('??-###-??'),
+            'type' => $this->faker->randomElement(VehicleType::cases()),
+            'fuel_type' => $this->faker->randomElement(FuelType::class),
+            'current_odometer' => $this->faker->numberBetween(1000, 150000),
+            'odometer_unit' => 'km',
+            'hourly_rate' => $this->faker->randomFloat(2, 15, 85), // Coût de possession horaire
+            'km_rate' => $this->faker->randomFloat(2, 0.20, 1.50),  // Coût au kilomètre
+            'is_active' => true,
         ];
     }
 }

@@ -14,16 +14,14 @@ class VehicleInspectionFactory extends Factory
     public function definition(): array
     {
         return [
-            'type' => $this->faker->word(),
-            'inspection_date' => Carbon::now(),
-            'next_due_date' => Carbon::now(),
-            'result' => $this->faker->word(),
-            'report_path' => $this->faker->word(),
-            'observation' => $this->faker->word(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'vehicle_id' => Vehicle::factory(),
+            'type' => $this->faker->randomElement(['VGP', 'CT', 'Entretien Curatif']),
+            'inspection_date' => now()->subMonths(1),
+            'next_inspection_date' => now()->addMonths(5),
+            'odometer_at_inspection' => $this->faker->numberBetween(10000, 100000),
+            'is_compliant' => true,
+            'report_path' => null,
+            'observations' => $this->faker->text(100),
         ];
     }
 }
