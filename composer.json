@@ -21,7 +21,8 @@
         "spatie/browsershot": "^5.2",
         "spatie/laravel-image-optimizer": "^1.8",
         "spatie/laravel-permission": "^6.24",
-        "spatie/pdf-to-image": "^1.2"
+        "spatie/pdf-to-image": "^1.2",
+        "ext-gd": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
