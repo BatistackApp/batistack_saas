@@ -26,7 +26,7 @@ class TimeEntryObserver
     {
         // Détection du passage à l'état "Approuvé"
         if ($timeEntry->wasChanged('status') && $timeEntry->status === TimeEntryStatus::Approved) {
-            $timeEntry->employee->notify(new TimeEntryApprovedNotification($timeEntry));
+            $timeEntry->employee->user->notify(new TimeEntryApprovedNotification($timeEntry));
         }
     }
 
