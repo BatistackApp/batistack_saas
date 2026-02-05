@@ -16,13 +16,13 @@ class StoreFolderRequest extends FormRequest
                 'max:100',
                 // Unicité du nom dans le même dossier parent pour ce tenant
                 Rule::unique('folders')->where(function ($query) {
-                    return $query->where('tenant_id', $this->user()->tenant_id)
+                    return $query->where('tenants_id', $this->user()->tenants_id)
                         ->where('parent_id', $this->parent_id);
                 })
             ],
             'parent_id' => [
                 'nullable',
-                Rule::exists('folders', 'id')->where('tenant_id', $this->user()->tenant_id)
+                Rule::exists('folders', 'id')->where('tenants_id', $this->user()->tenants_id)
             ],
             'color' => 'nullable|string|regex:/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/',
         ];

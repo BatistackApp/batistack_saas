@@ -19,7 +19,7 @@ class StoreDocumentRequest extends FormRequest
             'folder_id' => [
                 'nullable',
                 Rule::exists('folders', 'id')->where(function ($query) {
-                    $query->where('tenant_id', $this->user()->tenant_id);
+                    $query->where('tenants_id', $this->user()->tenants_id);
                 }),
             ],
             'description' => 'nullable|string|max:500',
