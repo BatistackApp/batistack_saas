@@ -24,13 +24,18 @@ class RecalculateProjectBudgetJob implements ShouldQueue
     {
         $summary = $budgetService->getFinancialSummary($this->project);
 
-        // Si le coût réel dépasse 90% du budget alloué, on notifie le CT.
-        if ($summary['allocated_budget'] > 0) {
-            $consumption = ($summary['actual_costs'] / $summary['allocated_budget']) * 100;
+        // Sécurisation : on s'assure que les clés existent, sinon on utilise 0 par défaut
+        // Cela évite l'erreur "Undefined array key" lors des tests sur des projets vides
+        $allocatedBudget = (float) ($summary['allocated_budget'] ?? 0);
+        $actualCosts = (float) ($summary['actual_costs'] ?? 0);
 
+        // Si le budget alloué est défini, on vérifie la consommation
+        if ($allocatedBudget > 0) {
+            $consumption = ($actualCosts / $allocatedBudget) * 100;
+
+            // Si le coût réel dépasse 90% du budget alloué, on notifie le CT.
             if ($consumption >= 90) {
-                // On récupère le conducteur de travaux (CT) affecté
-                // Proposition si plusieurs managers sont possibles
+                // On récupère les membres ayant le rôle de Conducteur de Travaux (ProjectManager)
                 $managers = $this->project->members()
                     ->wherePivot('role', \App\Enums\Projects\ProjectUserRole::ProjectManager->value)
                     ->get();
