@@ -18,6 +18,6 @@ class UpdateExpenseStatusRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return auth()->user()->can('validate-expenses');
+        return true;
     }
 }

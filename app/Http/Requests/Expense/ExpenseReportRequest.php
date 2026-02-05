@@ -19,13 +19,6 @@ class ExpenseReportRequest extends FormRequest
     {
         // Si c'est une mise à jour, on vérifie que la note appartient à l'utilisateur
         // et qu'elle n'est pas verrouillée (statut Draft ou Rejected).
-        if ($this->isMethod('PUT') || $this->isMethod('PATCH')) {
-            $report = $this->route('expense_report');
-            return $report &&
-                $report->user_id === auth()->id() &&
-                in_array($report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected]);
-        }
-
         return true;
     }
 

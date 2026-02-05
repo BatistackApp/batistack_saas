@@ -13,11 +13,20 @@ class ExpenseItemObserver
 
     public function saved(ExpenseItem $item): void
     {
-        $this->calculationService->refreshReportTotals($item->report);
+        $this->updateReportTotals($item);
     }
 
     public function deleted(ExpenseItem $item): void
     {
-        $this->calculationService->refreshReportTotals($item->report);
+        $this->updateReportTotals($item);
+    }
+
+    private function updateReportTotals(ExpenseItem $item): void
+    {
+        $item->load('report');
+
+        if ($item->report) {
+            $this->calculationService->refreshReportTotals($item->report);
+        }
     }
 }

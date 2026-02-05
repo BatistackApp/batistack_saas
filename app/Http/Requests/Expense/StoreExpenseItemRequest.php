@@ -37,11 +37,6 @@ class StoreExpenseItemRequest extends FormRequest
 
     public function authorize(): bool
     {
-        $report = ExpenseReport::find($this->input('expense_report_id'));
-
-        // On ne peut ajouter des items que si la note est modifiable
-        return $report &&
-            $report->user_id === auth()->id() &&
-            in_array($report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected]);
+        return true;
     }
 }

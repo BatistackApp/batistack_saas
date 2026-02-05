@@ -14,14 +14,11 @@ class ExpenseCategoryFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'icon' => $this->faker->word(),
-            'requires_distance' => $this->faker->boolean(),
-            'is_active' => $this->faker->boolean(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
-            'tenants_id' => Tenants::factory(),
+            'tenants_id' => 1, // À surcharger dans les tests
+            'name' => $this->faker->randomElement(['Restauration', 'Hébergement', 'Kilomètres', 'Petit Outillage']),
+            'icon' => 'heroicon-o-tag',
+            'requires_distance' => $this->faker->boolean(25),
+            'is_active' => true,
         ];
     }
 }

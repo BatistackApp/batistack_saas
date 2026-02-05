@@ -23,7 +23,9 @@ class RoleAndPermissionSeeder extends Seeder
             // Tiers
             'tiers.view', 'tiers.manage', 'tiers.compliance_validate',
             // Administration Tenant
-            'tenant.users.manage', 'tenant.settings.edit'
+            'tenant.users.manage', 'tenant.settings.edit',
+            // Expense
+            'tenant.expenses.manage', 'tenant.expenses.validate',
         ];
 
         foreach ($permissions as $permission) {

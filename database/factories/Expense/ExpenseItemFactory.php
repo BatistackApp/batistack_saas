@@ -15,21 +15,23 @@ class ExpenseItemFactory extends Factory
 
     public function definition(): array
     {
-        return [
-            'date' => Carbon::now(),
-            'description' => $this->faker->text(),
-            'amount_ht' => $this->faker->randomFloat(),
-            'tax_rate' => $this->faker->randomFloat(),
-            'amount_tva' => $this->faker->randomFloat(),
-            'amount_ttc' => $this->faker->randomFloat(),
-            'receipt_path' => $this->faker->word(),
-            'metadata' => $this->faker->words(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+        $amountTtc = $this->faker->randomFloat(2, 10, 200);
+        $taxRate = 20.0;
+        $amountHt = round($amountTtc / 1.2, 2);
+        $amountTva = round($amountTtc - $amountHt, 2);
 
+        return [
             'expense_report_id' => ExpenseReport::factory(),
             'expense_category_id' => ExpenseCategory::factory(),
-            'project_id' => Project::factory(),
+            'chantier_id' => null, // À lier à un chantier dans les tests
+            'date' => $this->faker->date(),
+            'description' => $this->faker->sentence(),
+            'amount_ht' => $amountHt,
+            'tax_rate' => $taxRate,
+            'amount_tva' => $amountTva,
+            'amount_ttc' => $amountTtc,
+            'receipt_path' => null,
+            'metadata' => null,
         ];
     }
 }

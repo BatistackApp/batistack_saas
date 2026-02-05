@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Expense;
 
+use App\Enums\Expense\ExpenseStatus;
 use App\Models\Core\Tenants;
 use App\Models\Expense\ExpenseReport;
 use App\Models\User;
@@ -15,19 +16,13 @@ class ExpenseReportFactory extends Factory
     public function definition(): array
     {
         return [
-            'label' => $this->faker->word(),
-            'amount_ht' => $this->faker->randomFloat(),
-            'amount_tva' => $this->faker->randomFloat(),
-            'amount_ttc' => $this->faker->randomFloat(),
-            'status' => $this->faker->word(),
-            'submitted_at' => Carbon::now(),
-            'validated_at' => Carbon::now(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'tenants_id' => Tenants::factory(),
             'user_id' => User::factory(),
-            'validated_by' => User::factory(),
+            'label' => 'Frais de ' . $this->faker->monthName() . ' ' . date('Y'),
+            'status' => ExpenseStatus::Draft,
+            'amount_ht' => 0,
+            'amount_tva' => 0,
+            'amount_ttc' => 0,
         ];
     }
 }

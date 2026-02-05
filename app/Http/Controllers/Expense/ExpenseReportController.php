@@ -35,7 +35,11 @@ class ExpenseReportController extends Controller
     {
         $report = ExpenseReport::create(array_merge(
             $request->validated(),
-            ['user_id' => auth()->id()]
+            [
+                'user_id' => auth()->id(),
+                'tenants_id' => auth()->user()->tenants_id,
+                'status' => 'draft',
+            ]
         ));
 
         return response()->json($report, 201);

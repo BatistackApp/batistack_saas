@@ -26,8 +26,9 @@ class ExpenseItemController extends Controller
         $amounts = $this->calcService->calculateFromTtc($data['amount_ttc'], $data['tax_rate']);
 
         // Gestion du justificatif
-        if ($request->hasFile('receipt')) {
-            $data['receipt_path'] = $request->file('receipt')->store('receipts/' . auth()->id(), 'public');
+        if ($request->hasFile('receipt_path')) {
+            $fileName = $request->file('receipt_path')->getFilename();
+            $data['receipt_path'] = $request->file('receipt_path')->store('receipts/' . auth()->id().'/'.$fileName, 'public');
         }
 
         $item = ExpenseItem::create(array_merge($data, $amounts));
