@@ -21,6 +21,7 @@ return new class extends Migration {
 
             $table->decimal('hourly_cost_charged', 15, 2)->default(0);
 
+            $table->date('contract_end_date')->nullable();
             $table->date('hired_at')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

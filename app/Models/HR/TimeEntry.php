@@ -7,11 +7,14 @@ use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use App\Models\User;
+use App\Observers\HR\TimeEntryObserver;
 use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([TimeEntryObserver::class])]
 class TimeEntry extends Model
 {
     use HasFactory, HasTenant;
