@@ -157,9 +157,13 @@ class GEDService
     /**
      * Récupère les statistiques de quota pour le tenant actuel
      */
-    public function getQuotaStats(): array
+    public function getQuotaStats(Tenants $tenants = null): array
     {
-        $tenant = auth()->user()->tenant;
+        $tenant = $tenant ?? auth()->user()?->tenant; // Fallback pour le tenant actuel si non fourni
+        if (!$tenant) {
+            // Gérer l'erreur si aucun tenant ne peut être déterminé
+            throw new \RuntimeException('Tenant not found for quota statistics.');
+        }
         return $this->quotaService->getUsageStats($tenant);
     }
 

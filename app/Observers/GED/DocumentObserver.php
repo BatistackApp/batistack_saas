@@ -15,15 +15,15 @@ class DocumentObserver
     public function created(Document $document): void
     {
         $tenant = $document->tenant;
-        $usage = $this->service->getQuotaStats()['percentage'];
+        $usageStats = $this->quotaService->getUsageStats($tenant); // Appeler QuotaService directement avec le tenant
+        $percentage = $usageStats['percentage'];
 
         // Si on dépasse 80%, on alerte les administrateurs du Tenant
-        if ($usage >= 80) {
+        if ($percentage >= 80) {
             $admins = $tenant->users()->where('role', 'admin')->get();
-            Notification::send($admins, new QuotaWarningNotification($tenant, $usage));
+            Notification::send($admins, new QuotaWarningNotification($tenant, $percentage));
         }
 
-        // Lancer le Job de génération de miniature
         \App\Jobs\GED\GenerateThumbnailJob::dispatch($document);
     }
 
