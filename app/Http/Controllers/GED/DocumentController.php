@@ -30,6 +30,10 @@ class DocumentController extends Controller
             ->orderBy('name')
             ->get();
 
+        $currentFolder = null;
+        if ($parentId) {
+            $currentFolder = DocumentFolder::where('tenants_id', $tenantId)->find($parentId);
+        }
         // Récupération des documents
         $documents = Document::where('tenants_id', $tenantId)
             ->where('folder_id', $parentId)
@@ -38,7 +42,7 @@ class DocumentController extends Controller
             ->paginate(30);
 
         return response()->json([
-            'current_folder' => $parentId ? DocumentFolder::find($parentId) : null,
+            'current_folder' => $currentFolder,
             'folders' => $folders,
             'documents' => $documents,
             'quota' => $this->gedService->getTenantQuota(auth()->user()->tenant)
@@ -72,7 +76,7 @@ class DocumentController extends Controller
     {
         $folder = DocumentFolder::create(array_merge(
             $request->validated(),
-            ['tenant_id' => auth()->user()->tenants_id]
+            ['tenants_id' => auth()->user()->tenants_id]
         ));
 
         return response()->json($folder, 201);

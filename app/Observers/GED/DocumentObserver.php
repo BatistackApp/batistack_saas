@@ -33,10 +33,9 @@ class DocumentObserver
             Storage::disk('public')->delete($document->file_path);
         }
 
-        // Supprimer aussi la miniature si elle existe
-        $thumbPath = 'thumbnails/' . $document->file_name;
-        if (Storage::disk('public')->exists($thumbPath)) {
-            Storage::disk('public')->delete($thumbPath);
+        // Supprimer aussi la miniature si elle existe, en utilisant le chemin stocké dans les métadonnées
+        if (isset($document->metadata['thumbnail']) && Storage::disk('public')->exists($document->metadata['thumbnail'])) {
+            Storage::disk('public')->delete($document->metadata['thumbnail']);
         }
     }
 }
