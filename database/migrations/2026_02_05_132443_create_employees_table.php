@@ -18,9 +18,11 @@ return new class extends Migration {
             $table->string('first_name');
             $table->string('last_name');
             $table->string('job_title')->nullable();
+            $table->string('department')->nullable();
 
             $table->decimal('hourly_cost_charged', 15, 2)->default(0);
 
+            $table->string('contract_type');
             $table->date('contract_end_date')->nullable();
             $table->date('hired_at')->nullable();
             $table->boolean('is_active')->default(true);

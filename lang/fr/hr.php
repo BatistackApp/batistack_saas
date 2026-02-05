@@ -16,4 +16,10 @@ return [
         'cut' => 'Abscence non justifiée',
         'unpaid_leave' => 'Congé sans solde',
     ],
+    'contract_type' => [
+        'cdi' => 'CDI',
+        'cdd' => 'CDD',
+        'freelance' => 'Auto-entrepreneur',
+        'interim' => 'Intérim',
+    ],
 ];
