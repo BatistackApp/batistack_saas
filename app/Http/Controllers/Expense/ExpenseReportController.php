@@ -65,4 +65,11 @@ class ExpenseReportController extends Controller
             return response()->json(['error' => $e->getMessage()], $e->getCode());
         }
     }
+
+    public function update(ExpenseReportRequest $request, ExpenseReport $report): JsonResponse
+    {
+        $report->update($request->validated());
+
+        return response()->json($report, 200);
+    }
 }
