@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 #[ObservedBy([VehicleObserver::class])]
@@ -52,10 +53,8 @@ class Vehicle extends Model
         return $this->hasMany(VehicleToll::class);
     }
 
-    public function currentAssignment(): BelongsTo
+    public function currentAssignment(): HasOne
     {
-        return $this->belongsTo(VehicleAssignment::class, 'id', 'vehicle_id')
-            ->whereNull('ended_at')
-            ->latest();
+        return $this->hasOne(VehicleAssignment::class)->whereNull('ended_at')->latestOfMany('started_at');
     }
 }

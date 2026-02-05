@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Fleet;
 
+use App\Rules\Fleet\AfterCurrentOdometerRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class VehicleConsumptionRequest extends FormRequest
@@ -16,8 +17,7 @@ class VehicleConsumptionRequest extends FormRequest
             'odometer_reading' => [
                 'required',
                 'numeric',
-                // On peut ajouter une règle personnalisée ici pour vérifier
-                // que l'odomètre est cohérent avec le relevé précédent
+                new AfterCurrentOdometerRule($this->vehicle_id),
             ],
             'notes' => ['nullable', 'string'],
         ];

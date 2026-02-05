@@ -2,6 +2,7 @@
 
 namespace Database\Factories\Fleet;
 
+use App\Enums\Fleet\InspectionType;
 use App\Models\Fleet\Vehicle;
 use App\Models\Fleet\VehicleInspection;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -15,11 +16,9 @@ class VehicleInspectionFactory extends Factory
     {
         return [
             'vehicle_id' => Vehicle::factory(),
-            'type' => $this->faker->randomElement(['VGP', 'CT', 'Entretien Curatif']),
+            'type' => $this->faker->randomElement(InspectionType::cases()),
             'inspection_date' => now()->subMonths(1),
-            'next_inspection_date' => now()->addMonths(5),
-            'odometer_at_inspection' => $this->faker->numberBetween(10000, 100000),
-            'is_compliant' => true,
+            'next_due_date' => now()->addMonths(5),
             'report_path' => null,
             'observations' => $this->faker->text(100),
         ];

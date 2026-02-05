@@ -8,7 +8,7 @@ use App\Models\Fleet\Vehicle;
 use App\Services\Fleet\FleetConsumptionService;
 use App\Services\Fleet\FleetTollService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {

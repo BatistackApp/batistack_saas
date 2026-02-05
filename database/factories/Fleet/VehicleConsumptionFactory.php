@@ -17,7 +17,7 @@ class VehicleConsumptionFactory extends Factory
             'vehicle_id' => Vehicle::factory(),
             'date' => now(),
             'quantity' => $this->faker->randomFloat(2, 20, 80), // Litres ou kWh
-            'total_amount_ht' => $this->faker->randomFloat(2, 30, 150),
+            'amount_ht' => $this->faker->randomFloat(2, 30, 150),
             'odometer_reading' => $this->faker->numberBetween(1000, 150000),
             'is_full' => true,
             'source' => 'manual', // ou 'api_total', 'api_as24'

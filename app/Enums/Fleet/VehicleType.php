@@ -9,7 +9,7 @@ enum VehicleType: string implements HasLabel
 {
     case Van = 'van';
     case Truck = 'truck';
-    case Excavator = 'Excavator';
+    case Excavator = 'excavator';
     case Loader = 'loader';
     case Crane = 'crane';
     case Car = 'car';

@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->date('next_due_date')->index();
             $table->string('result')->default('passed');
             $table->string('report_path')->nullable();
-            $table->text('observation')->nullable();
+            $table->text('observations')->nullable();
             $table->timestamps();
         });
     }
