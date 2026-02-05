@@ -14,7 +14,6 @@ class TimeEntryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $entries = TimeEntry::with(['employee', 'project'])
-            ->where('tenants_id', $request->header('X-Tenant-Id'))
             ->orderBy('date', 'desc')
             ->paginate();
 
@@ -54,11 +53,6 @@ class TimeEntryController extends Controller
 
     public function destroy(TimeEntry $timeEntry): JsonResponse
     {
-        // Sécurité : ne pas supprimer si déjà validé ? (Logique métier)
-        if ($timeEntry->status !== \App\Enums\HR\TimeEntryStatus::Draft->value) {
-            return response()->json(['message' => 'Impossible de supprimer un pointage validé'], 403);
-        }
-
         $timeEntry->delete();
         return response()->json(['message' => 'Pointage supprimé']);
     }

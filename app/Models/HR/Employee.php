@@ -29,6 +29,11 @@ class Employee extends Model
         return $this->hasMany(TimeEntry::class);
     }
 
+    public function manager(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'manager_user_id');
+    }
+
     protected function casts(): array
     {
         return [

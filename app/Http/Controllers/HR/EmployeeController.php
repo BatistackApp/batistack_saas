@@ -13,9 +13,7 @@ class EmployeeController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        // On pourrait filtrer par tenant ici
-        $employees = Employee::where('tenants_id', $request->header('X-Tenant-Id'))
-            ->latest()
+        $employees = Employee::latest()
             ->paginate();
 
         return response()->json($employees);

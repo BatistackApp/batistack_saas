@@ -13,6 +13,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignIdFor(Tenants::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(User::class)->nullable()->constrained()->nullOnDelete();
+            $table->foreignIdFor(User::class, 'manager_user_id')->nullable()->constrained()->nullOnDelete();
 
             $table->string('external_id')->nullable()->comment('ID logiciel de paie');
             $table->string('first_name');
