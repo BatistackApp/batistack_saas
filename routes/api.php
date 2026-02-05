@@ -3,6 +3,10 @@
 use App\Http\Controllers\Banque\BankAccountController;
 use App\Http\Controllers\Banque\BankTransactionController;
 use App\Http\Controllers\Banque\ReconciliationController;
+use App\Http\Controllers\Fleet\VehicleAssignmentController;
+use App\Http\Controllers\Fleet\VehicleConsumptionController;
+use App\Http\Controllers\Fleet\VehicleController;
+use App\Http\Controllers\Fleet\VehicleInspectionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +57,26 @@ Route::prefix('commerce')->group(function () {
         Route::post('/{id}/receive', [\App\Http\Controllers\Commerce\PurchaseOrderController::class, 'receive']);
         Route::get('/{id}', [\App\Http\Controllers\Commerce\PurchaseOrderController::class, 'show']);
     });
+});
+
+Route::prefix('fleet')->group(function () {
+    Route::apiResource('vehicles', VehicleController::class);
+    Route::post('vehicles/{vehicle}/sync', [VehicleController::class, 'syncApi'])
+        ->name('vehicles.sync-api');
+
+    // Affectations et Mouvements
+    Route::post('assignments', [VehicleAssignmentController::class, 'store'])
+        ->name('assignments.store');
+    Route::patch('assignments/{assignment}/release', [VehicleAssignmentController::class, 'release'])
+        ->name('assignments.release');
+
+    // Conformité et Maintenance
+    Route::post('inspections', [VehicleInspectionController::class, 'store'])
+        ->name('inspections.store');
+
+    // Consommations et Relevés
+    Route::post('consumptions', [VehicleConsumptionController::class, 'store'])
+        ->name('consumptions.store');
 });
 
 // Gestion des comptes bancaires
