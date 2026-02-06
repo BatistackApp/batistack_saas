@@ -61,7 +61,7 @@ class PayrollPeriodController extends Controller
                     'payroll_period_id' => $period->id,
                     'employee_id' => $employee->id,
                 ], [
-                    'tenants_id' => $period->tenants_id ?? auth()->user()->tenants_id,
+                    'tenants_id' => $period->tenants_id,
                 ]);
 
                 // 2. Agrégation des données (Heures, Paniers, Trajet)

@@ -118,7 +118,7 @@ class PayrollCalculationService
         ]);
     }
 
-    protected function calculateNetToPay(Payslip $payslip): float
+    public function calculateNetToPay(Payslip $payslip): float
     {
         $gains = $payslip->lines()->sum('amount_gain');
         $deductions = $payslip->lines()->sum('amount_deduction');

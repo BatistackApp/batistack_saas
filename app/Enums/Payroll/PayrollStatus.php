@@ -28,7 +28,7 @@ enum PayrollStatus: string implements HasLabel, HasColor, HasIcon
         return match($this) {
             self::Draft => 'heroicon-o-pencil',
             self::Validated => 'heroicon-o-check',
-            self::Paid => 'heroicon-o-dollar-sign',
+            self::Paid => 'heroicon-o-currency-dollar',
         };
     }
 

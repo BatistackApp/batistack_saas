@@ -5,10 +5,15 @@ namespace App\Http\Controllers\Payroll;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Payroll\PayslipAdjustmentRequest;
 use App\Models\Payroll\Payslip;
+use App\Services\Payroll\PayrollCalculationService;
 use Illuminate\Http\JsonResponse;
 
 class PayslipController extends Controller
 {
+    public function __construct(protected PayrollCalculationService $calculationService)
+    {
+    }
+
     /**
      * Détails d'un bulletin avec ses lignes.
      */
@@ -35,7 +40,7 @@ class PayslipController extends Controller
 
         // On force le recalcul du net de l'en-tête
         $payslip->update([
-            'net_to_pay' => $payslip->lines()->sum('amount_gain') - $payslip->lines()->sum('amount_deduction')
+            'net_to_pay' => $this->calculationService->calculateNetToPay($payslip)
         ]);
 
         return response()->json($line, 201);
