@@ -145,7 +145,7 @@ Route::prefix('payroll')->group(function () {
     Route::apiResource('payroll-periods', PayrollPeriodController::class);
 
     // Génération massive des bulletins pour une période
-    Route::post('payroll-periods/{payroll_period}/generate', [PayrollPeriodController::class, 'generatePayslips'])
+    Route::post('payroll-periods/{payrollPeriod}/generate', [PayrollPeriodController::class, 'generatePayslips'])
         ->name('payroll-periods.generate');
 
     // Clôture et validation de la période

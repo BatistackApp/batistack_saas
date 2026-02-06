@@ -49,6 +49,7 @@ class PayrollPeriodController extends Controller
      */
     public function generatePayslips(PayrollPeriod $period): JsonResponse
     {
+        dd($period);
         try {
             $employees = Employee::where('is_active', true)->get();
             $count = 0;
@@ -58,9 +59,8 @@ class PayrollPeriodController extends Controller
                 $payslip = Payslip::firstOrCreate([
                     'payroll_period_id' => $period->id,
                     'employee_id' => $employee->id,
-                    'tenants_id' => $period->tenants_id,
                 ], [
-                    'label' => "Bulletin de " . $period->name,
+                    'tenants_id' => $period->tenants_id ?? auth()->user()->tenants_id,
                 ]);
 
                 // 2. Agrégation des données (Heures, Paniers, Trajet)

@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories\Payslip;
+namespace Database\Factories\Payroll;
 
 use App\Models\Core\Tenants;
 use App\Models\HR\Employee;
