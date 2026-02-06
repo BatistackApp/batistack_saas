@@ -10,7 +10,9 @@ use App\Models\HR\Employee;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use App\Models\Tiers\Tiers;
+use App\Observers\Intervention\InterventionObserver;
 use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([InterventionObserver::class])]
 class Intervention extends Model
 {
     use HasFactory, SoftDeletes, HasTenant;

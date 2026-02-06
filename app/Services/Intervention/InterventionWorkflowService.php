@@ -8,7 +8,9 @@ use App\Exceptions\Intervention\ComplianceException;
 use App\Exceptions\Intervention\InvalidStatusTransitionException;
 use App\Models\HR\TimeEntry;
 use App\Models\Intervention\Intervention;
+use App\Notifications\Intervention\InterventionCompletedNotification;
 use App\Services\Projects\ProjectManagementService;
+use Auth;
 use DB;
 
 class InterventionWorkflowService
@@ -59,6 +61,10 @@ class InterventionWorkflowService
             $this->financialService->refreshValuation($intervention);
 
             $intervention->update(['status' => InterventionStatus::Completed]);
+
+            if (Auth::user()) {
+                Auth::user()->notify(new InterventionCompletedNotification($intervention));
+            }
         });
     }
 

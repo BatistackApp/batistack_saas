@@ -3,6 +3,9 @@
 namespace App\Services\Intervention;
 
 use App\Models\Intervention\Intervention;
+use App\Models\User;
+use App\Notifications\Intervention\LowMarginAlertNotification;
+use Illuminate\Support\Facades\Notification;
 
 /**
  * Service de gestion financière (Marge et Totaux).
@@ -28,11 +31,19 @@ class InterventionFinancialService
         });
 
         $totalCost = $totalMaterialCost + $totalLaborCost;
+        $margin = $totalSales - $totalCost;
 
         $intervention->update([
             'amount_ht' => $totalSales,
             'amount_cost_ht' => $totalCost,
             'margin_ht' => $totalSales - $totalCost,
         ]);
+
+        if ($totalSales > 0 && ($margin / $totalSales) < 0.15) {
+            $managers = User::permission('intervention.manage')->get();
+            if ($managers->isNotEmpty()) {
+                Notification::send($managers, new LowMarginAlertNotification($intervention));
+            }
+        }
     }
 }

@@ -5,10 +5,13 @@ namespace App\Models\Intervention;
 use App\Models\Articles\Article;
 use App\Models\Articles\ArticleSerialNumber;
 use App\Models\Articles\Ouvrage;
+use App\Observers\Intervention\InterventionItemObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([InterventionItemObserver::class])]
 class InterventionItem extends Model
 {
     use HasFactory;
