@@ -42,6 +42,7 @@ class ProjectBudgetService
             'subcontracting' => 0, // Mock: Liaison Tiers (Sub)
             'rentals' => 0, // Mock: Liaison Flotte
             'overheads' => 0,
+            'management' => 0 // Mock: Payroll
         ];
     }
 

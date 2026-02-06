@@ -26,6 +26,8 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.users.manage', 'tenant.settings.edit',
             // Expense
             'tenant.expenses.manage', 'tenant.expenses.validate',
+            // Payroll
+            'payroll.manage', 'payroll.validate',
         ];
 
         foreach ($permissions as $permission) {
