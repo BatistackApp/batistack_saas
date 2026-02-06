@@ -37,7 +37,7 @@ test('il découpe correctement les heures supplémentaires (151.67h / 25% / 50%)
         ->and($overtime25->rate)->toEqual(16.25);
 
     // Vérification 50% (Nouveau calcul ajouté pour le test)
-    $overtime50 = $lines->where('type', PayslipLineType::Earning)->last();
+    $overtime50 = $lines->where('label', 'Heures mensuelles majorées 50%')->first();
     // 200 - 186.33 = 13.67
     expect($overtime50->base)->toEqual(13.67);
 });

@@ -19,6 +19,7 @@ return new class extends Migration {
             $table->decimal('employer_amount', 12, 2)->nullable();
             $table->string('type');
             $table->integer('sort_order')->default(0);
+            $table->boolean('is_manual_adjustment')->default(false);
             $table->timestamps();
         });
     }

@@ -20,7 +20,6 @@ class Payslip extends Model
         'gross_amount', 'net_social_amount', 'net_to_pay',
         'pas_rate', 'pas_amount', 'status', 'metadata',
         'tenants_id',
-        'label'
     ];
 
     public function period(): BelongsTo

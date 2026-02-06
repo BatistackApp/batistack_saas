@@ -29,6 +29,7 @@ class PayslipController extends Controller
             'amount_gain' => $data['type'] === 'earning' ? $data['amount'] : 0,
             'amount_deduction' => $data['type'] === 'deduction' ? abs($data['amount']) : 0,
             'type' => $data['type'],
+            'is_manual_adjustment' => true,
             'sort_order' => 50, // Positionnement personnalisé
         ]);
 

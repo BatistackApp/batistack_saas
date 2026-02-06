@@ -19,7 +19,7 @@ class PayrollCalculationService
     {
         DB::transaction(function () use ($payslip, $aggregatedData) {
             // 1. Nettoyage des anciennes lignes
-            $payslip->lines()->delete();
+            $payslip->lines()->where('is_manual_adjustment', false)->delete();
 
             $employee = $payslip->employee;
 
