@@ -49,9 +49,10 @@ class PayrollPeriodController extends Controller
      */
     public function generatePayslips(PayrollPeriod $period): JsonResponse
     {
-        dd($period);
         try {
-            $employees = Employee::where('is_active', true)->get();
+            $employees = Employee::where('is_active', true)
+                ->where('tenants_id', auth()->user()->tenants_id)
+                ->get();
             $count = 0;
 
             foreach ($employees as $employee) {

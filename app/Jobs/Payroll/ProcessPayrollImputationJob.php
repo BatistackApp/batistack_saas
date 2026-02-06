@@ -43,10 +43,10 @@ class ProcessPayrollImputationJob implements ShouldQueue
             }
 
             // Calcul du coût moyen par heure travaillée
-            $totalHoursWorked = DB::table('pointages')
-                ->where('salarie_id', $employee->id)
+            $totalHoursWorked = DB::table('time_entries')
+                ->where('employee_id', $employee->id)
                 ->whereBetween('date', [$this->period->start_date, $this->period->end_date])
-                ->sum('heures_normales');
+                ->sum('hours');
 
             if ($totalHoursWorked == 0) {
                 continue;
@@ -59,16 +59,16 @@ class ProcessPayrollImputationJob implements ShouldQueue
                 ->where('employee_id', $employee->id)
                 ->whereBetween('date', [$this->period->start_date, $this->period->end_date])
                 ->groupBy('project_id')
-                ->select('project_id', DB::raw('SUM(heures_normales) as total_hours'))
+                ->select('project_id', DB::raw('SUM(hours) as total_hours'))
                 ->get();
 
             foreach ($chantierHours as $chantierHour) {
                 $imputedCost = $chantierHour->total_hours * $hourlyEmployerCost;
 
                 // Créer ou mettre à jour l'imputation de coût réel
-                DB::table('chantier_imputations')->updateOrInsert(
+                DB::table('project_imputations')->updateOrInsert(
                     [
-                        'chantier_id' => $chantierHour->chantier_id,
+                        'project_id' => $chantierHour->project_id,
                         'employee_id' => $employee->id,
                         'payroll_period_id' => $this->period->id,
                         'type' => 'employer_costs',
