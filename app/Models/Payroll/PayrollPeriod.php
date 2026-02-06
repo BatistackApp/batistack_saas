@@ -4,12 +4,15 @@ namespace App\Models\Payroll;
 
 use App\Enums\Payroll\PayrollStatus;
 use App\Models\Core\Tenants;
+use App\Observers\Payroll\PayrollPeriodObserver;
 use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ObservedBy([PayrollPeriodObserver::class])]
 class PayrollPeriod extends Model
 {
     use HasFactory, HasTenant;

@@ -2,6 +2,7 @@
 
 namespace App\Services\Payroll;
 
+use App\Enums\HR\TimeEntryStatus;
 use App\Models\HR\Employee;
 use App\Models\Payroll\PayrollPeriod;
 
@@ -14,7 +15,7 @@ class PayrollAggregationService
     {
         $entries = $employee->timeEntries()
             ->whereBetween('date', [$period->start_date, $period->end_date])
-            ->where('status', 'approved') // Statut du module RH-Pointage
+            ->where('status', TimeEntryStatus::Approved) // Statut du module RH-Pointage
             ->get();
 
         $totalHours = (float) $entries->sum('hours');
