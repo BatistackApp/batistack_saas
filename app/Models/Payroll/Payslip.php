@@ -18,7 +18,9 @@ class Payslip extends Model
     protected $fillable = [
         'tenant_id', 'payroll_period_id', 'employee_id',
         'gross_amount', 'net_social_amount', 'net_to_pay',
-        'pas_rate', 'pas_amount', 'status', 'metadata'
+        'pas_rate', 'pas_amount', 'status', 'metadata',
+        'tenants_id',
+        'label'
     ];
 
     public function period(): BelongsTo
