@@ -3,9 +3,11 @@
 namespace App\Observers\GPAO;
 
 use App\Enums\GPAO\WorkOrderStatus;
+use App\Exceptions\GPAO\InsufficientMaterialException;
 use App\Models\GPAO\WorkOrder;
 use App\Models\User;
 use App\Notifications\GPAO\ProductionFinishedNotification;
+use App\Services\GPAO\ProductionOrchestrator;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Str;
 
@@ -24,11 +26,23 @@ class WorkOrderObserver
         }
     }
 
+    /**
+     * @throws InsufficientMaterialException
+     */
     public function updated(WorkOrder $wo): void
     {
-        if ($wo->wasChanged('status') && $wo->status === WorkOrderStatus::Completed) {
-            $recipients = User::permission('gpao.manage')->get();
-            Notification::send($recipients, new ProductionFinishedNotification($wo));
+        if ($wo->wasChanged('status')) {
+
+            // 1. Passage à PLANNED = Consommation des matières
+            if ($wo->status === WorkOrderStatus::Planned && $wo->getOriginal('status') === WorkOrderStatus::Draft) {
+                app(ProductionOrchestrator::class)->consumeComponents($wo);
+            }
+
+            // 2. Passage à COMPLETED = Notification de fin
+            if ($wo->status === WorkOrderStatus::Completed) {
+                $recipients = User::permission('gpao.manage')->get();
+                Notification::send($recipients, new ProductionFinishedNotification($wo));
+            }
         }
     }
 }

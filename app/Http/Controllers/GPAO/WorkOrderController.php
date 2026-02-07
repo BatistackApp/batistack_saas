@@ -4,6 +4,7 @@ namespace App\Http\Controllers\GPAO;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GPAO\StoreWorkOrderRequest;
+use App\Http\Requests\GPAO\UpdateWorkOrderRequest;
 use App\Models\GPAO\WorkOrder;
 use App\Services\GPAO\ProductionOrchestrator;
 use App\Services\GPAO\ProductionValuationService;
@@ -41,6 +42,13 @@ class WorkOrderController extends Controller
     public function show(WorkOrder $workOrder): JsonResponse
     {
         return response()->json($workOrder->load(['components', 'operations.workCenter']));
+    }
+
+    public function update(UpdateWorkOrderRequest $request, WorkOrder $workOrder): JsonResponse
+    {
+        $workOrder->update($request->validated());
+
+        return response()->json($workOrder);
     }
 
     /**

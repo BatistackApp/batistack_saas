@@ -27,10 +27,11 @@ class WorkOrderExecutionService
         }
 
         $operation->update(['status' => OperationStatus::Running]);
+        $wo = $operation->workOrder;
 
-        // Si c'est la première opération, on passe l'OF en "In Progress"
-        if ($operation->workOrder->status === WorkOrderStatus::Planned) {
-            $operation->workOrder->update([
+        // On marque le démarrage réel de la fabrication
+        if ($wo->status === WorkOrderStatus::Planned) {
+            $wo->update([
                 'status' => WorkOrderStatus::InProgress,
                 'actual_start_at' => now()
             ]);

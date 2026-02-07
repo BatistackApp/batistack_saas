@@ -80,7 +80,7 @@ class ProductionOrchestrator
     {
         // On vérifie une dernière fois avant de sortir les pièces
         if (!$this->validateStockAvailability($wo)) {
-            throw new InsufficientMaterialException("Impossible de consommer les composants : stock insuffisant.");
+            throw new InsufficientMaterialException("Impossible de consommer les composants : stock insuffisant.", 422);
         }
 
         foreach ($wo->components as $component) {

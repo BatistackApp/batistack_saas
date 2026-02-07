@@ -15,23 +15,19 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    // Initialisation des permissions pour correspondre au middleware
     \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'gpao.manage', 'guard_name' => 'web']);
-
     $this->tenant = \App\Models\Core\Tenants::factory()->create();
     $this->user = User::factory()->create(['tenants_id' => $this->tenant->id]);
     $this->user->givePermissionTo(['gpao.manage']);
     $this->tenantsId = $this->user->tenants_id;
 
     $this->warehouse = Warehouse::factory()->create(['tenants_id' => $this->tenantsId]);
-
     $this->article = Article::factory()->create([
         'tenants_id' => $this->tenantsId,
         'cump_ht' => 10.00,
         'total_stock' => 100
     ]);
 
-    // Initialisation physique du stock dans le dépôt pour le test
     $this->article->warehouses()->attach($this->warehouse->id, [
         'quantity' => 100,
         'bin_location' => 'A1'
@@ -40,10 +36,9 @@ beforeEach(function () {
     $this->ouvrage = Ouvrage::factory()->create(['tenants_id' => $this->tenantsId]);
     $this->ouvrage->components()->attach($this->article->id, ['quantity_needed' => 2]);
 
-    $this->workCenter = WorkCenter::factory()->create([
-        'tenants_id' => $this->tenantsId,
-        'hourly_rate' => 60.00
-    ]);
+    $this->workCenter = WorkCenter::factory()->create(['tenants_id' => $this->tenantsId]);
+
+    Queue::fake();
 });
 
 test('la création d\'un OF explose automatiquement la nomenclature', function () {
@@ -100,6 +95,56 @@ test('le démarrage de la première opération déstocke les matières première
         'type' => StockMovementType::Exit->value,
         'quantity' => 10
     ]);
+});
+
+test('le passage au statut PLANNED déstocke les matières premières', function () {
+    // 1. Création en statut DRAFT
+    $wo = WorkOrder::factory()->create([
+        'tenants_id' => $this->tenantsId,
+        'status' => WorkOrderStatus::Draft,
+        'ouvrage_id' => $this->ouvrage->id,
+        'warehouse_id' => $this->warehouse->id,
+        'quantity_planned' => 5,
+    ]);
+
+    // Simuler l'explosion de nomenclature
+    app(\App\Services\GPAO\ProductionOrchestrator::class)->initializeFromOuvrage($wo);
+
+    // 2. Changement de statut vers PLANNED
+    $response = $this->actingAs($this->user)
+        ->patchJson(route('work-orders.update', $wo), [
+            'status' => WorkOrderStatus::Planned->value
+        ]);
+
+    $response->assertStatus(200);
+
+    // 3. Vérifier que le mouvement de stock (Issue) a été généré par l'Observer
+    $this->assertDatabaseHas('stock_movements', [
+        'article_id' => $this->article->id,
+        'type' => StockMovementType::Exit->value,
+        'quantity' => 10 // 5 unités * 2 composants par nomenclature
+    ]);
+});
+
+test('on ne peut pas planifier si le stock est insuffisant', function () {
+    $wo = WorkOrder::factory()->create([
+        'tenants_id' => $this->tenantsId,
+        'status' => WorkOrderStatus::Draft,
+        'ouvrage_id' => $this->ouvrage->id,
+        'warehouse_id' => $this->warehouse->id,
+        'quantity_planned' => 500, // Demande 1000 articles alors qu'on en a 100
+    ]);
+
+    app(\App\Services\GPAO\ProductionOrchestrator::class)->initializeFromOuvrage($wo);
+
+    $response = $this->actingAs($this->user)
+        ->patchJson(route('work-orders.update', $wo), [
+            'status' => WorkOrderStatus::Planned->value
+        ]);
+
+    // L'Observer lève une InsufficientMaterialException via le service
+    $response->assertStatus(422);
+    $this->assertDatabaseMissing('stock_movements', ['quantity' => 1000]);
 });
 
 test('une notification est envoyée en cas de stock insuffisant lors du check', function () {
