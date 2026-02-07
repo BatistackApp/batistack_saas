@@ -37,7 +37,6 @@ class RentalCostImputationService
 
                     DB::table('project_imputations')->insert([
                         'project_id' => $contract->project_id,
-                        'employee_id' => Employee::where('user_id', auth()->id())->firstOrFail()->id,
                         'type' => 'rental',
                         'amount' => $cost
                     ]);

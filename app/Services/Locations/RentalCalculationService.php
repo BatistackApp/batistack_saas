@@ -3,6 +3,7 @@
 namespace App\Services\Locations;
 
 use App\Models\Locations\RentalItem;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 
 /**
@@ -14,7 +15,7 @@ class RentalCalculationService
     /**
      * Calcule le coût d'une ligne pour une période donnée.
      */
-    public function calculateItemCost(RentalItem $item, Carbon $start, Carbon $end): float
+    public function calculateItemCost(RentalItem $item, CarbonImmutable $start, CarbonImmutable $end): float
     {
         $days = $this->getBillableDays($item, $start, $end);
 
@@ -44,14 +45,16 @@ class RentalCalculationService
     /**
      * Calcule le nombre de jours facturables en tenant compte des weekends.
      */
-    private function getBillableDays(RentalItem $item, Carbon $start, Carbon $end): int
+    private function getBillableDays(RentalItem $item, CarbonImmutable $start, CarbonImmutable $end): int
     {
+        // Pour les jobs quotidiens (durée exacte de 24h), on ne fait pas de +1 inclusif
+        // car le job tourne chaque jour.
         if ($item->is_weekend_included) {
-            return $start->diffInDays($end) + 1;
+            return (int) $start->diffInDays($end);
         }
 
-        return $start->diffInDaysFiltered(function (Carbon $date) {
-                return !$date->isWeekend();
-            }, $end) + 1;
+        return (int) $start->diffInDaysFiltered(function (Carbon $date) {
+            return !$date->isWeekend();
+        }, $end);
     }
 }
