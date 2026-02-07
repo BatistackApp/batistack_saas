@@ -114,7 +114,7 @@ test('le job d\'imputation journalière crée des lignes de coûts sur le projet
     $this->assertDatabaseHas('project_imputations', [
         'project_id' => $this->project->id,
         'type' => 'rental',
-        'amount_ht' => 250.00
+        'amount' => 250.00
     ]);
 });
 
