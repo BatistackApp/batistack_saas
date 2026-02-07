@@ -28,6 +28,8 @@ class RoleAndPermissionSeeder extends Seeder
             'tenant.expenses.manage', 'tenant.expenses.validate',
             // Payroll
             'payroll.manage', 'payroll.validate',
+            // GPAO
+            'gpao.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -51,13 +53,19 @@ class RoleAndPermissionSeeder extends Seeder
         $logistics = Role::findOrCreate('logistics_manager', 'web');
         $logistics->givePermissionTo([
             'inventory.view', 'inventory.manage', 'inventory.audit',
-            'projects.view', 'tiers.view'
+            'projects.view', 'tiers.view', 'gpao.manage'
         ]);
 
         // CHEF DE CHANTIER (Consultation et saisie terrain)
         $foreman = Role::findOrCreate('foreman', 'web');
         $foreman->givePermissionTo([
             'projects.view', 'inventory.view'
+        ]);
+
+        // CHEF D'ATELIER
+        $atl = Role::findOrCreate('chef_atelier', 'web');
+        $atl->givePermissionTo([
+            'projects.view', 'inventory.view', 'gpao.manage'
         ]);
     }
 }

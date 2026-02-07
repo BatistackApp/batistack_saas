@@ -15,3 +15,5 @@ include("api/expense.php");
 include("api/payroll.php");
 include("api/intervention.php");
 include("api/banque.php");
+include("api/gpao.php");
+
