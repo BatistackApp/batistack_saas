@@ -6,10 +6,13 @@ use App\Enums\Articles\StockMovementType;
 use App\Models\Articles\StockMovement;
 use App\Models\GPAO\WorkOrder;
 use App\Models\GPAO\WorkOrderComponent;
+use App\Models\User;
+use App\Notifications\GPAO\StockShortageNotification;
 use App\Services\Articles\InventoryService;
 use App\Services\Articles\StockMovementService;
 use Auth;
 use DB;
+use Illuminate\Support\Facades\Notification;
 
 /**
  * Service d'orchestration de la production (Lien avec le Stock).
@@ -48,10 +51,37 @@ class ProductionOrchestrator
     }
 
     /**
+     * Vérifie la disponibilité des stocks et notifie en cas de rupture.
+     * Cette méthode doit être appelée lors du passage au statut 'PLANNED'.
+     */
+    public function validateStockAvailability(WorkOrder $wo): bool
+    {
+        $wo->load('components.article');
+        $hasShortage = false;
+
+        foreach ($wo->components as $component) {
+            if (!$this->inventoryService->hasEnoughStock($component->article, $wo->warehouse, $component->quantity_planned)) {
+                $hasShortage = true;
+
+                // AUTOMATISATION : Notification immédiate de rupture pour l'OF
+                $recipients = User::permission('gpao.manage')->get();
+                Notification::send($recipients, new StockShortageNotification($wo, $component->label));
+            }
+        }
+
+        return !$hasShortage;
+    }
+
+    /**
      * Consomme les matières premières pour cet OF.
      */
     public function consumeComponents(WorkOrder $wo): void
     {
+        // On vérifie une dernière fois avant de sortir les pièces
+        if (!$this->validateStockAvailability($wo)) {
+            throw new InsufficientMaterialException("Impossible de consommer les composants : stock insuffisant.");
+        }
+
         foreach ($wo->components as $component) {
             // Création du mouvement de sortie pour chaque composant
             StockMovement::create([

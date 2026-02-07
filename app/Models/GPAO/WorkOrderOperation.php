@@ -3,10 +3,13 @@
 namespace App\Models\GPAO;
 
 use App\Enums\GPAO\OperationStatus;
+use App\Observers\GPAO\WorkOrderOperationObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([WorkOrderOperationObserver::class])]
 class WorkOrderOperation extends Model
 {
     use HasFactory;
