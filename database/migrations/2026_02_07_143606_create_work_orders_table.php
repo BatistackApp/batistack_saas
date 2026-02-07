@@ -30,7 +30,7 @@ return new class extends Migration {
             $table->timestamp('planned_start_at')->nullable();
             $table->timestamp('planned_end_at')->nullable();
             $table->timestamp('actual_start_at')->nullable();
-            $table->timestamp('actuel_end_at')->nullable();
+            $table->timestamp('actual_end_at')->nullable();
 
             $table->decimal('total_cost_ht', 15, 2)->default(0);
             $table->timestamps();

@@ -27,7 +27,7 @@ class WorkOrderFactory extends Factory
             'planned_start_at' => Carbon::now(),
             'planned_end_at' => Carbon::now(),
             'actual_start_at' => Carbon::now(),
-            'actuel_end_at' => Carbon::now(),
+            'actual_end_at' => Carbon::now(),
             'total_cost_ht' => $this->faker->randomFloat(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
