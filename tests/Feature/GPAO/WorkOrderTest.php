@@ -97,6 +97,44 @@ test('le démarrage de la première opération déstocke les matières première
     ]);
 });
 
+test('la finalisation d\'un OF avec quantité partielle recalcule le coût unitaire', function () {
+    $wo = WorkOrder::factory()->create([
+        'tenants_id' => $this->tenantsId,
+        'status' => WorkOrderStatus::InProgress,
+        'quantity_planned' => 10,
+        'ouvrage_id' => $this->ouvrage->id,
+        'warehouse_id' => $this->warehouse->id
+    ]);
+
+    // Coût matières : 100€ (pour les 10 prévus)
+    $wo->components()->create([
+        'article_id' => $this->article->id,
+        'label' => 'Composant',
+        'quantity_planned' => 20,
+        'quantity_consumed' => 20,
+        'unit_cost_ht' => 5.00
+    ]);
+
+    // Fabrication de seulement 8 unités (2 rebus)
+    $response = $this->actingAs($this->user)
+        ->postJson(route('work-orders.finalize', $wo), [
+            'quantity_produced' => 8
+        ]);
+
+    $response->assertStatus(200);
+
+    $wo->refresh();
+    expect((float)$wo->quantity_produced)->toBe(8.0);
+
+    // Le coût unitaire doit être 100 / 8 = 12.50€ (au lieu de 10€ théoriques)
+    $this->assertDatabaseHas('stock_movements', [
+        'ouvrage_id' => $this->ouvrage->id,
+        'type' => StockMovementType::Entry->value,
+        'quantity' => 8,
+        'unit_cost_ht' => 12.50
+    ]);
+});
+
 test('le passage au statut PLANNED déstocke les matières premières', function () {
     // 1. Création en statut DRAFT
     $wo = WorkOrder::factory()->create([

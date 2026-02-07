@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GPAO;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GPAO\FinalizeWorkOrderRequest;
 use App\Http\Requests\GPAO\StoreWorkOrderRequest;
 use App\Http\Requests\GPAO\UpdateWorkOrderRequest;
 use App\Models\GPAO\WorkOrder;
@@ -54,10 +55,13 @@ class WorkOrderController extends Controller
     /**
      * Clôture finale de l'OF avec valorisation du produit fini.
      */
-    public function finalize(WorkOrder $workOrder): JsonResponse
+    public function finalize(FinalizeWorkOrderRequest $request, WorkOrder $workOrder): JsonResponse
     {
         try {
-            $this->valuationService->finalizeWorkOrder($workOrder);
+            $this->valuationService->finalizeWorkOrder(
+                $workOrder,
+                $request->input('quantity_produced') // Passage de la quantité réelle
+            );
             return response()->json(['message' => 'Ordre de fabrication clôturé et produit fini entré en stock.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);

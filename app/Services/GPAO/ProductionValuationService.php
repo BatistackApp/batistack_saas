@@ -21,53 +21,47 @@ class ProductionValuationService
     /**
      * Clôture l'OF, calcule le coût de revient et fait entrer le produit fini en stock.
      */
-    public function finalizeWorkOrder(WorkOrder $wo): void
+    public function finalizeWorkOrder(WorkOrder $wo, ?float $quantityProduced = null): void
     {
         if ($wo->status === WorkOrderStatus::Completed) {
             throw new WorkOrderLockedException("Cet OF est déjà clôturé.");
         }
 
-        DB::transaction(function () use ($wo) {
+        DB::transaction(function () use ($wo, $quantityProduced) {
             $wo->load(['components', 'operations.workCenter']);
 
-            // 1. Calcul du coût des matières
-            $materialCost = $wo->components->sum(function ($c) {
-                return $c->quantity_consumed * $c->unit_cost_ht;
-            });
-
-            // 2. Calcul du coût des postes de charge (Heures machine)
-            $machineCost = $wo->operations->sum(function ($op) {
-                $hours = $op->time_actual_minutes / 60;
-                return $hours * $op->workCenter->hourly_rate;
-            });
-
+            // 1. Calcul des coûts réels engagés
+            $materialCost = $wo->components->sum(fn($c) => $c->quantity_consumed * $c->unit_cost_ht);
+            $machineCost = $wo->operations->sum(fn($op) => ($op->time_actual_minutes / 60) * $op->workCenter->hourly_rate);
             $totalCost = $materialCost + $machineCost;
+
+            // 2. Détermination de la quantité finale
+            $finalQty = $quantityProduced ?? $wo->quantity_planned;
 
             // 3. Mise à jour de l'OF
             $wo->update([
                 'status' => WorkOrderStatus::Completed,
                 'actual_end_at' => now(),
                 'total_cost_ht' => $totalCost,
-                'quantity_produced' => $wo->quantity_planned // Par défaut, tout est produit
+                'quantity_produced' => $finalQty
             ]);
 
-            // 4. Entrée en stock du produit fini (l'Ouvrage)
-            $unitProductionCost = $totalCost / $wo->quantity_planned;
+            // 4. Calcul du coût de revient unitaire (spread cost)
+            $unitCost = $finalQty > 0 ? ($totalCost / $finalQty) : 0;
 
-            // Création du mouvement d'entrée
+            // 5. Entrée en stock de l'ouvrage produit
             StockMovement::create([
                 'tenants_id' => $wo->tenants_id,
-                'article_id' => null, // C'est un ouvrage qui entre en stock
                 'ouvrage_id' => $wo->ouvrage_id,
                 'warehouse_id' => $wo->warehouse_id,
                 'type' => StockMovementType::Entry,
-                'quantity' => $wo->quantity_produced,
-                'unit_cost_ht' => $unitProductionCost,
+                'quantity' => $finalQty,
+                'unit_cost_ht' => $unitCost,
                 'user_id' => Auth::id(),
             ]);
 
-            // 5. Mise à jour du CUMP de l'Ouvrage produit via l'InventoryService
-            $this->inventoryService->updateCump($wo->ouvrage, (float) $wo->quantity_produced, $unitProductionCost);
+            // 6. Mise à jour de la valeur moyenne du stock (CUMP)
+            $this->inventoryService->updateCump($wo->ouvrage, (float) $finalQty, $unitCost);
         });
     }
 }
