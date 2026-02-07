@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('project_imputations', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Project::class)->constrained()->cascadeOnDelete();
-            $table->foreignIdFor(Employee::class)->nullable()->constrained();
+            $table->foreignIdFor(Employee::class)->constrained();
             $table->foreignIdFor(PayrollPeriod::class)->nullable()->constrained();
             $table->string('type');
             $table->decimal('amount', 15, 2)->default(0);
