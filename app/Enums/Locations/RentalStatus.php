@@ -39,11 +39,11 @@ enum RentalStatus: string implements HasLabel, HasColor, HasIcon
     public function getLabel(): string|Htmlable|null
     {
         return match($this) {
-            self::DRAFT => __('rental.statuses.draft'),
-            self::ACTIVE => __('rental.statuses.active'),
-            self::ENDED => __('rental.statuses.ended'),
-            self::INVOICED => __('rental.statuses.invoiced'),
-            self::CANCELLED => __('rental.statuses.cancelled'),
+            self::DRAFT => __('locations.statuses.draft'),
+            self::ACTIVE => __('locations.statuses.active'),
+            self::ENDED => __('locations.statuses.ended'),
+            self::INVOICED => __('locations.statuses.invoiced'),
+            self::CANCELLED => __('locations.statuses.cancelled'),
         };
     }
 }
