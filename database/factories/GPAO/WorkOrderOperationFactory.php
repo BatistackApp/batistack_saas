@@ -2,6 +2,7 @@
 
 namespace Database\Factories\GPAO;
 
+use App\Enums\GPAO\OperationStatus;
 use App\Models\GPAO\WorkCenter;
 use App\Models\GPAO\WorkOrder;
 use App\Models\GPAO\WorkOrderOperation;
@@ -19,7 +20,7 @@ class WorkOrderOperationFactory extends Factory
             'label' => $this->faker->word(),
             'time_planned_minutes' => $this->faker->randomFloat(),
             'time_actual_minutes' => $this->faker->randomFloat(),
-            'status' => $this->faker->word(),
+            'status' => $this->faker->randomElement(OperationStatus::cases()),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
 

@@ -29,7 +29,7 @@ class WorkOrderController extends Controller
     {
         $workOrder = WorkOrder::create(array_merge(
             $request->validated(),
-            ['tenant_id' => auth()->user()->tenants_id]
+            ['tenants_id' => auth()->user()->tenants_id]
         ));
 
         // AUTOMATISATION : Explosion immédiate de la nomenclature (BOM)

@@ -18,7 +18,7 @@ class WorkCenterController extends Controller
     {
         $workCenter = WorkCenter::create(array_merge(
             $request->validated(),
-            ['tenant_id' => auth()->user()->tenants_id]
+            ['tenants_id' => auth()->user()->tenants_id]
         ));
 
         return response()->json($workCenter, 201);

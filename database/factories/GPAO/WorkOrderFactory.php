@@ -2,6 +2,7 @@
 
 namespace Database\Factories\GPAO;
 
+use App\Enums\GPAO\WorkOrderStatus;
 use App\Models\Articles\Ouvrage;
 use App\Models\Articles\Warehouse;
 use App\Models\Core\Tenants;
@@ -21,7 +22,7 @@ class WorkOrderFactory extends Factory
             'reference' => $this->faker->word(),
             'quantity_planned' => $this->faker->randomFloat(),
             'quantity_produced' => $this->faker->randomFloat(),
-            'status' => $this->faker->word(),
+            'status' => $this->faker->randomElement(WorkOrderStatus::cases()),
             'priority' => $this->faker->randomNumber(),
             'planned_start_at' => Carbon::now(),
             'planned_end_at' => Carbon::now(),

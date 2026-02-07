@@ -3,6 +3,7 @@
 namespace App\Services\GPAO;
 
 use App\Enums\Articles\StockMovementType;
+use App\Exceptions\GPAO\InsufficientMaterialException;
 use App\Models\Articles\StockMovement;
 use App\Models\GPAO\WorkOrder;
 use App\Models\GPAO\WorkOrderComponent;
