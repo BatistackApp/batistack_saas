@@ -4,13 +4,16 @@ namespace App\Models\Bim;
 
 use App\Enums\Bim\BimModelStatus;
 use App\Models\Projects\Project;
+use App\Observers\Bim\BimModelObserver;
 use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([BimModelObserver::class])]
 class BimModel extends Model
 {
     use HasFactory, HasTenant, SoftDeletes;
