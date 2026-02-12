@@ -15,6 +15,8 @@ class BimMapping extends Model
         'bim_object_id',
         'color_override',
         'metadata',
+        'mappable_id',
+        'mappable_type',
     ];
 
     public function bimObject(): BelongsTo
