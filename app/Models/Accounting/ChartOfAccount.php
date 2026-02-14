@@ -20,7 +20,6 @@ class ChartOfAccount extends Model
         'tenants_id',
         'account_number',
         'account_label',
-        'account_type',
         'nature',
         'is_active',
     ];

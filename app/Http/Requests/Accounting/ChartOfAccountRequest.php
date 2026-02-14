@@ -23,7 +23,7 @@ class ChartOfAccountRequest extends FormRequest
                     ->ignore($accountId)
             ],
             'account_label' => ['required', 'string', 'max:255'],
-            'account_type' => ['required', 'string', 'max:100'],
+            'nature' => ['required', 'string', Rule::enum(AccountType::class)],
             'is_active' => ['boolean'],
         ];
     }

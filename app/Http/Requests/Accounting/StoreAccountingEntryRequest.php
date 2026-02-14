@@ -9,7 +9,7 @@ class StoreAccountingEntryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'journal_id' => ['required', 'exists:journals,id'],
+            'journal_id' => ['required', 'exists:journals,uild'],
             'accounting_date' => ['required', 'date'],
             'label' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],

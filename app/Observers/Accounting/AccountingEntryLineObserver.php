@@ -19,14 +19,11 @@ class AccountingEntryLineObserver
 
     protected function syncEntryTotals(AccountingEntry $entry): void
     {
-        $totals = $entry->lines()
-            ->selectRaw('SUM(debit) as total_debit, SUM(credit) as total_credit')
-            ->first();
-
-        // On utilise updateQuietly pour ne pas redéclencher l'observer de l'entry
+        $totalDebit = $entry->lines()->sum('debit');
+        $totalCredit = $entry->lines()->sum('credit');
         $entry->updateQuietly([
-            'total_debit' => $totals->total_debit ?? 0,
-            'total_credit' => $totals->total_credit ?? 0,
+            'total_debit' => $totalDebit,
+            'total_credit' => $totalCredit,
         ]);
     }
 }

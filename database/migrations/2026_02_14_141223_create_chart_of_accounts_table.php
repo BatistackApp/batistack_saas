@@ -14,8 +14,7 @@ return new class extends Migration {
             $table->foreignIdFor(Tenants::class)->constrained()->cascadeOnDelete();
             $table->string('account_number', 20);
             $table->string('account_label');
-            $table->string('account_type');
-            $table->string('nature')->default();
+            $table->string('nature');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
             $table->softDeletes();

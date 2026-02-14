@@ -15,11 +15,11 @@ class PeriodClosureService
      */
     public function closePeriod(int $month, int $year): PeriodClosure
     {
-        $periodStart = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $periodEnd = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+        $periodStart = CarbonImmutable::createFromDate($year, $month, 1)->startOfMonth();
+        $periodEnd = CarbonImmutable::createFromDate($year, $month, 1)->endOfMonth();
 
         return DB::transaction(function () use ($month, $year, $periodStart, $periodEnd) {
-            $closure = PeriodClosure::updateOrCreate(
+            return PeriodClosure::updateOrCreate(
                 ['month' => $month, 'year' => $year],
                 [
                     'period_start' => $periodStart,
@@ -29,8 +29,6 @@ class PeriodClosureService
                     'closed_at' => now(),
                 ]
             );
-
-            return $closure;
         });
     }
 
@@ -48,7 +46,7 @@ class PeriodClosureService
     /**
      * Empêche les modifications sur une période clôturée.
      */
-    public function preventModificationIfClosed(Carbon $date): void
+    public function preventModificationIfClosed(CarbonImmutable $date): void
     {
         if ($this->isPeriodClosed($date)) {
             throw new \RuntimeException(
@@ -62,8 +60,8 @@ class PeriodClosureService
      */
     public function generateClosureReport(int $month, int $year): array
     {
-        $startDate = Carbon::createFromDate($year, $month, 1)->startOfMonth();
-        $endDate = Carbon::createFromDate($year, $month, 1)->endOfMonth();
+        $startDate = CarbonImmutable::createFromDate($year, $month, 1)->startOfMonth();
+        $endDate = CarbonImmutable::createFromDate($year, $month, 1)->endOfMonth();
 
         $balanceCalculator = app(BalanceCalculator::class);
         $balances = $balanceCalculator->calculateAllBalances($endDate);

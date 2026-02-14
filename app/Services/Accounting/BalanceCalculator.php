@@ -6,6 +6,7 @@ use App\Enums\Accounting\EntryStatus;
 use App\Models\Accounting\ChartOfAccount;
 use Cache;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use DB;
 
 class BalanceCalculator
@@ -36,7 +37,7 @@ class BalanceCalculator
     /**
      * Calcule les soldes pour tous les comptes du plan comptable.
      */
-    public function calculateAllBalances(?Carbon $asOf = null): array
+    public function calculateAllBalances(?CarbonImmutable $asOf = null): array
     {
         $asOf ??= today();
 

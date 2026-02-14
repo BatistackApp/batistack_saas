@@ -25,7 +25,7 @@ return new class extends Migration {
             $table->foreignIdFor(User::class, 'created_by')->nullable()->constrained()->nullOnDelete();
             $table->foreignIdFor(User::class, 'validated_by')->nullable()->constrained()->nullOnDelete();
             $table->dateTime('validated_at')->nullable();
-            $table->boolean('created_from_automation ')->default(false);
+            $table->boolean('created_from_automation')->default(false);
             $table->timestamps();
             $table->softDeletes();
 
