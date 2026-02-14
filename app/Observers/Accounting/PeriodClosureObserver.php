@@ -23,4 +23,15 @@ class PeriodClosureObserver
         // Dispatcher un job pour générer le rapport de clôture
         GeneratePeriodClosureReportJob::dispatch($closure);
     }
+
+    /**
+     * Après la clôture, on peut déclencher des notifications ou des exports auto.
+     */
+    public function saved(PeriodClosure $closure): void
+    {
+        if ($closure->is_locked && $closure->wasChanged('is_locked')) {
+            // Notification aux administrateurs
+            // PeriodClosedNotification::dispatch($closure);
+        }
+    }
 }

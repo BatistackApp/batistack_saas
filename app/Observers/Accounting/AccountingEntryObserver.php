@@ -2,11 +2,14 @@
 
 namespace App\Observers\Accounting;
 
+use App\Enums\Accounting\EntryStatus;
 use App\Models\Accounting\AccountingEntry;
 use App\Models\Accounting\PeriodClosure;
+use App\Services\Accounting\PeriodClosureService;
 
 class AccountingEntryObserver
 {
+    public function __construct(protected PeriodClosureService $closureService) {}
     public function creating(AccountingEntry $entry): void
     {
         $periodClosure = PeriodClosure::where('month', $entry->accounting_date->month)
@@ -20,6 +23,16 @@ class AccountingEntryObserver
         }
     }
 
+    /**
+     * Empêche toute création/modification si la période est clôturée.
+     */
+    public function saving(AccountingEntry $entry): void
+    {
+        if ($this->closureService->isPeriodClosed($entry->accounting_date)) {
+            throw new \RuntimeException("Action impossible : La période comptable est clôturée.");
+        }
+    }
+
     public function updated(AccountingEntry $entry): void
     {
         if ($entry->wasChanged('status') && $entry->status->value === 'validated') {
@@ -27,6 +40,20 @@ class AccountingEntryObserver
                 app(\App\Services\Accounting\BalanceCalculator::class)
                     ->invalidateCache($line->account, $entry->accounting_date);
             }
+        }
+    }
+
+    /**
+     * Bloque la modification des écritures validées (Immuabilité).
+     */
+    public function updating(AccountingEntry $entry): void
+    {
+        if ($entry->isDirty('status') && $entry->getOriginal('status') === EntryStatus::Validated->value) {
+            // Seul le passage vers Closed ou Cancelled pourrait être toléré selon les règles métier
+        }
+
+        if ($entry->status === EntryStatus::Validated && !$entry->isDirty('status')) {
+            throw new \RuntimeException("Une écriture validée ne peut plus être modifiée.");
         }
     }
 
