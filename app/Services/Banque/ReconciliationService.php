@@ -111,12 +111,12 @@ class ReconciliationService
     /**
      * Calcul de score générique.
      */
-    protected function calculateScore($invoice, float $amount, string $label): int
+    protected function calculateScore($invoice, string $amount, string $label): int
     {
         $score = 0;
-        $netToPay = round((float)($invoice->net_to_pay ?? $invoice->total_ttc), 2);
+        $netToPay = round((string)($invoice->net_to_pay ?? $invoice->total_ttc), 2);
 
-        $diff = abs((float) bcsub($netToPay, $amount, 4));
+        $diff = abs((string) bcsub($netToPay, $amount, 4));
 
         if ($diff <= 0.01) {
             $score += 60;
