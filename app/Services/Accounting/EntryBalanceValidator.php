@@ -12,24 +12,14 @@ class EntryBalanceValidator
      */
     public function validate(AccountingEntry $entry): bool
     {
-        $totalDebit = bcadd(
-            '0',
-            (string) $entry->total_debit,
-            4
-        );
-
-        $totalCredit = bcadd(
-            '0',
-            (string) $entry->total_credit,
-            4
-        );
+        $totalDebit = bcadd('0', (string) $entry->total_debit, 4);
+        $totalCredit = bcadd('0', (string) $entry->total_credit, 4);
 
         if (bccomp($totalDebit, $totalCredit, 4) !== 0) {
             throw ValidationException::withMessages([
                 'balance' => "L'écriture n'est pas équilibrée. Débits: {$totalDebit} ≠ Crédits: {$totalCredit}",
             ]);
         }
-
         return true;
     }
 
@@ -38,29 +28,18 @@ class EntryBalanceValidator
      */
     public function validateLines(AccountingEntry $entry): bool
     {
-        $lines = $entry->lines;
-
-        if ($lines->isEmpty()) {
-            throw ValidationException::withMessages([
-                'lines' => "L'écriture doit contenir au moins 2 lignes.",
-            ]);
+        if ($entry->lines->isEmpty()) {
+            throw ValidationException::withMessages(['lines' => "L'écriture doit contenir au moins 2 lignes."]);
         }
 
-        foreach ($lines as $line) {
+        foreach ($entry->lines as $line) {
             if (bccomp($line->debit, '0', 4) < 0 || bccomp($line->credit, '0', 4) < 0) {
-                throw ValidationException::withMessages([
-                    'lines' => "Les montants doivent être positifs ou nuls.",
-                ]);
+                throw ValidationException::withMessages(['lines' => "Les montants doivent être positifs."]);
             }
-
-            // Une ligne ne peut pas avoir à la fois un débit et un crédit
             if (bccomp($line->debit, '0', 4) > 0 && bccomp($line->credit, '0', 4) > 0) {
-                throw ValidationException::withMessages([
-                    'lines' => "Une ligne ne peut pas avoir à la fois un débit et un crédit.",
-                ]);
+                throw ValidationException::withMessages(['lines' => "Une ligne ne peut avoir simultanément un débit et un crédit."]);
             }
         }
-
         return true;
     }
 }

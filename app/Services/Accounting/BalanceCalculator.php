@@ -2,6 +2,7 @@
 
 namespace App\Services\Accounting;
 
+use App\Enums\Accounting\EntryStatus;
 use App\Models\Accounting\ChartOfAccount;
 use Cache;
 use Carbon\Carbon;
@@ -16,33 +17,20 @@ class BalanceCalculator
     public function calculate(ChartOfAccount $account, ?Carbon $asOf = null): string
     {
         $asOf ??= today();
-
-        // Tentative de récupération du cache
         $cacheKey = "account_balance.{$account->id}.{$asOf->format('Y-m-d')}";
 
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
+        return Cache::remember($cacheKey, 3600, function () use ($account, $asOf) {
+            $balance = DB::table('accounting_entry_lines')
+                ->join('accounting_entries', 'accounting_entry_lines.accounting_entry_id', '=', 'accounting_entries.id')
+                ->where('accounting_entry_lines.chart_of_account_id', $account->id)
+                ->where('accounting_entries.status', EntryStatus::Validated->value)
+                ->where('accounting_entries.accounting_date', '<=', $asOf)
+                ->selectRaw('COALESCE(SUM(debit), 0) as total_debit')
+                ->selectRaw('COALESCE(SUM(credit), 0) as total_credit')
+                ->first();
 
-        $balance = DB::table('accounting_entry_lines')
-            ->join('accounting_entries', 'accounting_entry_lines.accounting_entry_id', '=', 'accounting_entries.id')
-            ->where('accounting_entry_lines.chart_of_account_id', $account->id)
-            ->where('accounting_entries.status', 'validated')
-            ->where('accounting_entries.accounting_date', '<=', $asOf)
-            ->selectRaw('COALESCE(SUM(debit), 0) as total_debit')
-            ->selectRaw('COALESCE(SUM(credit), 0) as total_credit')
-            ->first();
-
-        $result = bcsub(
-            (string) $balance->total_debit,
-            (string) $balance->total_credit,
-            4
-        );
-
-        // Mise en cache pendant 1 jour
-        Cache::put($cacheKey, $result, 86400);
-
-        return $result;
+            return bcsub((string) $balance->total_debit, (string) $balance->total_credit, 4);
+        });
     }
 
     /**
@@ -83,8 +71,7 @@ class BalanceCalculator
      */
     public function invalidateCache(ChartOfAccount $account, Carbon $date): void
     {
-        $cacheKey = "account_balance.{$account->id}.{$date->format('Y-m-d')}";
-        Cache::forget($cacheKey);
+        Cache::forget("account_balance.{$account->id}.{$date->format('Y-m-d')}");
 
         // Invalider aussi les jours suivants
         for ($i = 1; $i <= 30; $i++) {
