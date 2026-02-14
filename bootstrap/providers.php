@@ -13,4 +13,5 @@ return [
     App\Providers\ExpenseServiceProvider::class,
     App\Providers\LocationsServiceProvider::class,
     App\Providers\AccountingServiceProvider::class,
+    App\Providers\PilotageServiceProvider::class,
 ];
