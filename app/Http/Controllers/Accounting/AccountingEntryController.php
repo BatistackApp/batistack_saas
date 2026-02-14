@@ -48,7 +48,8 @@ class AccountingEntryController extends Controller
             Carbon::parse($request->accounting_date),
             $request->label,
             $request->lines,
-            $request->description
+            $request->description,
+            $request->user()->id,
         );
 
         return response()->json($entry->load('lines'), 201);

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Accounting;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Accounting\PeriodClosureRequest;
 use App\Jobs\Accounting\ExportFecJob;
 use App\Services\Accounting\PeriodClosureService;
 use Carbon\Carbon;
@@ -16,11 +17,12 @@ class FinancialOperationController extends Controller
     /**
      * Déclenche la clôture d'un mois.
      */
-    public function closeMonth(int $year, int $month): JsonResponse
+    public function closeMonth(PeriodClosureRequest $request): JsonResponse
     {
         try {
-            $closure = $this->closureService->closePeriod($month, $year);
-            return response()->json(['message' => "Période {$month}/{$year} clôturée.", 'closure' => $closure]);
+            // Utiliser $request->validated('month') et $request->validated('year')
+            $closure = $this->closureService->closePeriod($request->validated('month'), $request->validated('year'));
+            return response()->json(['message' => "Période {$request->validated('month')}/{$request->validated('year')} clôturée.", 'closure' => $closure]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }

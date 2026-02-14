@@ -27,8 +27,9 @@ class AccountingEntryService
         string $label,
         array $lines,
         ?string $description = null,
+        ?int $createdBy = null,
     ): AccountingEntry {
-        return DB::transaction(function () use ($journal, $accountingDate, $label, $lines, $description) {
+        return DB::transaction(function () use ($journal, $accountingDate, $label, $lines, $description, $createdBy) {
             // Générer le numéro séquentiel
             $referenceNumber = $this->sequenceGenerator->generate($journal, $accountingDate);
 
@@ -42,6 +43,7 @@ class AccountingEntryService
                 'status' => EntryStatus::Draft,
                 'total_debit' => 0,
                 'total_credit' => 0,
+                'created_by' => $createdBy,
             ]);
 
             // Ajouter les lignes d'écriture

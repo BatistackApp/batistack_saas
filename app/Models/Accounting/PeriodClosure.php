@@ -39,7 +39,7 @@ class PeriodClosure extends Model
             'closed_at' => 'datetime',
         ];
     }
-    public function closedByUsed(): BelongsTo
+    public function closedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'closed_by');
     }
