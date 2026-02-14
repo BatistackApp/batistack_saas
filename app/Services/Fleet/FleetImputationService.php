@@ -43,11 +43,8 @@ class FleetImputationService
             // 4. Injection dans la table analytique des projets
             if (bccomp($totalToImpute, '0', 2) > 0) {
                 DB::table('project_imputations')->insert([
-                    'tenants_id' => $assignment->tenants_id,
                     'project_id' => $assignment->project_id,
-                    'project_phase_id' => $assignment->project_phase_id,
-                    'label' => "Coût Flotte : {$vehicle->license_plate} ({$assignment->label})",
-                    'amount_ht' => $totalToImpute,
+                    'amount' => $totalToImpute,
                     'type' => 'fleet',
                     'metadata' => json_encode([
                         'assignment_id' => $assignment->id,
