@@ -20,7 +20,8 @@ class KpiIndicator extends Model
 
     protected $fillable = [
         'tenants_id', 'code', 'name', 'description',
-        'category', 'unit', 'formula_class', 'is_active'
+        'category', 'unit', 'formula_class', 'is_active',
+        'id'
     ];
 
     protected function casts(): array
@@ -40,5 +41,10 @@ class KpiIndicator extends Model
     public function thresholds(): HasMany
     {
         return $this->hasMany(KpiThresholds::class);
+    }
+
+    public function uniqueIds(): array
+    {
+        return ['ulid']; // Indique au trait HasUlids d'utiliser 'ulid' et non 'id'
     }
 }

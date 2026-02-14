@@ -37,4 +37,9 @@ class KpiSnapshot extends Model
             'value' => 'decimal:4',
         ];
     }
+
+    public function uniqueIds(): array
+    {
+        return ['ulid']; // Indique au trait HasUlids d'utiliser 'ulid' et non 'id'
+    }
 }

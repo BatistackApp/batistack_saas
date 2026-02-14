@@ -34,4 +34,9 @@ class KpiThresholds extends Model
             'max_value' => 'float',
         ];
     }
+
+    public function uniqueIds(): array
+    {
+        return ['ulid']; // Indique au trait HasUlids d'utiliser 'ulid' et non 'id'
+    }
 }
