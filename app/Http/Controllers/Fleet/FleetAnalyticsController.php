@@ -48,7 +48,7 @@ class FleetAnalyticsController extends Controller
      */
     public function getFleetGlobalStats(): JsonResponse
     {
-        $vehicles = Vehicle::where('is_active', true)->get();
+        $vehicles = Vehicle::where('is_active', true)->with('consumptions', 'tolls')->get();
 
         $stats = $vehicles->map(function ($vehicle) {
             return [

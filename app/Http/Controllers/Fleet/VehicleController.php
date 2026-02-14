@@ -24,7 +24,6 @@ class VehicleController extends Controller
                     ->orWhere('internal_code', 'like', "%{$request->search}%")
                     ->orWhere('license_plate', 'like', "%{$request->search}%");
             })
-            ->where('tenants_id', auth()->user()->tenants_id)
             ->latest()
             ->paginate(15);
 
@@ -36,9 +35,7 @@ class VehicleController extends Controller
      */
     public function store(VehicleRequest $request): JsonResponse
     {
-        $data = $request->validated();
-        $data['tenants_id'] = auth()->user()->tenants_id;
-        $vehicle = Vehicle::create($data);
+        $vehicle = Vehicle::create($request->validated());
 
         return response()->json($vehicle, 201);
     }
