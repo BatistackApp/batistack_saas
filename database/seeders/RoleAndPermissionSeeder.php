@@ -32,6 +32,8 @@ class RoleAndPermissionSeeder extends Seeder
             'gpao.manage',
             // Locations
             'locations.manage',
+            // Kpi
+            'pilotage.view', 'pilotage.manage',
         ];
 
         foreach ($permissions as $permission) {
@@ -48,7 +50,7 @@ class RoleAndPermissionSeeder extends Seeder
         $manager = Role::findOrCreate('project_manager', 'web');
         $manager->givePermissionTo([
             'projects.view', 'projects.create', 'projects.edit', 'projects.manage_budget',
-            'inventory.view', 'tiers.view', 'locations.manage',
+            'inventory.view', 'tiers.view', 'locations.manage', 'pilotage.view'
         ]);
 
         // RESPONSABLE LOGISTIQUE (Focus Stock)
