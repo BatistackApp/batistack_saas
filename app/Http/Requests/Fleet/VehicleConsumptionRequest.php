@@ -17,7 +17,8 @@ class VehicleConsumptionRequest extends FormRequest
             'odometer_reading' => [
                 'required',
                 'numeric',
-                new AfterCurrentOdometerRule($this->vehicle_id),
+                // Règle personnalisée pour empêcher les retours en arrière de compteur
+                new AfterCurrentOdometerRule($this->input('vehicle_id')),
             ],
             'notes' => ['nullable', 'string'],
         ];
@@ -25,6 +26,6 @@ class VehicleConsumptionRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        return auth()->user()->can('fleet.manage');
     }
 }

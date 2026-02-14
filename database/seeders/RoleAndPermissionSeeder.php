@@ -32,6 +32,8 @@ class RoleAndPermissionSeeder extends Seeder
             'gpao.manage',
             // Locations
             'locations.manage',
+            // Flottes
+            'fleet.manage', 'fleet.view',
             // Kpi
             'pilotage.view', 'pilotage.manage',
         ];
