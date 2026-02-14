@@ -4,13 +4,16 @@ namespace App\Models\Pilotage;
 
 use App\Enums\Pilotage\KpiCategory;
 use App\Enums\Pilotage\KpiUnit;
+use App\Observers\Pilotage\KpiIndicatorObserver;
 use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([KpiIndicatorObserver::class])]
 class KpiIndicator extends Model
 {
     use HasFactory, SoftDeletes, HasTenant, HasUlids;
