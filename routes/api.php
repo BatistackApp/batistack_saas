@@ -18,4 +18,5 @@ include("api/banque.php");
 include("api/gpao.php");
 include("api/locations.php");
 include("api/bim.php");
+include("api/accounting.php");
 
