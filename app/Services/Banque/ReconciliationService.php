@@ -126,18 +126,24 @@ class ReconciliationService
     protected function calculateScore($invoice, string $amount, string $label): int
     {
         $score = 0;
-        $netToPay = round((string)($invoice->net_to_pay ?? $invoice->total_ttc), 2);
 
-        $diff = abs((string) bcsub($netToPay, $amount, 4));
+        // 1. Calculer le montant restant dû avec précision
+        $paidAmount = (string) $invoice->payments()->sum('amount');
+        $totalInvoiceAmount = (string) ($invoice->net_to_pay ?? $invoice->total_ttc); // Assumer net_to_pay est le total
+        $remainingAmountDue = bcsub($totalInvoiceAmount, $paidAmount, 2);
 
-        if ($diff <= 0.01) {
+        // 2. Comparer le montant de la transaction avec le montant restant dû
+        // Utiliser bccomp pour comparer les chaînes avec une tolérance
+        $diff = bcsub($remainingAmountDue, $amount, 4); // Calculer la différence avec haute précision
+        // Vérifier si la différence absolue est dans une tolérance acceptable (ex: 0.01)
+        if (bccomp(abs($diff), '0.01', 4) <= 0) { // bccomp(abs(diff), '0.01', precision)
             $score += 60;
 
             if (str_contains($label, mb_strtolower($invoice->reference))) {
                 $score += 40;
             }
 
-            $tiersName = $invoice->tiers->name ?? ($invoice->supplier->name ?? '');
+            $tiersName = $invoice->tiers->name ?? ($invoice->supplier->name ?? ''); // Améliorer cette logique si supplier existe séparément
             if ($score < 100 && !empty($tiersName) && str_contains($label, mb_strtolower($tiersName))) {
                 $score += 20;
             }
