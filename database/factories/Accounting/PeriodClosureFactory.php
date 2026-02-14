@@ -1,0 +1,32 @@
+<?php
+
+namespace Database\Factories\Accounting;
+
+use App\Models\Accounting\PeriodClosure;
+use App\Models\Core\Tenants;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Carbon;
+
+class PeriodClosureFactory extends Factory
+{
+    protected $model = PeriodClosure::class;
+
+    public function definition(): array
+    {
+        return [
+            'ulid' => $this->faker->words(),
+            'month' => $this->faker->randomNumber(),
+            'year' => $this->faker->randomNumber(),
+            'period_start' => Carbon::now(),
+            'period_end' => Carbon::now(),
+            'is_locked' => $this->faker->boolean(),
+            'closed_at' => Carbon::now(),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+
+            'tenants_id' => Tenants::factory(),
+            'closed_by' => User::factory(),
+        ];
+    }
+}
