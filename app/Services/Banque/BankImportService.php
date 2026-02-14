@@ -23,11 +23,18 @@ class BankImportService
             foreach ($rows as $row) {
                 // $row attendu : [date, label, amount]
                 $amount = (string) $row['amount'];
+                try {
+                    $valueDate = Carbon::parse($row['date']);
+                } catch (\Exception $e) {
+                    // Log l'erreur, ou ajoute à une liste d'erreurs pour le rapport d'import
+                    // Ou throw une exception spécifique pour arrêter l'importation
+                    throw new \InvalidArgumentException("Invalid date format for row: " . json_encode($row));
+                }
 
                 BankTransaction::create([
                     'tenants_id' => $account->tenants_id,
                     'bank_account_id' => $account->id,
-                    'value_date' => Carbon::parse($row['date']),
+                    'value_date' => $valueDate,
                     'label' => $row['label'],
                     'amount' => $amount,
                     'type' => bccomp($amount, '0', 2) > 0 ? BankTransactionType::Credit : BankTransactionType::Debit,

@@ -15,7 +15,6 @@ class ReconciliationService
 {
     public function suggestMatches(BankTransaction $transaction): array
     {
-        $suggestions = [];
         $amount = (string) abs($transaction->amount);
         $label = mb_strtolower($transaction->label);
         $tenantId = $transaction->tenants_id;
@@ -30,43 +29,34 @@ class ReconciliationService
         return collect($suggestions)->sortByDesc('score')->values()->all();
     }
 
-    public function reconcile(BankTransaction $transaction, Invoices $invoice, float $amount): Payment
+    public function reconcile(BankTransaction $transaction, Invoices $model, float $amount): Payment
     {
         return DB::transaction(function () use ($transaction, $model, $amount) {
-
-            $isSupplier = ($model instanceof SupplierInvoice) || (isset($model->supplier_id));
 
             $payment = Payment::create([
                 'tenants_id' => $transaction->tenants_id,
                 'bank_transaction_id' => $transaction->id,
-                // On utilise le polymorphisme ou des colonnes séparées selon ton schéma Payment
-                'invoice_id' => !$isSupplier ? $model->id : null,
-                'supplier_invoice_id' => $isSupplier ? $model->id : null,
+                'invoice_id' => $model->id,
                 'amount' => $amount,
                 'payment_date' => $transaction->value_date,
-                'method' => $this->guessMethod($transaction->label),
+                'method' => $this->guessMethod($transaction->label, $transaction->type),
                 'created_by' => Auth::id(),
             ]);
 
-            // Mise à jour du statut du modèle (Client ou Fournisseur)
-            $this->updateModelStatus($model);
-
+            $this->updateInvoiceStatus($model);
             $transaction->update(['is_reconciled' => true]);
 
             return $payment;
         });
     }
 
-    protected function updateModelStatus($model): void
+    protected function updateInvoiceStatus(Invoices $invoice): void
     {
-        // Logique de calcul du reste à payer simplifiée
-        $totalPaid = round($model->payments()->sum('amount'), 2);
-        $target = round($model->net_to_pay ?? $model->total_ttc, 2);
+        $totalPaid = (string) $invoice->payments()->sum('amount');
+        $target = (string) $invoice->net_to_pay;
 
-        $status = ($totalPaid >= $target) ? 'paid' : 'partially_paid';
-
-        // Adaptation aux enums si nécessaire
-        $model->update(['status' => $status]);
+        $status = (bccomp($totalPaid, $target, 2) >= 0) ? InvoiceStatus::Paid : InvoiceStatus::PartiallyPaid;
+        $invoice->update(['status' => $status]);
     }
 
     protected function getMatchingReason(int $score): string
@@ -109,33 +99,6 @@ class ReconciliationService
             if ($score > 0) {
                 $suggestions[] = [
                     'type' => ($tierTypeCode === 'client') ? 'sale' : 'purchase',
-                    'model' => $invoice,
-                    'score' => $score,
-                    'reason' => $this->getMatchingReason($score)
-                ];
-            }
-        }
-        return $suggestions;
-    }
-
-    /**
-     * Recherche des factures fournisseurs (Dépenses).
-     */
-    protected function searchSupplierInvoices(int $tenantId, float $amount, string $label): array
-    {
-        $suggestions = [];
-
-        // On assume que SupplierInvoice a une structure similaire à Invoices
-        $invoices = DB::table('supplier_invoices')
-            ->where('tenants_id', $tenantId)
-            ->whereIn('status', ['validated', 'partially_paid'])
-            ->get();
-
-        foreach ($invoices as $invoice) {
-            $score = $this->calculateScore($invoice, $amount, $label);
-            if ($score > 0) {
-                $suggestions[] = [
-                    'type' => 'supplier_invoice',
                     'model' => $invoice,
                     'score' => $score,
                     'reason' => $this->getMatchingReason($score)
