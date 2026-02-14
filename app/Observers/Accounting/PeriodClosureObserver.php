@@ -11,10 +11,6 @@ class PeriodClosureObserver
 {
     public function created(PeriodClosure $closure): void
     {
-        // Verrouiller toutes les écritures de cette période
-        $closure->period_start;
-        $closure->period_end;
-
         // Notifier l'équipe comptable
         $users = auth()->user(); // À adapter selon la structure RH
 

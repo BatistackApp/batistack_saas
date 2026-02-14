@@ -29,7 +29,7 @@ enum EntryStatus: string implements HasLabel, HasColor, HasIcon
         return match ($this) {
             self::Draft => 'heroicon-o-document-text',
             self::Validated => 'heroicon-o-check-circle',
-            self::Closed => 'heroicon-o-x',
+            self::Closed => 'heroicon-o-lock',
             self::Cancelled => 'heroicon-o-x',
         };
     }

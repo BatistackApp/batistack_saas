@@ -24,7 +24,6 @@ class ChartOfAccountRequest extends FormRequest
             ],
             'account_label' => ['required', 'string', 'max:255'],
             'account_type' => ['required', 'string', 'max:100'],
-            'nature' => ['required', Rule::enum(AccountType::class)],
             'is_active' => ['boolean'],
         ];
     }

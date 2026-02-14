@@ -48,10 +48,6 @@ class AccountingEntryObserver
      */
     public function updating(AccountingEntry $entry): void
     {
-        if ($entry->isDirty('status') && $entry->getOriginal('status') === EntryStatus::Validated->value) {
-            // Seul le passage vers Closed ou Cancelled pourrait être toléré selon les règles métier
-        }
-
         if ($entry->status === EntryStatus::Validated && !$entry->isDirty('status')) {
             throw new \RuntimeException("Une écriture validée ne peut plus être modifiée.");
         }
