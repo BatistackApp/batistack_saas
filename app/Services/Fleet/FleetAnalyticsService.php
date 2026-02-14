@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Services\Fleet;
+
+use App\Models\Fleet\Vehicle;
+use Carbon\CarbonImmutable;
+
+class FleetAnalyticsService
+{
+    /**
+     * Calcule le coût total de possession (TCO) pour un véhicule.
+     * Basé sur les consommations, les péages et l'amortissement.
+     */
+    public function getVehicleTco(Vehicle $vehicle, ?CarbonImmutable $startDate = null, ?CarbonImmutable $endDate = null): array
+    {
+        $startDate ??= now()->subYear();
+        $endDate ??= now();
+
+        // 1. Coûts de consommation (Carburant/Énergie)
+        $energyCosts = (string) $vehicle->consumptions()
+            ->whereBetween('date', [$startDate, $endDate])
+            ->sum('amount_ht');
+
+        // 2. Coûts de péages
+        $tollCosts = (string) $vehicle->tolls()
+            ->whereBetween('entry_at', [$startDate, $endDate])
+            ->sum('amount_ht');
+
+        // 3. Estimation d'amortissement (Exemple: 20% par an)
+        $purchasePrice = (string) ($vehicle->purchase_price ?? 0);
+        $yearsOwned = $vehicle->purchase_date ? $vehicle->purchase_date->diffInYears(now(), true) : 1;
+        $depreciation = bcmul($purchasePrice, '0.20', 2); // 20% par an
+
+        $totalTco = bcadd(bcadd($energyCosts, $tollCosts, 2), $depreciation, 2);
+
+        // 4. Coût au kilomètre
+        $kmTraveled = (float) $this->getDistanceTraveled($vehicle, $startDate, $endDate);
+        $costPerKm = ($kmTraveled > 0) ? (float) bcdiv($totalTco, (string)$kmTraveled, 4) : 0;
+
+        return [
+            'energy_ht' => (float) $energyCosts,
+            'tolls_ht' => (float) $tollCosts,
+            'depreciation_est' => (float) $depreciation,
+            'total_tco_ht' => (float) $totalTco,
+            'km_traveled' => $kmTraveled,
+            'cost_per_km' => $costPerKm
+        ];
+    }
+
+    /**
+     * Calcule la consommation moyenne (L/100km) entre deux pleins.
+     */
+    public function calculateAverageConsumption(Vehicle $vehicle): float
+    {
+        $consumptions = $vehicle->consumptions()
+            ->orderBy('odometer_reading', 'asc')
+            ->get();
+
+        if ($consumptions->count() < 2) {
+            return 0.0;
+        }
+
+        $totalLiters = $consumptions->skip(1)->sum('quantity');
+        $distance = $consumptions->last()->odometer_reading - $consumptions->first()->odometer_reading;
+
+        if ($distance <= 0) {
+            return 0.0;
+        }
+
+        return (float) round(($totalLiters * 100) / $distance, 2);
+    }
+
+    private function getDistanceTraveled(Vehicle $vehicle, CarbonImmutable $start, CarbonImmutable $end): float
+    {
+        $first = $vehicle->consumptions()->where('date', '>=', $start)->orderBy('date', 'asc')->first();
+        $last = $vehicle->consumptions()->where('date', '<=', $end)->orderBy('date', 'desc')->first();
+
+        if (!$first || !$last) return 0.0;
+
+        return (float) ($last->odometer_reading - $first->odometer_reading);
+    }
+}
