@@ -16,18 +16,16 @@ class ReconciliationService
     public function suggestMatches(BankTransaction $transaction): array
     {
         $suggestions = [];
-        $amount = abs((float) $transaction->amount);
+        $amount = (string) abs($transaction->amount);
         $label = mb_strtolower($transaction->label);
         $tenantId = $transaction->tenants_id;
 
-        // 1. Si Crédit (Recette) -> On cherche des factures clients
-        if ($transaction->type === BankTransactionType::Credit) {
-            $suggestions = $this->searchInvoices($tenantId, $amount, $label);
-        }
-        // 2. Si Débit (Dépense) -> On cherche des factures fournisseurs
-        else {
-            $suggestions = $this->searchSupplierInvoices($tenantId, $amount, $label);
-        }
+        // On définit le type de tiers recherché selon le sens de la transaction
+        $targetType = ($transaction->type === BankTransactionType::Credit)
+            ? 'client' // Recette -> On cherche un client
+            : 'fournisseur'; // Dépense -> On cherche un fournisseur (ou sous-traitant)
+
+        $suggestions = $this->searchInvoices($tenantId, $amount, $label, $targetType);
 
         return collect($suggestions)->sortByDesc('score')->values()->all();
     }
@@ -91,13 +89,18 @@ class ReconciliationService
     }
 
     /**
-     * Recherche des factures clients (Recettes).
+     * Recherche dans l'unique table Invoices filtrée par le type de tiers.
      */
-    protected function searchInvoices(int $tenantId, float $amount, string $label): array
+    protected function searchInvoices(int $tenantId, string $amount, string $label, string $tierTypeCode): array
     {
         $suggestions = [];
+
+        // Utilisation de whereHas pour filtrer sur la relation polymorphe/multiple des types de tiers
         $invoices = Invoices::where('tenants_id', $tenantId)
             ->whereIn('status', [InvoiceStatus::Validated, InvoiceStatus::PartiallyPaid])
+            ->whereHas('tiers.types', function($query) use ($tierTypeCode) {
+                $query->where('type', $tierTypeCode);
+            })
             ->with(['tiers'])
             ->get();
 
@@ -105,7 +108,7 @@ class ReconciliationService
             $score = $this->calculateScore($invoice, $amount, $label);
             if ($score > 0) {
                 $suggestions[] = [
-                    'type' => 'customer_invoice',
+                    'type' => ($tierTypeCode === 'client') ? 'sale' : 'purchase',
                     'model' => $invoice,
                     'score' => $score,
                     'reason' => $this->getMatchingReason($score)
@@ -150,13 +153,16 @@ class ReconciliationService
         $score = 0;
         $netToPay = round((float)($invoice->net_to_pay ?? $invoice->total_ttc), 2);
 
-        if (abs($netToPay - $amount) <= 0.01) {
+        $diff = abs((float) bcsub($netToPay, $amount, 4));
+
+        if ($diff <= 0.01) {
             $score += 60;
+
             if (str_contains($label, mb_strtolower($invoice->reference))) {
                 $score += 40;
             }
-            // Recherche du nom du tiers si disponible
-            $tiersName = $invoice->tiers->name ?? ($invoice->supplier_name ?? '');
+
+            $tiersName = $invoice->tiers->name ?? ($invoice->supplier->name ?? '');
             if ($score < 100 && !empty($tiersName) && str_contains($label, mb_strtolower($tiersName))) {
                 $score += 20;
             }

@@ -22,45 +22,46 @@ class CashFlowForecastService
         $today = now()->startOfDay();
         $endDate = now()->addDays($days)->endOfDay();
 
-        // 1. Récupération des encaissements prévus (Invoices)
-        $incomings = Invoices::where('tenants_id', $tenantId)
+        // OPTIMISATION : Agrégation SQL groupée des flux entrants (Tiers = Client)
+        $incomingsByDate = Invoices::where('tenants_id', $tenantId)
             ->whereIn('status', ['validated', 'partially_paid'])
+            ->whereHas('tiers.types', fn($q) => $q->where('type', 'client'))
             ->whereBetween('due_date', [$today, $endDate])
-            ->orderBy('due_date')
-            ->get();
+            ->select('due_date', DB::raw('SUM(total_ttc) as total')) // Note: total_ttc car net_to_pay est un accesseur
+            ->groupBy('due_date')
+            ->pluck('total', 'due_date');
 
-        // 2. Récupération des décaissements prévus (Supplier Invoices)
-        $outgoings = DB::table('supplier_invoices')
-            ->where('tenants_id', $tenantId)
+        // OPTIMISATION : Agrégation SQL groupée des flux sortants (Tiers = Fournisseur)
+        $outgoingsByDate = Invoices::where('tenants_id', $tenantId)
             ->whereIn('status', ['validated', 'partially_paid'])
+            ->whereHas('tiers.types', fn($q) => $q->where('type', 'fournisseur'))
             ->whereBetween('due_date', [$today, $endDate])
-            ->orderBy('due_date')
-            ->get();
+            ->select('due_date', DB::raw('SUM(total_ttc) as total'))
+            ->groupBy('due_date')
+            ->pluck('total', 'due_date');
 
-        // 3. Construction de la courbe temporelle
         $runningBalance = $currentBalance;
 
-        // On itère par jour pour créer les points du graphique
         for ($i = 0; $i <= $days; $i++) {
-            $date = $today->copy()->addDays($i);
+            $dateString = $today->copy()->addDays($i)->toDateString();
 
-            $dayIn = $incomings->where('due_date', $date->toDateString())->sum('net_to_pay');
-            $dayOut = $outgoings->where('due_date', $date->toDateString())->sum('total_ttc');
+            $dayIn = (string) ($incomingsByDate[$dateString] ?? '0');
+            $dayOut = (string) ($outgoingsByDate[$dateString] ?? '0');
 
-            $runningBalance = bcadd($runningBalance, (string)$dayIn, 2);
-            $runningBalance = bcsub($runningBalance, (string)$dayOut, 2);
+            $runningBalance = bcadd($runningBalance, $dayIn, 2);
+            $runningBalance = bcsub($runningBalance, $dayOut, 2);
 
             $projections[] = [
-                'date' => $date->toDateString(),
-                'in' => $dayIn,
-                'out' => $dayOut,
-                'balance' => $runningBalance
+                'date' => $dateString,
+                'in' => (float) $dayIn,
+                'out' => (float) $dayOut,
+                'balance' => (float) $runningBalance
             ];
         }
 
         return [
-            'current_balance' => $currentBalance,
-            'forecast_end_balance' => $runningBalance,
+            'initial_balance' => (float) $currentBalance,
+            'final_balance' => (float) $runningBalance,
             'data' => $projections
         ];
     }
