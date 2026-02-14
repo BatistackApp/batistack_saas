@@ -7,27 +7,40 @@ use App\Http\Controllers\Fleet\VehicleController;
 use App\Http\Controllers\Fleet\VehicleInspectionController;
 
 Route::prefix('fleet')->group(function () {
+    // --- Gestion des Véhicules (CRUD) ---
+    // Correspond aux tests : /api/fleet/vehicles
     Route::apiResource('vehicles', VehicleController::class);
-    Route::post('vehicles/{vehicle}/sync', [VehicleController::class, 'syncApi'])
-        ->name('vehicles.sync-api');
 
-    // --- Suivi Analytique & TCO (Issue #35) ---
+    // --- Actions spécifiques aux véhicules ---
+    Route::prefix('vehicles/{vehicle}')->group(function () {
+        Route::post('sync-api', [VehicleController::class, 'syncApi'])
+            ->name('vehicles.sync-api');
+
+        // Suivi TCO par véhicule (Issue #35)
+        Route::get('analytics/tco', [FleetAnalyticsController::class, 'getVehicleTco'])
+            ->name('vehicles.analytics.tco');
+    });
+
+    // --- Suivi Global ---
     Route::get('analytics/global', [FleetAnalyticsController::class, 'getFleetGlobalStats'])
         ->name('fleet.analytics.global');
-    Route::get('vehicles/{vehicle}/analytics/tco', [FleetAnalyticsController::class, 'getVehicleTco'])
-        ->name('vehicles.analytics.tco');
 
-    // Affectations et Mouvements
-    Route::post('assignments', [VehicleAssignmentController::class, 'store'])
-        ->name('assignments.store');
-    Route::patch('assignments/{assignment}/release', [VehicleAssignmentController::class, 'release'])
-        ->name('assignments.release');
+    // --- Opérations Flotte (Affectations, Consommations, Inspections) ---
+    Route::prefix('vehicles')->group(function () {
 
-    // Conformité et Maintenance
-    Route::post('inspections', [VehicleInspectionController::class, 'store'])
-        ->name('inspections.store');
+        // Affectations (Correspond au test : /api/fleet/vehicles/assignments)
+        Route::post('assignments', [VehicleAssignmentController::class, 'store'])
+            ->name('vehicle-assignments.store');
 
-    // Consommations et Relevés
-    Route::post('consumptions', [VehicleConsumptionController::class, 'store'])
-        ->name('consumptions.store');
+        Route::patch('assignments/{assignment}/release', [VehicleAssignmentController::class, 'release'])
+            ->name('vehicle-assignments.release');
+
+        // Consommations & Pleins
+        Route::post('consumptions', [VehicleConsumptionController::class, 'store'])
+            ->name('vehicle-consumptions.store');
+
+        // Inspections & Maintenance
+        Route::post('inspections', [VehicleInspectionController::class, 'store'])
+            ->name('vehicle-inspections.store');
+    });
 });
