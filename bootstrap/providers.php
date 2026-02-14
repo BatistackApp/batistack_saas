@@ -12,4 +12,5 @@ return [
     App\Providers\HumanResourceServiceProvider::class,
     App\Providers\ExpenseServiceProvider::class,
     App\Providers\LocationsServiceProvider::class,
+    App\Providers\AccountingServiceProvider::class,
 ];
