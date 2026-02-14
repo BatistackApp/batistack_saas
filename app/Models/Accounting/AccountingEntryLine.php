@@ -2,6 +2,8 @@
 
 namespace App\Models\Accounting;
 
+use App\Models\Projects\Project;
+use App\Models\Projects\ProjectPhase;
 use App\Observers\Accounting\AccountingEntryLineObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
@@ -40,6 +42,16 @@ class AccountingEntryLine extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'chart_of_account_id');
+    }
+
+    public function project(): BelongsTo
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function phase(): BelongsTo
+    {
+        return $this->belongsTo(ProjectPhase::class, 'project_phase_id');
     }
 
     public function uniqueIds(): array

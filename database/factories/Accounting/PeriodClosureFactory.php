@@ -15,12 +15,13 @@ class PeriodClosureFactory extends Factory
 
     public function definition(): array
     {
+        $year = Carbon::now();
         return [
             'ulid' => Str::ulid(),
-            'month' => $this->faker->randomNumber(),
-            'year' => $this->faker->randomNumber(),
-            'period_start' => Carbon::now(),
-            'period_end' => Carbon::now(),
+            'month' => $this->faker->month(),
+            'year' => $year,
+            'period_start' => $year->startOfYear()->toDateString(),
+            'period_end' => $year->endOfYear()->toDateString(),
             'is_locked' => $this->faker->boolean(),
             'closed_at' => Carbon::now(),
             'created_at' => Carbon::now(),

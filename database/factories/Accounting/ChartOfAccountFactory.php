@@ -17,7 +17,6 @@ class ChartOfAccountFactory extends Factory
         return [
             'account_number' => fake()->unique()->numerify('###000'),
             'account_label' => fake()->words(3, true),
-            'account_type' => fake()->numberBetween(1, 7),
             'nature' => fake()->randomElement(AccountType::cases()),
             'is_active' => true,
         ];
