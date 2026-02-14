@@ -3,6 +3,8 @@
 namespace App\Jobs\Accounting;
 
 use App\Models\Accounting\PeriodClosure;
+use App\Models\User;
+use App\Notifications\Accounting\PeriodClosedNotification;
 use App\Services\Accounting\PeriodClosureService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -32,6 +34,6 @@ class GeneratePeriodClosureReportJob implements ShouldQueue
         );
 
         // Notifier que le rapport est prêt
-        dispatch(new GeneratePeriodClosureReportJob($this->closure));
+        $this->closure->closedByUsed->notify(new PeriodClosedNotification($this->closure));
     }
 }

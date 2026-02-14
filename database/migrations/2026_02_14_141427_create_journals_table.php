@@ -10,9 +10,9 @@ return new class extends Migration {
     {
         Schema::create('journals', function (Blueprint $table) {
             $table->id();
-            $table->ulid('ulid');
+            $table->ulid('ulid')->unique();
             $table->foreignIdFor(Tenants::class)->constrained()->cascadeOnDelete();
-            $table->string('code', 3)->unique();
+            $table->string('code', 3);
             $table->string('label');
             $table->string('type');
             $table->boolean('is_active')->default(true);
@@ -20,6 +20,7 @@ return new class extends Migration {
             $table->softDeletes();
 
             $table->index(['tenants_id', 'code']);
+            $table->unique(['tenants_id', 'code']);
         });
     }
 

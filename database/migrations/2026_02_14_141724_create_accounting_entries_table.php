@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->ulid('ulid')->unique();
             $table->foreignIdFor(Tenants::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Journal::class)->constrained()->cascadeOnDelete();
-            $table->string('reference_number', 50)->unique();
+            $table->string('reference_number', 50);
             $table->date('accounting_date');
             $table->string('label');
             $table->text('description')->nullable();
@@ -25,11 +25,14 @@ return new class extends Migration {
             $table->foreignIdFor(User::class, 'created_by')->nullable()->constrained()->nullOnDelete();
             $table->foreignIdFor(User::class, 'validated_by')->nullable()->constrained()->nullOnDelete();
             $table->dateTime('validated_at')->nullable();
+            $table->boolean('created_from_automation ')->default(false);
             $table->timestamps();
             $table->softDeletes();
 
             $table->index(['tenants_id', 'journal_id', 'accounting_date']);
             $table->index(['reference_number']);
+
+            $table->unique(['tenants_id', 'reference_number']);
         });
     }
 

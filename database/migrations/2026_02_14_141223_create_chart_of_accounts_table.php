@@ -12,7 +12,7 @@ return new class extends Migration {
             $table->id();
             $table->ulid('ulid')->unique();
             $table->foreignIdFor(Tenants::class)->constrained()->cascadeOnDelete();
-            $table->string('account_number', 20)->unique();
+            $table->string('account_number', 20);
             $table->string('account_label');
             $table->string('account_type');
             $table->string('nature')->default();
@@ -21,6 +21,7 @@ return new class extends Migration {
             $table->softDeletes();
 
             $table->index(['tenants_id', 'account_number']);
+            $table->unique(['tenants_id', 'account_number']);
         });
     }
 

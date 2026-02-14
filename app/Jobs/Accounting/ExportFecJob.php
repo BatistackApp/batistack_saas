@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Accounting;
 
+use App\Models\User;
 use App\Services\Accounting\FecExportService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -17,6 +18,7 @@ class ExportFecJob implements ShouldQueue
     public function __construct(
         private Carbon $startDate,
         private Carbon $endDate,
+        private int $userId,
     ) {}
 
     public function handle(FecExportService $service): void
@@ -33,7 +35,7 @@ class ExportFecJob implements ShouldQueue
         $filePath = $service->export($this->startDate, $this->endDate);
 
         // Notifier l'utilisateur que le fichier est prêt
-        $user = auth()->user();
+        $user = User::find($this->userId);
         $user->notify(new \App\Notifications\Accounting\FecExportReadyNotification($filePath));
     }
 }

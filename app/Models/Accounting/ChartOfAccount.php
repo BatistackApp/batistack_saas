@@ -38,19 +38,6 @@ class ChartOfAccount extends Model
         return $this->hasMany(AccountingEntryLine::class, 'chart_of_account_id');
     }
 
-    public function getBalance(?\DateTime $asOf = null): float
-    {
-        $query = $this->entries();
-
-        if ($asOf) {
-            $query->whereHas('entry', fn ($q) => $q->where('accounting_date', '<=', $asOf));
-        }
-
-        return (float) $query->selectRaw('COALESCE(SUM(debit - credit), 0) as balance')
-            ->pluck('balance')
-            ->first();
-    }
-
     public function uniqueIds(): array
     {
         return ['ulid']; // Indique au trait HasUlids d'utiliser 'ulid' et non 'id'

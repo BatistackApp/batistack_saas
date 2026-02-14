@@ -7,6 +7,7 @@ use App\Models\Core\Tenants;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 class PeriodClosureFactory extends Factory
 {
@@ -15,7 +16,7 @@ class PeriodClosureFactory extends Factory
     public function definition(): array
     {
         return [
-            'ulid' => $this->faker->words(),
+            'ulid' => Str::ulid(),
             'month' => $this->faker->randomNumber(),
             'year' => $this->faker->randomNumber(),
             'period_start' => Carbon::now(),

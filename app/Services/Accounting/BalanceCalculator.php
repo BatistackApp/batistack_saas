@@ -57,8 +57,8 @@ class BalanceCalculator
                 $row->account_number => [
                     'id' => $row->id,
                     'label' => $row->account_label,
-                    'debit' => $row->total_debit,
-                    'credit' => $row->total_credit,
+                    'debit' => (string) $row->total_debit,
+                    'credit' => (string) $row->total_credit,
                     'balance' => $row->balance,
                 ],
             ]);

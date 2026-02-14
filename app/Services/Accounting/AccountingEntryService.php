@@ -50,7 +50,7 @@ class AccountingEntryService
             $lineOrder = 0;
 
             foreach ($lines as $lineData) {
-                $account = ChartOfAccount::findOrFail($lineData['account_id']);
+                $account = ChartOfAccount::findOrFail($lineData['chart_of_account_id']);
 
                 $debit = isset($lineData['debit']) ? bcadd('0', (string) $lineData['debit'], 4) : '0';
                 $credit = isset($lineData['credit']) ? bcadd('0', (string) $lineData['credit'], 4) : '0';

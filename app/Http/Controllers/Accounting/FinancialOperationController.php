@@ -34,7 +34,7 @@ class FinancialOperationController extends Controller
         $start = Carbon::parse($request->start_date);
         $end = Carbon::parse($request->end_date);
 
-        ExportFecJob::dispatch($start, $end);
+        ExportFecJob::dispatch($start, $end, auth()->user()->id);
 
         return response()->json(['message' => 'Génération du FEC lancée. Vous recevrez une notification une fois le fichier prêt.']);
     }

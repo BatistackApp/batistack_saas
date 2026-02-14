@@ -34,6 +34,7 @@ class AccountingEntry extends Model
         'created_by',
         'validated_by',
         'validated_at',
+        'created_from_automation',
     ];
 
     protected function casts(): array
