@@ -13,7 +13,7 @@ class FleetImputationService
      * Impute les coûts d'un véhicule sur un projet durant sa période d'affectation.
      * Calcule le TCO complet : Consommation + Péages + Amortissement.
      */
-    public function imputeCostsToProject(VehicleAssignment $assignment): void
+    public function imputeCostsToProject(VehicleAssignment $assignment, ?CarbonImmutable $explicitEndDate = null): void
     {
         if (!$assignment->project_id) {
             return;
@@ -22,7 +22,7 @@ class FleetImputationService
         DB::transaction(function () use ($assignment) {
             $vehicle = $assignment->vehicle;
             $start = $assignment->started_at;
-            $end = $assignment->ended_at ?? now();
+            $end = $explicitEndDate ?? ($assignment->ended_at ?? now());
 
             // 1. Récupération des péages réels durant l'affectation
             $tolls = (string) $vehicle->tolls()

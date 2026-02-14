@@ -36,8 +36,9 @@ class VehicleController extends Controller
      */
     public function store(VehicleRequest $request): JsonResponse
     {
-        $request->merge(['tenants_id' => auth()->user()->tenants_id]);
-        $vehicle = Vehicle::create($request->all());
+        $data = $request->validated();
+        $data['tenants_id'] = auth()->user()->tenants_id;
+        $vehicle = Vehicle::create($data);
 
         return response()->json($vehicle, 201);
     }

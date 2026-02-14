@@ -13,8 +13,9 @@ class FleetAnalyticsService
      */
     public function getVehicleTco(Vehicle $vehicle, ?CarbonImmutable $startDate = null, ?CarbonImmutable $endDate = null): array
     {
-        $startDate ??= now()->subYear();
-        $endDate ??= now();
+        $startDate ??= CarbonImmutable::now()->subYear();
+        $endDate ??= CarbonImmutable::now();
+        $depreciation = '0';
 
         // 1. Coûts de consommation (Carburant/Énergie)
         $energyCosts = (string) $vehicle->consumptions()
@@ -29,7 +30,12 @@ class FleetAnalyticsService
         // 3. Estimation d'amortissement (Exemple: 20% par an)
         $purchasePrice = (string) ($vehicle->purchase_price ?? 0);
         $yearsOwned = $vehicle->purchase_date ? $vehicle->purchase_date->diffInYears(now(), true) : 1;
-        $depreciation = bcmul($purchasePrice, '0.20', 2); // 20% par an
+
+        if (bccomp($purchasePrice, '0', 2) > 0) {
+            $daysInPeriod = $startDate->diffInDays($endDate);
+            $dailyDepreciationRate = bcdiv($purchasePrice, '1825', 4); // Amortissement sur 5 ans (1825 jours)
+            $depreciation = bcmul($dailyDepreciationRate, (string) $daysInPeriod, 2);
+        }
 
         $totalTco = bcadd(bcadd($energyCosts, $tollCosts, 2), $depreciation, 2);
 
