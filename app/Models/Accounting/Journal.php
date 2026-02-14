@@ -37,4 +37,9 @@ class Journal extends Model
     {
         return $this->hasMany(AccountingEntry::class);
     }
+
+    public function uniqueIds(): array
+    {
+        return ['ulid']; // Indique au trait HasUlids d'utiliser 'ulid' et non 'id'
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Services\Accounting;
 
 use App\Models\Accounting\PeriodClosure;
 use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use DB;
 
 class PeriodClosureService
@@ -36,7 +37,7 @@ class PeriodClosureService
     /**
      * Vérifie si une période est clôturée.
      */
-    public function isPeriodClosed(Carbon $date): bool
+    public function isPeriodClosed(CarbonImmutable $date): bool
     {
         return PeriodClosure::where('month', $date->month)
             ->where('year', $date->year)

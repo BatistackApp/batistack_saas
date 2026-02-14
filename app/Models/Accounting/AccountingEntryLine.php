@@ -41,4 +41,9 @@ class AccountingEntryLine extends Model
     {
         return $this->belongsTo(ChartOfAccount::class, 'chart_of_account_id');
     }
+
+    public function uniqueIds(): array
+    {
+        return ['ulid']; // Indique au trait HasUlids d'utiliser 'ulid' et non 'id'
+    }
 }

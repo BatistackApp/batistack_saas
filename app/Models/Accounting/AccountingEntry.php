@@ -69,4 +69,9 @@ class AccountingEntry extends Model
     {
         return bccomp($this->total_debit, $this->total_credit, 4) === 0;
     }
+
+    public function uniqueIds(): array
+    {
+        return ['ulid']; // Indique au trait HasUlids d'utiliser 'ulid' et non 'id'
+    }
 }

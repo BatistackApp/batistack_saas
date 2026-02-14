@@ -43,4 +43,9 @@ class PeriodClosure extends Model
     {
         return $this->belongsTo(User::class, 'closed_by');
     }
+
+    public function uniqueIds(): array
+    {
+        return ['ulid']; // Indique au trait HasUlids d'utiliser 'ulid' et non 'id'
+    }
 }

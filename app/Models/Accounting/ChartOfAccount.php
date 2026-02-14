@@ -17,6 +17,7 @@ class ChartOfAccount extends Model
     use HasFactory, SoftDeletes, HasUlids, HasTenant;
 
     protected $fillable = [
+        'tenants_id',
         'account_number',
         'account_label',
         'account_type',
@@ -48,5 +49,10 @@ class ChartOfAccount extends Model
         return (float) $query->selectRaw('COALESCE(SUM(debit - credit), 0) as balance')
             ->pluck('balance')
             ->first();
+    }
+
+    public function uniqueIds(): array
+    {
+        return ['ulid']; // Indique au trait HasUlids d'utiliser 'ulid' et non 'id'
     }
 }
