@@ -20,6 +20,8 @@ class BankImportService
     {
         return DB::transaction(function () use ($account, $rows) {
             $count = 0;
+            $totalAmountAdded = '0'; // Initialiser avec une chaîne pour bc functions
+
             foreach ($rows as $row) {
                 // $row attendu : [date, label, amount]
                 $amount = (string) $row['amount'];
@@ -42,12 +44,16 @@ class BankImportService
                     'is_reconciled' => false,
                 ]);
 
-                // Mise à jour précise du solde du compte
-                $newBalance = bcadd((string)$account->current_balance, $amount, 2);
-                $account->update(['current_balance' => $newBalance]);
-
+                $totalAmountAdded = bcadd($totalAmountAdded, (string)$row['amount'], 2);
                 $count++;
             }
+
+            // Mise à jour unique du solde du compte après la boucle
+            $newBalance = bcadd((string)$account->current_balance, $totalAmountAdded, 2);
+            $account->update(['current_balance' => $newBalance]);
+            // Recharger le modèle si besoin plus tard dans la même transaction
+            $account->refresh();
+
             return $count;
         });
     }

@@ -40,7 +40,7 @@ class ReconciliationService
                 'amount' => $amount,
                 'payment_date' => $transaction->value_date,
                 'method' => $this->guessMethod($transaction->label, $transaction->type),
-                'created_by' => Auth::id(),
+                'created_by' => auth()->user()->id,
             ]);
 
             $this->updateInvoiceStatus($model);
@@ -68,14 +68,26 @@ class ReconciliationService
         };
     }
 
-    protected function guessMethod(string $label): BankPaymentMethod
+    protected function guessMethod(string $label, BankTransactionType $type): BankPaymentMethod
     {
         $label = mb_strtolower($label);
-        if (str_contains($label, 'virement') || str_contains($label, 'transfer')) return BankPaymentMethod::TransferIncoming;
-        if (str_contains($label, 'chèque') || str_contains($label, 'check')) return BankPaymentMethod::Check;
-        if (str_contains($label, 'cb ') || str_contains($label, 'card')) return BankPaymentMethod::Card;
 
-        return BankPaymentMethod::TransferIncoming;
+        if (str_contains($label, 'chèque') || str_contains($label, 'check')) {
+            return BankPaymentMethod::Check;
+        }
+        if (str_contains($label, 'cb ') || str_contains($label, 'card')) {
+            return BankPaymentMethod::Card;
+        }
+        // Ajouter d'autres méthodes spécifiques avant les virements généraux si nécessaire (e.g., LCR)
+
+        // Gestion des virements en fonction du type de transaction
+        if (str_contains($label, 'virement') || str_contains($label, 'transfer')) {
+            return ($type === BankTransactionType::Credit) ? BankPaymentMethod::TransferIncoming : BankPaymentMethod::TransferOutgoing;
+        }
+
+        // Par défaut, si rien n'est trouvé, on peut utiliser un virement par défaut
+        // Il pourrait être judicieux de logguer cette situation ou de retourner une méthode 'Unknown' si l'Enum le permet.
+        return ($type === BankTransactionType::Credit) ? BankPaymentMethod::TransferIncoming : BankPaymentMethod::TransferOutgoing;
     }
 
     /**
