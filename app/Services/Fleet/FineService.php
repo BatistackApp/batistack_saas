@@ -69,29 +69,6 @@ class FineService
     }
 
     /**
-     * Prépare les données pour l'export CSV ANTAI (Désignation en masse).
-     * Format basé sur les spécifications de l'ANTAI pour les flottes.
-     */
-    public function formatForAntaiExport(Collection $fines): array
-    {
-        return $fines->map(function ($fine) {
-            $driver = $fine->driver;
-
-            return [
-                'num_avis' => $fine->notice_number,
-                'date_infraction' => $fine->offense_at->format('d/m/Y'),
-                'immatriculation' => $fine->vehicle->license_plate,
-                'nom_conducteur' => $driver?->nom,
-                'prenom_conducteur' => $driver?->prenom,
-                'email' => $driver?->email,
-                'adresse' => $driver?->address, // Nécessite que le modèle User ait ces champs
-                'date_naissance' => $driver?->birth_date,
-                'num_permis' => $driver?->license_number,
-            ];
-        })->toArray();
-    }
-
-    /**
      * Statistiques du module pour le tableau de bord Flotte.
      */
     public function getStats(int $tenantId): array
