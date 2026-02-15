@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Fleet;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Fleet\VehicleRequest;
 use App\Models\Fleet\Vehicle;
+use App\Services\Fleet\FleetComplianceService;
 use App\Services\Fleet\FleetConsumptionService;
 use App\Services\Fleet\FleetTollService;
 use Illuminate\Http\JsonResponse;
@@ -43,13 +44,34 @@ class VehicleController extends Controller
     /**
      * Détails d'un véhicule incluant les compteurs et l'état de conformité.
      */
-    public function show(Vehicle $vehicle): JsonResponse
+    public function show(Vehicle $vehicle, FleetComplianceService $complianceService): JsonResponse
     {
-        return response()->json($vehicle->load([
+        $vehicle->load([
             'assignments.project',
+            'assignments.user',
             'inspections',
             'consumptions' => fn ($q) => $q->latest()->limit(10),
-        ]));
+        ]);
+
+        $complianceData = [
+            'is_compliant' => true,
+            'issues' => []
+        ];
+
+        if ($vehicle->currentAssignment?->user) {
+            $check = $complianceService->checkDriverCompliance($vehicle, $vehicle->currentAssignment->user);
+            if (!$check['status']) {
+                $complianceData = [
+                    'is_compliant' => false,
+                    'issues' => [$check['message']]
+                ];
+            }
+        }
+
+        return response()->json([
+            'vehicle' => $vehicle,
+            'compliance' => $complianceData
+        ]);
     }
 
     /**

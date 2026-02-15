@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Fleet;
 use App\Http\Controllers\Controller;
 use App\Models\Fleet\Vehicle;
 use App\Services\Fleet\FleetAnalyticsService;
+use App\Services\Fleet\FleetComplianceService;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +13,8 @@ use Illuminate\Http\Request;
 class FleetAnalyticsController extends Controller
 {
     public function __construct(
-        protected FleetAnalyticsService $analyticsService
+        protected FleetAnalyticsService $analyticsService,
+        protected FleetComplianceService $complianceService,
     ) {}
 
     /**
@@ -29,12 +31,7 @@ class FleetAnalyticsController extends Controller
         $tcoData['average_consumption'] = $this->analyticsService->calculateAverageConsumption($vehicle);
 
         return response()->json([
-            'vehicle' => [
-                'id' => $vehicle->id,
-                'name' => $vehicle->name,
-                'license_plate' => $vehicle->license_plate,
-                'internal_code' => $vehicle->internal_code,
-            ],
+            'vehicle' => $vehicle->only(['id', 'name', 'license_plate', 'internal_code']),
             'period' => [
                 'from' => $startDate->toDateString(),
                 'to' => $endDate->toDateString(),
@@ -48,21 +45,58 @@ class FleetAnalyticsController extends Controller
      */
     public function getFleetGlobalStats(): JsonResponse
     {
-        $vehicles = Vehicle::where('is_active', true)->with('consumptions', 'tolls')->get();
+        $vehicles = Vehicle::where('is_active', true)
+            ->with(['currentAssignment.user', 'inspections'])
+            ->get();
 
-        $stats = $vehicles->map(function ($vehicle) {
+        $complianceReport = [
+            'total_compliant' => 0,
+            'total_critical' => 0,
+            'critical_vehicles' => []
+        ];
+
+        $stats = $vehicles->map(function ($vehicle) use (&$complianceReport) {
+            // Calcul TCO rapide
+            $tco = $this->analyticsService->getVehicleTco($vehicle, CarbonImmutable::now()->subYear());
+
+            // Audit de conformité
+            $isCompliant = true;
+            $driverIssue = null;
+
+            if ($vehicle->currentAssignment?->user) {
+                $check = $this->complianceService->checkDriverCompliance($vehicle, $vehicle->currentAssignment->user);
+                if (!$check['status']) {
+                    $isCompliant = false;
+                    $driverIssue = $check['message'];
+                }
+            }
+
+            if (!$isCompliant) {
+                $complianceReport['total_critical']++;
+                $complianceReport['critical_vehicles'][] = [
+                    'id' => $vehicle->id,
+                    'internal_code' => $vehicle->internal_code,
+                    'issue' => $driverIssue
+                ];
+            } else {
+                $complianceReport['total_compliant']++;
+            }
+
             return [
                 'vehicle' => $vehicle->internal_code,
                 'odometer' => $vehicle->current_odometer,
                 'consumption' => $this->analyticsService->calculateAverageConsumption($vehicle),
-                'tco_year' => $this->analyticsService->getVehicleTco($vehicle, CarbonImmutable::now()->subYear())['total_tco_ht']
+                'tco_year_ht' => $tco['total_tco_ht'],
+                'status' => $isCompliant ? 'ok' : 'alert'
             ];
         });
 
         return response()->json([
-            'total_vehicles' => $vehicles->count(),
-            'fleet_details' => $stats,
-            'alerts_count' => \App\Models\Fleet\VehicleInspection::where('next_due_date', '<', now()->addDays(15))->count()
+            'summary' => [
+                'total_vehicles' => $vehicles->count(),
+                'compliance' => $complianceReport,
+            ],
+            'fleet_details' => $stats
         ]);
     }
 }
