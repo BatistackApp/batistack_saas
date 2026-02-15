@@ -4,12 +4,15 @@ namespace App\Models\Fleet;
 
 use App\Models\Core\Tenants;
 use App\Models\User;
+use App\Observers\Fleet\VehicleCheckObserver;
 use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+#[ObservedBy([VehicleCheckObserver::class])]
 class VehicleCheck extends Model
 {
     use HasFactory, HasTenant;
