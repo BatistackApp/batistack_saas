@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Jobs\Fleet\AuditDriverComplianceJob;
 use App\Jobs\Fleet\ExportAntaiFinesJob;
 use App\Jobs\Fleet\MonthlyFleetImputationJob;
 use App\Jobs\Fleet\ProcessFineMatchingJob;
@@ -33,6 +34,10 @@ class FleetServiceProvider extends ServiceProvider
 
             $schedule->job(new ScanVehiclesForMaintenanceJob())
                 ->dailyAt('04:30')
+                ->onOneServer();
+
+            $schedule->job(new AuditDriverComplianceJob())
+                ->dailyAt('03:00')
                 ->onOneServer();
 
             $schedule->call(function () {
