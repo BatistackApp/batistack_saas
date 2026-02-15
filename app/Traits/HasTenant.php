@@ -19,7 +19,7 @@ trait HasTenant
      * Le "boot" du trait est appelé automatiquement par Eloquent.
      * Il enregistre le scope global et le hook de création.
      */
-    protected static function bootBelongsToTenant(): void
+    protected static function bootHasTenant(): void
     {
         // 1. Applique le scope global pour filtrer les SELECT/UPDATE/DELETE
         static::addGlobalScope(new TenantScope);
