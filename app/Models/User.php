@@ -4,6 +4,8 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Core\Tenants;
+use App\Models\Tiers\TierQualification;
+use App\Models\Tiers\Tiers;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,7 +33,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'tenants_id'
+        'tenants_id',
+        'tiers_id',
     ];
 
     /**
@@ -64,6 +67,11 @@ class User extends Authenticatable
         return $this->hasRole('tenant_admin');
     }
 
+    public function tiers(): BelongsTo
+    {
+        return $this->belongsTo(Tiers::class, 'tiers_id');
+    }
+
     /**
      * Get the user's initials
      */
@@ -74,5 +82,22 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    /**
+     * Vérifie si l'utilisateur possède une habilitation spécifique valide.
+     * * @param string $certificationType Le libellé de la qualification (ex: CACES R482-A)
+     * @return bool
+     */
+    public function hasValidQualification(string $certificationType): bool
+    {
+        if (!$this->tier_id) {
+            return false;
+        }
+
+        return TierQualification::where('tiers_id', $this->tiers_id)
+            ->where('label', $certificationType)
+            ->where('valid_until', '>=', now())
+            ->exists();
     }
 }
