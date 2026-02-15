@@ -7,12 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Fleet\MaintenanceCompletionRequest;
 use App\Http\Requests\Fleet\MaintenanceRequest;
 use App\Models\Fleet\VehicleMaintenance;
+use App\Services\Fleet\FleetMaintenanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class MaintenanceController extends Controller
 {
+    public function __construct(protected FleetMaintenanceService $maintenanceService) {}
+
     /**
      * Liste filtrée des interventions de maintenance.
      */
@@ -71,20 +74,11 @@ class MaintenanceController extends Controller
      */
     public function complete(MaintenanceCompletionRequest $request, VehicleMaintenance $maintenance): JsonResponse
     {
-        $data = $request->validated();
-        $data['maintenance_status'] = MaintenanceStatus::Completed;
-        $data['completed_at'] = $data['completed_at'] ?? now();
-
-        // Calcul du temps d'immobilisation (Downtime)
-        if ($maintenance->started_at) {
-            $data['downtime_hours'] = $maintenance->started_at->diffInHours($data['completed_at']);
-        }
-
-        $maintenance->update($data);
+        $this->maintenanceService->completeIntervention($maintenance, $request->validated());
 
         return response()->json([
-            'message' => 'Maintenance clôturée et compteurs mis à jour.',
-            'data' => $maintenance->fresh()
+            'message' => 'La maintenance a été clôturée avec succès.',
+            'data'    => $maintenance->fresh()
         ]);
     }
 

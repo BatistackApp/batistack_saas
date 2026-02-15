@@ -86,13 +86,15 @@ class FleetMaintenanceService
     public function completeIntervention(VehicleMaintenance $maintenance, array $data): bool
     {
         return DB::transaction(function () use ($maintenance, $data) {
-            $completedAt = Carbon::parse($data['completed_at'] ?? now());
-            $startedAt = $maintenance->started_at ?? $maintenance->scheduled_at ?? $maintenance->created_at;
+            $completedAt = isset($data['completed_at']) ? Carbon::parse($data['completed_at']) : now();
 
             // Calcul du temps d'immobilisation en heures
-            $downtime = $startedAt->diffInHours($completedAt);
+            $downtime = 0;
+            if ($maintenance->started_at) {
+                $downtime = $maintenance->started_at->diffInHours($completedAt);
+            }
 
-            return $maintenance->update([
+            $maintenance->update([
                 'maintenance_status' => MaintenanceStatus::Completed,
                 'completed_at' => $completedAt,
                 'resolution_notes' => $data['resolution_notes'] ?? null,
@@ -103,6 +105,12 @@ class FleetMaintenanceService
                 'technician_name' => $data['technician_name'] ?? $maintenance->technician_name,
                 'downtime_hours' => $downtime,
             ]);
+
+            if (isset($data['odometer_reading']) && $data['odometer_reading'] > $maintenance->vehicle->current_odometer) {
+                $maintenance->vehicle->update(['current_odometer' => $data['odometer_reading']]);
+            }
+
+            return $maintenance;
         });
     }
 }
