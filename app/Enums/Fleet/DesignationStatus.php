@@ -12,6 +12,7 @@ enum DesignationStatus: string implements HasLabel, HasColor, HasIcon
 {
     case None = 'none';               // Pas de désignation nécessaire
     case Pending = 'pending';         // En attente d'envoi à l'ANTAI
+    case Exported = 'exported';       // Exporté (fichier généré mais pas encore envoyé)
     case Sent = 'sent';               // Envoyé (export généré ou API)
     case Confirmed = 'confirmed';     // Confirmé par l'ANTAI
 
@@ -22,6 +23,7 @@ enum DesignationStatus: string implements HasLabel, HasColor, HasIcon
             self::Pending => 'amber',
             self::Sent => 'blue',
             self::Confirmed => 'green',
+            self::Exported => 'indigo',
         };
     }
 
@@ -32,6 +34,7 @@ enum DesignationStatus: string implements HasLabel, HasColor, HasIcon
             self::Pending => 'heroicon-o-clock',
             self::Sent => 'heroicon-o-paper-airplane',
             self::Confirmed => 'heroicon-o-check-circle',
+            self::Exported => 'heroicon-o-document',
         };
     }
 
@@ -42,6 +45,7 @@ enum DesignationStatus: string implements HasLabel, HasColor, HasIcon
             self::Pending => __('fleet.designation_statuses.pending'),
             self::Sent => __('fleet.designation_statuses.sent'),
             self::Confirmed => __('fleet.designation_statuses.confirmed'),
+            self::Exported => __('fleet.designation_statuses.exported'),
         };
     }
 }

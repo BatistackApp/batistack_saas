@@ -40,5 +40,6 @@ return [
         'pending' => 'En attente d\'envoi à l\'ANTAI',
         'sent' => 'Envoyé',
         'confirmed' => 'Confirmé par l\'ANTAI',
+        'exported' => 'Exporté (fichier généré mais pas encore envoyé)',
     ],
 ];

@@ -43,4 +43,12 @@ Route::prefix('fleet')->group(function () {
         Route::post('inspections', [VehicleInspectionController::class, 'store'])
             ->name('vehicle-inspections.store');
     });
+
+    Route::prefix('fines')->group(function () {
+        Route::get('export-ready', [\App\Http\Controllers\Fleet\FineExportController::class, 'index'])
+            ->name('fines.export-ready');
+
+        Route::post('export-antai', [\App\Http\Controllers\Fleet\FineExportController::class, 'export'])
+            ->name('fines.export-antai');
+    });
 });

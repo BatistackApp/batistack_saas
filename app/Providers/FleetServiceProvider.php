@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Jobs\Fleet\ExportAntaiFinesJob;
 use App\Jobs\Fleet\MonthlyFleetImputationJob;
 use App\Jobs\Fleet\ProcessFineMatchingJob;
 use App\Jobs\Fleet\SyncAllVehiclesApiDataJob;
@@ -24,6 +25,10 @@ class FleetServiceProvider extends ServiceProvider
 
             $schedule->job(new MonthlyFleetImputationJob())
                 ->monthlyOn(1, '04:00');
+
+            $schedule->job(new ExportAntaiFinesJob())
+                ->weeklyOn(1, '05:00')
+                ->onOneServer();
 
             $schedule->call(function () {
                 $pendingFines = VehicleFine::where('status', 'received')
