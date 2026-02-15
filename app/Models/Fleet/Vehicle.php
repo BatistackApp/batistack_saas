@@ -53,6 +53,11 @@ class Vehicle extends Model
         return $this->hasMany(VehicleToll::class);
     }
 
+    public function maintenances(): HasMany
+    {
+        return $this->hasMany(VehicleMaintenance::class);
+    }
+
     public function currentAssignment(): HasOne
     {
         return $this->hasOne(VehicleAssignment::class)->whereNull('ended_at')->latestOfMany('started_at');

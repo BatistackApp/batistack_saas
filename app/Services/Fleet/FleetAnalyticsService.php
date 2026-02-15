@@ -4,6 +4,7 @@ namespace App\Services\Fleet;
 
 use App\Models\Fleet\Vehicle;
 use Carbon\CarbonImmutable;
+use DB;
 
 class FleetAnalyticsService
 {
@@ -27,6 +28,11 @@ class FleetAnalyticsService
             ->whereBetween('entry_at', [$startDate, $endDate])
             ->sum('amount_ht');
 
+        // 3. NOUVEAU : Coûts de Maintenance (Préventive + Curative)
+        $maintenanceCosts = $vehicle->maintenances()
+            ->whereBetween('completed_at', [$startDate, $endDate])
+            ->sum(DB::raw('cost_parts + cost_labor'));
+
         // 3. Estimation d'amortissement (Exemple: 20% par an)
         $purchasePrice = (string) ($vehicle->purchase_price ?? 0);
         $yearsOwned = $vehicle->purchase_date ? $vehicle->purchase_date->diffInYears(now(), true) : 1;
@@ -38,6 +44,7 @@ class FleetAnalyticsService
         }
 
         $totalTco = bcadd(bcadd($energyCosts, $tollCosts, 2), $depreciation, 2);
+        $totalTco += $maintenanceCosts; // Ajouter les coûts de maintenance au TCO total
 
         // 4. Coût au kilomètre
         $kmTraveled = (float) $this->getDistanceTraveled($vehicle, $startDate, $endDate);
@@ -46,10 +53,12 @@ class FleetAnalyticsService
         return [
             'energy_ht' => (float) $energyCosts,
             'tolls_ht' => (float) $tollCosts,
+            'maintenance_ht' => (float) $maintenanceCosts,
             'depreciation_est' => (float) $depreciation,
             'total_tco_ht' => (float) $totalTco,
             'km_traveled' => $kmTraveled,
-            'cost_per_km' => $costPerKm
+            'cost_per_km' => $costPerKm,
+            'downtime_total_hours' => $vehicle->maintenances()->whereBetween('completed_at', [$startDate, $endDate])->sum('downtime_hours'),
         ];
     }
 
