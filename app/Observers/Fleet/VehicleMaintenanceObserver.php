@@ -50,5 +50,15 @@ class VehicleMaintenanceObserver
                 $vehicle->update($updates);
             }
         }
+
+        if ($maintenance->wasChanged('maintenance_status') && $maintenance->maintenance_status === MaintenanceStatus::InProgress) {
+            $maintenance->vehicle->updateQuietly([
+                'is_available' => false,
+            ]);
+        } else {
+            $maintenance->vehicle->updateQuietly([
+                'is_available' => true,
+            ]);
+        }
     }
 }

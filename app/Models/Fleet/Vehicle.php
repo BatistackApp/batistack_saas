@@ -30,6 +30,7 @@ class Vehicle extends Model
             'current_odometer' => 'decimal:2',
             'purchase_date' => 'date',
             'last_external_sync_at' => 'datetime',
+            'is_available' => 'boolean',
         ];
     }
 

@@ -9,6 +9,7 @@ return new class extends Migration {
     {
         Schema::table('vehicles', function (Blueprint $table) {
             $table->integer('current_hours')->default(0)->after('current_odometer');
+            $table->boolean('is_available')->default(true)->after('current_hours');
         });
     }
 
@@ -16,6 +17,7 @@ return new class extends Migration {
     {
         Schema::table('vehicles', function (Blueprint $table) {
             $table->dropColumn('current_hours');
+            $table->dropColumn('is_available');
         });
     }
 };
