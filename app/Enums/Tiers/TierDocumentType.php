@@ -11,4 +11,6 @@ enum TierDocumentType: string
     case FOREIGN_WORKERS = 'LISTE_TRAVAILLEURS_ETRANGERS';
     case BTP_CARD = 'CARTE_BTP';
     case DC4 = 'FORMULAIRE_DC4';
+
+    case DRIVERLICENCE = 'DRIVER_LICENCE';
 }
