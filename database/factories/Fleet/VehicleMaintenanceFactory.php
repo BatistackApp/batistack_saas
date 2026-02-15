@@ -2,6 +2,8 @@
 
 namespace Database\Factories\Fleet;
 
+use App\Enums\Fleet\MaintenanceStatus;
+use App\Enums\Fleet\MaintenanceType;
 use App\Models\Core\Tenants;
 use App\Models\Fleet\Vehicle;
 use App\Models\Fleet\VehicleMaintenance;
@@ -18,15 +20,14 @@ class VehicleMaintenanceFactory extends Factory
     {
         return [
             'technician_name' => $this->faker->name(),
-            'maintenance_type' => $this->faker->word(),
-            'maintenance_status' => $this->faker->word(),
+            'maintenance_type' => $this->faker->randomElement(MaintenanceType::cases()),
+            'maintenance_status' => $this->faker->randomElement(MaintenanceStatus::cases()),
             'description' => $this->faker->text(),
             'resolution_notes' => $this->faker->word(),
             'odometer_reading' => $this->faker->randomFloat(),
             'hours_reading' => $this->faker->randomFloat(),
             'cost_parts' => $this->faker->randomFloat(),
             'cost_labor' => $this->faker->randomFloat(),
-            'total_cost' => $this->faker->randomFloat(),
             'reported_at' => Carbon::now(),
             'scheduled_at' => Carbon::now(),
             'started_at' => Carbon::now(),

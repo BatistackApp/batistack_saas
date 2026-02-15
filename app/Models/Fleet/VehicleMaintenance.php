@@ -33,7 +33,6 @@ class VehicleMaintenance extends Model
         'hours_reading',
         'cost_parts',
         'cost_labor',
-        'total_cost',
         'reported_at',
         'scheduled_at',
         'started_at',
