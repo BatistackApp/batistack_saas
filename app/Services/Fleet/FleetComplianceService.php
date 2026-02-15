@@ -42,7 +42,7 @@ class FleetComplianceService
         if (!$license) {
             return [
                 'status' => false,
-                'message' => 'Profil de conformité (Tiers) manquant pour cet utilisateur.',
+                'message' => 'Le permis de conduire est manquant, expiré ou non validé.',
                 'errors' => ['user_id' => ['Le permis de conduire est manquant, expiré ou non validé.']]
             ];
         }
@@ -57,7 +57,7 @@ class FleetComplianceService
             if (!$hasQualification) {
                 return [
                     'status' => false,
-                    'message' => 'Profil de conformité (Tiers) manquant pour cet utilisateur.',
+                    'message' => "La qualification spécifique '{$vehicle->required_certification_type}' est requise pour ce véhicule.",
                     'errors' => ['user_id' => ["La qualification spécifique '{$vehicle->required_certification_type}' est requise pour ce véhicule."]]
                 ];
             }
