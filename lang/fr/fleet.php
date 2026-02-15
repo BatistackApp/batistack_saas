@@ -28,4 +28,18 @@ return [
         'vgp' => 'Vérification Générale Périodique (VGP)',
         'tachograph' => 'Chronotachygraphe',
     ],
+    'fines_statuses' => [
+        'received' => 'Reçu',
+        'driver_assigned' => 'Conducteur assigné',
+        'contested' => 'Contesté',
+        'paid' => 'Payé',
+        'archived' => 'Archivé',
+    ],
+    'designation_statuses' => [
+        'none' => 'Aucune désignation nécessaire',
+        'pending' => 'En attente d\'envoi à l\'ANTAI',
+        'sent' => 'Envoyé',
+        'confirmed' => 'Confirmé par l\'ANTAI',
+        'exported' => 'Exporté (fichier généré mais pas encore envoyé)',
+    ],
 ];
