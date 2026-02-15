@@ -23,7 +23,6 @@ class VehicleAssignmentFactory extends Factory
             'user_id' => User::factory(), // Conducteur attitré
             'started_at' => now()->subDays($this->faker->numberBetween(1, 30)),
             'ended_at' => null, // Active par défaut
-            'start_odometer' => $this->faker->numberBetween(1000, 50000),
             'notes' => $this->faker->sentence(),
         ];
     }
