@@ -38,6 +38,9 @@ class VehicleFine extends Model
         'is_project_imputable',
         'document_path',
         'notes',
+        'exported_at',
+        'type',
+        'points_lost',
     ];
 
     public function vehicle(): BelongsTo
@@ -71,6 +74,8 @@ class VehicleFine extends Model
             'amount_initial' => 'decimal:2',
             'amount_discounted' => 'decimal:2',
             'amount_increased' => 'decimal:2',
+            'exported_at' => 'datetime',
+            'points_lost' => 'integer',
         ];
     }
 

@@ -38,6 +38,10 @@ return new class extends Migration {
             $table->string('document_path')->nullable();
             $table->text('notes')->nullable();
 
+            $table->timestamp('exported_at')->nullable();
+            $table->string('type')->nullable();
+            $table->integer('points_lost')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
 

@@ -47,7 +47,6 @@ class VehicleFineRequest extends FormRequest
 
             // Note interne
             'notes' => ['nullable', 'string'],
-            'tenants_id' => ['required', 'exists:tenants,id'],
         ];
     }
 

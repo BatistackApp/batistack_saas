@@ -61,37 +61,6 @@ class VehicleFineController extends Controller
     }
 
     /**
-     * ACTION MÉTIER : Génération du flux ANTAI.
-     * Déclenche la création du fichier XML pour les contraventions sélectionnées.
-     */
-    public function exportAntai(Request $request, AntaiExportService $antaiService)
-    {
-        $request->validate([
-            'fine_ids' => 'required|array',
-            'fine_ids.*' => 'exists:vehicle_fines,id'
-        ]);
-
-        $fines = VehicleFine::whereIn('id', $request->fine_ids)
-            ->with(['vehicle', 'user'])
-            ->get();
-
-        // Vérification que toutes les amendes ont un chauffeur assigné
-        if ($fines->contains(fn($f) => is_null($f->user_id))) {
-            return response()->json([
-                'error' => 'Certaines contraventions n\'ont pas de chauffeur assigné. Impossible de générer l\'export.'
-            ], 422);
-        }
-
-        $xmlContent = $antaiService->generateCsv($fines, auth()->user()->tenants_id);
-        $filename = 'antai_export_' . now()->format('Ymd_His') . '.xml';
-
-        return Response::make($xmlContent, 200, [
-            'Content-Type' => 'application/xml',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-        ]);
-    }
-
-    /**
      * Suppression d'une contravention (si saisie par erreur).
      */
     public function destroy(VehicleFine $fine): JsonResponse
