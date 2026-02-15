@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Jobs\Fleet\ExportAntaiFinesJob;
 use App\Jobs\Fleet\MonthlyFleetImputationJob;
 use App\Jobs\Fleet\ProcessFineMatchingJob;
+use App\Jobs\Fleet\ScanVehiclesForMaintenanceJob;
 use App\Jobs\Fleet\SyncAllVehiclesApiDataJob;
 use App\Models\Fleet\VehicleFine;
 use Illuminate\Console\Scheduling\Schedule;
@@ -28,6 +29,10 @@ class FleetServiceProvider extends ServiceProvider
 
             $schedule->job(new ExportAntaiFinesJob())
                 ->weeklyOn(1, '05:00')
+                ->onOneServer();
+
+            $schedule->job(new ScanVehiclesForMaintenanceJob())
+                ->dailyAt('04:30')
                 ->onOneServer();
 
             $schedule->call(function () {
