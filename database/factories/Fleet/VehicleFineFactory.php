@@ -2,6 +2,8 @@
 
 namespace Database\Factories\Fleet;
 
+use App\Enums\Fleet\DesignationStatus;
+use App\Enums\Fleet\FinesStatus;
 use App\Models\Core\Tenants;
 use App\Models\Fleet\FineCategory;
 use App\Models\Fleet\Vehicle;
@@ -17,18 +19,20 @@ class VehicleFineFactory extends Factory
 
     public function definition(): array
     {
+        $offense = fake()->dateTimeBetween('-1 year', 'now');
+        $project_imputable = $this->faker->boolean();
         return [
-            'notice_number' => $this->faker->word(),
-            'offense_at' => Carbon::now(),
-            'location' => $this->faker->word(),
+            'notice_number' => 'AB-'.fake()->numerify('###').'-CD',
+            'offense_at' => $offense,
+            'location' => $this->faker->address(),
             'amount_initial' => $this->faker->randomFloat(),
             'amount_discounted' => $this->faker->randomFloat(),
             'amount_increased' => $this->faker->randomFloat(),
-            'due_date' => Carbon::now(),
-            'status' => $this->faker->word(),
-            'designation_status' => $this->faker->word(),
-            'is_project_imputable' => $this->faker->boolean(),
-            'document_path' => $this->faker->word(),
+            'due_date' => $offense->add(new \DateInterval('P45D')),
+            'status' => $this->faker->randomElement(FinesStatus::cases()),
+            'designation_status' => $this->faker->randomElement(DesignationStatus::cases()),
+            'is_project_imputable' => $project_imputable,
+            'document_path' => $this->faker->filePath(),
             'notes' => $this->faker->word(),
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
@@ -37,7 +41,7 @@ class VehicleFineFactory extends Factory
             'vehicle_id' => Vehicle::factory(),
             'fine_category_id' => FineCategory::factory(),
             'user_id' => User::factory(),
-            'project_id' => Project::factory(),
+            'project_id' => $project_imputable ? Project::factory() : null,
         ];
     }
 }

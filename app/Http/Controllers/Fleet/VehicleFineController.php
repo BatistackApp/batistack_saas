@@ -17,7 +17,7 @@ class VehicleFineController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $fines = VehicleFine::with(['vehicle', 'user'])
+        $fines = VehicleFine::with(['vehicle', 'driver'])
             ->when($request->vehicle_id, fn($q) => $q->where('vehicle_id', $request->vehicle_id))
             ->when($request->status, fn($q) => $q->where('status', $request->status))
             ->latest('offense_at')

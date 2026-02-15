@@ -37,8 +37,8 @@ class VehicleFineRequest extends FormRequest
             ],
 
             // Détails de l'infraction
-            'offence_date' => ['required', 'date', 'before_or_equal:now'],
-            'amount' => ['required', 'numeric', 'min:0'],
+            'offense_at' => ['required', 'date', 'before_or_equal:now'],
+            'amount_initial' => ['required', 'numeric', 'min:0'],
             'points_lost' => ['nullable', 'integer', 'min:0', 'max:12'],
 
             // Localisation et type
@@ -47,6 +47,7 @@ class VehicleFineRequest extends FormRequest
 
             // Note interne
             'notes' => ['nullable', 'string'],
+            'tenants_id' => ['required', 'exists:tenants,id'],
         ];
     }
 
