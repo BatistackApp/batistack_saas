@@ -91,7 +91,7 @@ class User extends Authenticatable
      */
     public function hasValidQualification(string $certificationType): bool
     {
-        if (!$this->tier_id) {
+        if (!$this->tiers_id) {
             return false;
         }
 
