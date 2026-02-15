@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Notifications\Notifiable;
 
@@ -42,9 +43,9 @@ class Tiers extends Model
         return $this->hasMany(TierType::class);
     }
 
-    public function users(): HasMany
+    public function user(): HasOne
     {
-        return $this->hasMany(User::class);
+        return $this->hasOne(User::class);
     }
 
     public function documents(): HasMany
