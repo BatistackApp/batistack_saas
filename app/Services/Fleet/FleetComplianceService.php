@@ -2,6 +2,8 @@
 
 namespace App\Services\Fleet;
 
+use App\Enums\Tiers\TierDocumentStatus;
+use App\Enums\Tiers\TierDocumentType;
 use App\Models\Fleet\Vehicle;
 use App\Models\Tiers\TierQualification;
 use App\Models\User;
@@ -16,51 +18,54 @@ class FleetComplianceService
      */
     public function checkDriverCompliance(Vehicle $vehicle, User $user, ?CarbonImmutable $date = null): array
     {
-        $date ??= now();
-        $requiredCert = $vehicle->required_certification_type;
+        $errors = [];
 
-        // 1. Si aucune certification n'est requise, c'est conforme par défaut
-        if (empty($requiredCert)) {
-            return [
-                'status' => true,
-                'message' => null
-            ];
-        }
-
-        // 2. Récupération du profil Tiers de l'utilisateur
-        // On suppose ici que le User est lié à un Tiers (via la relation users() définie dans le modèle Tiers)
-        $tier = $user->tiers;
+        // Récupération du profil "Tiers" associé au User (conducteur)
+        // On suppose que l'utilisateur est lié à un Tiers de type 'personne_physique' (Employé)
+        $tier = $user->tiers; // Relation à définir ou via un repo
 
         if (!$tier) {
             return [
                 'status' => false,
-                'message' => "L'utilisateur n'est pas lié à un profil de tiers. Impossible de vérifier ses habilitations."
+                'message' => 'Profil de conformité (Tiers) manquant pour cet utilisateur.',
+                'errors' => ['user_id' => ['Profil de conformité introuvable.']]
             ];
         }
 
-        // 3. Recherche de la qualification correspondante
-        $qualification = TierQualification::where('tiers_id', $tier->id)
-            ->where('label', $requiredCert)
+        // 1. VÉRIFICATION SYSTÉMATIQUE DU PERMIS DE CONDUIRE
+        $license = $tier->documents()
+            ->where('type', TierDocumentType::DRIVERLICENCE) // Type de document générique
+            ->where('status', TierDocumentStatus::Valid)
+            ->where('expires_at', '>', now())
             ->first();
 
-        if (!$qualification) {
+        if (!$license) {
             return [
                 'status' => false,
-                'message' => "Le conducteur ne possède pas l'habilitation requise : {$requiredCert}."
+                'message' => 'Profil de conformité (Tiers) manquant pour cet utilisateur.',
+                'errors' => ['user_id' => ['Le permis de conduire est manquant, expiré ou non validé.']]
             ];
         }
 
-        // 4. Vérification de la date de validité
-        if ($qualification->valid_until && $qualification->valid_until->isBefore($date)) {
-            return [
-                'status' => false,
-                'message' => "L'habilitation {$requiredCert} a expiré le " . $qualification->valid_until->format('d/m/Y') . "."
-            ];
+        // 2. VÉRIFICATION DES CERTIFICATIONS SPÉCIFIQUES (ex: CACES, Habilitation)
+        if ($vehicle->required_certification_type) {
+            $hasQualification = $tier->qualifications()
+                ->where('label', $vehicle->required_certification_type)
+                ->where('valid_until', '>', now())
+                ->exists();
+
+            if (!$hasQualification) {
+                return [
+                    'status' => false,
+                    'message' => 'Profil de conformité (Tiers) manquant pour cet utilisateur.',
+                    'errors' => ['user_id' => ["La qualification spécifique '{$vehicle->required_certification_type}' est requise pour ce véhicule."]]
+                ];
+            }
         }
 
         return [
             'status' => true,
-            'message' => "Habilitation {$requiredCert} valide."
+            'message' => 'Habilitation valide.'
         ];
     }
 

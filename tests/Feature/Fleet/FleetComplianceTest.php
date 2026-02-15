@@ -34,8 +34,12 @@ beforeEach(function () {
  * --- TESTS DE VALIDATION DE CONFORMITÉ (AFFECTATIONS) ---
  */
 
-it('refuse d\'assigner un conducteur sans permis de conduire enregistré', function () {
+it('refuse l\'affectation si le conducteur n\'a aucun permis enregistré', function () {
     $driver = User::factory()->create(['tenants_id' => $this->tenant->id]);
+
+    // On crée le Tiers associé mais sans document
+    $tier = Tiers::factory()->create(['tenants_id' => $this->tenant->id]);
+    $driver->update(['tiers_id' => $tier->id]); // On suppose l'existence de cette FK
 
     $response = $this->actingAs($this->user)
         ->postJson('/api/fleet/vehicles/assignments', [
@@ -47,21 +51,21 @@ it('refuse d\'assigner un conducteur sans permis de conduire enregistré', funct
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['user_id']);
 
-    expect($response->json('errors.user_id.0'))->toContain('permis de conduire introuvable');
+    expect($response->json('errors.user_id.0'))->toContain('permis de conduire');
 });
 
-it('refuse d\'assigner un conducteur dont le permis est expiré', function () {
+it('refuse l\'affectation si le permis est expiré même sans certification spécifique sur le véhicule', function () {
     $driver = User::factory()->create(['tenants_id' => $this->tenant->id]);
-
     $tier = Tiers::factory()->create(['tenants_id' => $this->tenant->id]);
-    // On crée un document de permis déjà expiré
+    $driver->update(['tiers_id' => $tier->id]);
+
+    // Document expiré
     TierDocument::create([
-        'tiers_id' => $tier->id, // Dans votre logique, cela peut être lié au User/Employee via une autre table,
-        // ici on simule la présence du doc requis par le service.
-        'type' => 'permis_conduire',
+        'tiers_id' => $tier->id,
+        'type' => \App\Enums\Tiers\TierDocumentType::DRIVERLICENCE,
         'status' => TierDocumentStatus::Expired->value,
-        'expires_at' => now()->subDays(10),
-        'file_path' => 'tests/permis.pdf'
+        'expires_at' => now()->subDays(1),
+        'file_path' => 'tests/expired.pdf'
     ]);
 
     $response = $this->actingAs($this->user)
@@ -79,6 +83,8 @@ it('autorise l\'affectation si le conducteur est parfaitement en règle', functi
 
     // Simulation d'un permis valide (Logique simplifiée pour le test)
     // Note : Le service de conformité utilise le DriverComplianceService.
+    $tiers = Tiers::factory()->create(['tenants_id' => $this->tenant->id]);
+    $driver->update(['tiers_id' => $tiers->id]);
 
     // Dans ce test, nous mockons ou créons les conditions de succès
     $response = $this->actingAs($this->user)
@@ -90,6 +96,10 @@ it('autorise l\'affectation si le conducteur est parfaitement en règle', functi
 
     // Si vos documents ne sont pas encore liés en BD, le test passera
     // selon les conditions par défaut de votre service.
+    $response->assertStatus(201);
+
+    expect($response->json('errors.vehicle_id.0'))->toContain('permis de conduire');
+
     if ($response->status() === 201) {
         $this->assertDatabaseHas('vehicle_assignments', [
             'vehicle_id' => $this->vehicle->id,
@@ -154,7 +164,6 @@ it('identifie les véhicules en alerte dans les statistiques globales', function
     $response = $this->actingAs($this->user)
         ->getJson('/api/fleet/analytics/global');
 
-    dd($response->json());
 
     $response->assertStatus(200)
         ->assertJsonFragment(['internal_code' => 'V-ALERT'])

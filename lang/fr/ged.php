@@ -10,5 +10,6 @@ return [
         'identity' => 'Pièce d\'identité',
         'photo' => 'Photo',
         'other' => 'Autre',
+        'driver_licence' => 'Permis de conduire',
     ],
 ];

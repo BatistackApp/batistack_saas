@@ -15,6 +15,7 @@ enum DocumentType: string implements HasLabel
     case Identity = 'identity';
     case Photo = 'photo';
     case Other = 'other';
+    case DriverLicence = 'driver_licence';
 
     public function getLabel(): string|Htmlable|null
     {
@@ -27,6 +28,7 @@ enum DocumentType: string implements HasLabel
             self::Identity => __('ged.document_types.identity'),
             self::Photo => __('ged.document_types.photo'),
             self::Other => __('ged.document_types.other'),
+            self::DriverLicence => __('ged.document_types.driver_licence'),
         };
     }
 }
