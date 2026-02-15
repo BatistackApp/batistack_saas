@@ -30,6 +30,7 @@ class Vehicle extends Model
             'current_odometer' => 'decimal:2',
             'purchase_date' => 'date',
             'last_external_sync_at' => 'datetime',
+            'is_available' => 'boolean',
         ];
     }
 
@@ -51,6 +52,11 @@ class Vehicle extends Model
     public function tolls(): HasMany
     {
         return $this->hasMany(VehicleToll::class);
+    }
+
+    public function maintenances(): HasMany
+    {
+        return $this->hasMany(VehicleMaintenance::class);
     }
 
     public function currentAssignment(): HasOne

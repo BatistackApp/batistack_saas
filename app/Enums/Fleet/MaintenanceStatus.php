@@ -8,6 +8,7 @@ use Illuminate\Contracts\Support\Htmlable;
 
 enum MaintenanceStatus: string implements HasLabel, HasColor
 {
+    case Reported = 'reported';
     case Scheduled = 'scheduled';
     case InProgress = 'in_progress';
     case Completed = 'completed';
@@ -20,6 +21,7 @@ enum MaintenanceStatus: string implements HasLabel, HasColor
             self::InProgress => 'yellow',
             self::Completed => 'green',
             self::Cancelled => 'red',
+            self::Reported => 'indigo',
         };
     }
 
@@ -30,6 +32,7 @@ enum MaintenanceStatus: string implements HasLabel, HasColor
             self::InProgress => __('fleet.maintenance_statuses.in_progress'),
             self::Completed => __('fleet.maintenance_statuses.completed'),
             self::Cancelled => __('fleet.maintenance_statuses.cancelled'),
+            self::Reported => __('fleet.maintenance_statuses.reported'),
         };
     }
 }
