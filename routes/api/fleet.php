@@ -4,6 +4,7 @@ use App\Http\Controllers\Fleet\FleetAnalyticsController;
 use App\Http\Controllers\Fleet\VehicleAssignmentController;
 use App\Http\Controllers\Fleet\VehicleConsumptionController;
 use App\Http\Controllers\Fleet\VehicleController;
+use App\Http\Controllers\Fleet\VehicleFineController;
 use App\Http\Controllers\Fleet\VehicleInspectionController;
 
 Route::prefix('fleet')->group(function () {
@@ -50,5 +51,14 @@ Route::prefix('fleet')->group(function () {
 
         Route::post('export-antai', [\App\Http\Controllers\Fleet\FineExportController::class, 'export'])
             ->name('fines.export-antai');
+
+        Route::apiResource('fines', VehicleFineController::class)
+            ->names([
+                'index'   => 'fleet.fines.index',
+                'store'   => 'fleet.fines.store',
+                'show'    => 'fleet.fines.show',
+                'update'  => 'fleet.fines.update',
+                'destroy' => 'fleet.fines.destroy',
+            ]);
     });
 });
