@@ -113,4 +113,37 @@ class FleetMaintenanceService
             return $maintenance;
         });
     }
+
+    /**
+     * Enregistre une nouvelle demande de maintenance.
+     */
+    public function reportMaintenance(array $data, int $reportedById): VehicleMaintenance
+    {
+        // Génération automatique d'une référence interne si non fournie
+        $data['reported_by'] = $reportedById;
+        $data['maintenance_status'] = MaintenanceStatus::Reported;
+
+        return VehicleMaintenance::create($data);
+    }
+
+    /**
+     * Passe une maintenance en état "En cours".
+     */
+    public function startMaintenance(VehicleMaintenance $maintenance): bool
+    {
+        return $maintenance->update([
+            'maintenance_status' => MaintenanceStatus::InProgress,
+            'started_at'         => now(),
+        ]);
+    }
+
+    /**
+     * Annule une maintenance.
+     */
+    public function cancelMaintenance(VehicleMaintenance $maintenance): bool
+    {
+        return $maintenance->update([
+            'maintenance_status' => MaintenanceStatus::Cancelled,
+        ]);
+    }
 }

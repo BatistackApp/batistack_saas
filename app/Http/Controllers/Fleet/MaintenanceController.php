@@ -35,16 +35,15 @@ class MaintenanceController extends Controller
      */
     public function store(MaintenanceRequest $request): JsonResponse
     {
-        $data = $request->validated();
+        $maintenance = $this->maintenanceService->reportMaintenance(
+            $request->validated(),
+            auth()->id()
+        );
 
-        // Génération d'une référence unique MTN-YYYY-XXXX
-        $data['reported_by'] = auth()->id();
-        $data['reported_at'] = now();
-        $data['maintenance_status'] = MaintenanceStatus::Reported;
-
-        $maintenance = VehicleMaintenance::create($data);
-
-        return response()->json($maintenance, 201);
+        return response()->json([
+            'message' => 'Demande de maintenance enregistrée.',
+            'data'    => $maintenance
+        ], 201);
     }
 
     /**
@@ -60,12 +59,12 @@ class MaintenanceController extends Controller
      */
     public function start(VehicleMaintenance $maintenance): JsonResponse
     {
-        $maintenance->update([
-            'maintenance_status' => MaintenanceStatus::InProgress,
-            'started_at' => now(),
-        ]);
+        $this->maintenanceService->startMaintenance($maintenance);
 
-        return response()->json($maintenance);
+        return response()->json([
+            'message' => 'La maintenance est désormais en cours.',
+            'data'    => $maintenance->fresh()
+        ]);
     }
 
     /**
@@ -87,7 +86,11 @@ class MaintenanceController extends Controller
      */
     public function cancel(VehicleMaintenance $maintenance): JsonResponse
     {
-        $maintenance->update(['maintenance_status' => MaintenanceStatus::Cancelled]);
-        return response()->json(['message' => 'Maintenance annulée.']);
+        $this->maintenanceService->cancelMaintenance($maintenance);
+
+        return response()->json([
+            'message' => 'La maintenance a été annulée.',
+            'data'    => $maintenance->fresh()
+        ]);
     }
 }
