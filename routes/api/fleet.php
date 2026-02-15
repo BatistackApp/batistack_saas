@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Fleet\FleetAnalyticsController;
+use App\Http\Controllers\Fleet\MaintenanceController;
+use App\Http\Controllers\Fleet\MaintenancePlanController;
 use App\Http\Controllers\Fleet\VehicleAssignmentController;
 use App\Http\Controllers\Fleet\VehicleConsumptionController;
 use App\Http\Controllers\Fleet\VehicleController;
@@ -43,6 +45,16 @@ Route::prefix('fleet')->group(function () {
         // Inspections & Maintenance
         Route::post('inspections', [VehicleInspectionController::class, 'store'])
             ->name('vehicle-inspections.store');
+    });
+
+    // --- Maintenance (Nouveautés Étape 7) ---
+    Route::apiResource('maintenance-plans', MaintenancePlanController::class);
+
+    Route::apiResource('maintenances', MaintenanceController::class);
+    Route::prefix('maintenances/{maintenance}')->group(function () {
+        Route::patch('start', [MaintenanceController::class, 'start'])->name('maintenances.start');
+        Route::patch('complete', [MaintenanceController::class, 'complete'])->name('maintenances.complete');
+        Route::patch('cancel', [MaintenanceController::class, 'cancel'])->name('maintenances.cancel');
     });
 
     Route::prefix('fines')->group(function () {
