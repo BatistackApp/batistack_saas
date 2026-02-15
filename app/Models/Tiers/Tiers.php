@@ -43,6 +43,7 @@ class Tiers extends Model
         return $this->hasMany(TierType::class);
     }
 
+    // Un tiers à un seul accès à User
     public function user(): HasOne
     {
         return $this->hasOne(User::class);
