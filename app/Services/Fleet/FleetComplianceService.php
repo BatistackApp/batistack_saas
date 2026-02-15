@@ -73,7 +73,7 @@ class FleetComplianceService
      * Retourne la liste des conducteurs (Users) éligibles pour un véhicule donné.
      * Utile pour filtrer les menus déroulants dans l'UI.
      */
-    public function getEligibleDriversForVehicle(Vehicle $vehicle): User
+    public function getEligibleDriversForVehicle(Vehicle $vehicle): Collection
     {
         $requiredCert = $vehicle->required_certification_type;
 
