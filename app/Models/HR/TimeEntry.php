@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[ObservedBy([TimeEntryObserver::class])]
 class TimeEntry extends Model
@@ -40,6 +41,19 @@ class TimeEntry extends Model
         return $this->belongsTo(User::class, 'verified_by');
     }
 
+    public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Historique des changements d'état
+     */
+    public function logs(): HasMany
+    {
+        return $this->hasMany(TimeEntryLog::class)->latest();
+    }
+
     protected function casts(): array
     {
         return [
@@ -48,6 +62,8 @@ class TimeEntry extends Model
             'has_host_allowance' => 'boolean',
             'hours' => 'decimal:2',
             'status' => TimeEntryStatus::class,
+            'verified_at' => 'datetime',
+            'approved_at' => 'datetime',
         ];
     }
 }

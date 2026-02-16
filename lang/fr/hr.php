@@ -22,6 +22,7 @@ return [
         'approved' => 'Validé',
         'rejected' => 'Rejeté',
         'cancelled' => 'Annulé',
+        'verified' => 'Vérifié',
     ],
     'absence_request_status' => [
         'draft' => 'Brouillon',
