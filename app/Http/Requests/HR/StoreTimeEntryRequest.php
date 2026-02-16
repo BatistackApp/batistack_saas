@@ -11,7 +11,6 @@ class StoreTimeEntryRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tenants_id' => ['required', 'exists:tenants,id'],
             'employee_id' => ['required', 'exists:employees,id'],
             'project_id' => ['required', 'exists:projects,id'],
             'project_phase_id' => ['nullable', 'exists:project_phases,id'],

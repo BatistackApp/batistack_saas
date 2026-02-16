@@ -12,12 +12,19 @@ class VerifyTimeEntryRequest extends FormRequest
     {
         return [
             'status' => ['required', new Enum(TimeEntryStatus::class)],
-            'verified_by' => ['required', 'exists:users,id'],
+            'notes' => ['nullable', 'string'],
         ];
     }
 
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'verified_by' => $this->user()->id,
+        ]);
     }
 }
