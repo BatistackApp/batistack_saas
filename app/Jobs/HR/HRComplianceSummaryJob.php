@@ -4,6 +4,7 @@ namespace App\Jobs\HR;
 
 use App\Models\Core\Tenants;
 use App\Models\HR\EmployeeSkill;
+use App\Notifications\HR\DailyComplianceReportNotification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

@@ -38,10 +38,6 @@ class EmployeeSkillController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('document_path')) {
-            // Supprimer l'ancien document si existant
-            if ($employeeSkill->document_path) {
-                Storage::disk('public')->delete($employeeSkill->document_path);
-            }
             $path = $request->file('document_path')->store('hr/compliance', 'public');
             $data['document_path'] = $path;
         }
@@ -56,10 +52,6 @@ class EmployeeSkillController extends Controller
 
     public function destroy(EmployeeSkill $employeeSkill): JsonResponse
     {
-        if ($employeeSkill->document_path) {
-            Storage::disk('public')->delete($employeeSkill->document_path);
-        }
-
         $employeeSkill->delete();
         return response()->json(['message' => 'Affectation supprimée']);
     }

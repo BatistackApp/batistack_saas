@@ -8,7 +8,6 @@ use App\Models\HR\EmployeeSkill;
 use App\Models\HR\Skill;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
-use Storage;
 
 class SkillManagerService
 {
@@ -100,17 +99,5 @@ class SkillManagerService
                     }),
                 ];
             });
-    }
-
-    /**
-     * Gère la suppression sécurisée d'un document justificatif.
-     */
-    public function deleteSkillDocument(EmployeeSkill $employeeSkill): bool
-    {
-        if ($employeeSkill->document_path && Storage::exists($employeeSkill->document_path)) {
-            Storage::delete($employeeSkill->document_path);
-        }
-
-        return $employeeSkill->update(['document_path' => null]);
     }
 }
