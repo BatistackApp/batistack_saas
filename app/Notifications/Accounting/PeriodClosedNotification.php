@@ -35,7 +35,7 @@ class PeriodClosedNotification extends Notification implements ShouldQueue
     {
         return [
             'title' => "Clôture de période {$this->closure->month}/{$this->closure->year}",
-            'message' => "La période a été clôturée par {$this->closure->closedByUsed->name}",
+            'message' => "La période a été clôturée par {$this->closure->closedByUser->name}",
             'period_closure_id' => $this->closure->id,
         ];
     }

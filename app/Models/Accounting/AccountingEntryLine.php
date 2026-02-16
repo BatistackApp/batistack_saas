@@ -5,6 +5,7 @@ namespace App\Models\Accounting;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use App\Observers\Accounting\AccountingEntryLineObserver;
+use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ObservedBy([AccountingEntryLineObserver::class])]
 class AccountingEntryLine extends Model
 {
-    use HasFactory, HasUlids;
+    use HasFactory, HasUlids, HasTenant;
 
     protected $fillable = [
         'ulid',
@@ -24,6 +25,9 @@ class AccountingEntryLine extends Model
         'credit',
         'description',
         'line_order',
+        'project_id',
+        'project_phase_id',
+        'tenants_id',
     ];
 
     protected function casts(): array

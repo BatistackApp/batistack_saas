@@ -17,7 +17,7 @@ class BalanceCalculator
      */
     public function calculate(ChartOfAccount $account, ?Carbon $asOf = null): string
     {
-        $asOf ??= today();
+        $asOf = ($asOf ?? today())->endOfDay();
         $cacheKey = "account_balance.{$account->id}.{$asOf->format('Y-m-d')}";
 
         return Cache::remember($cacheKey, 3600, function () use ($account, $asOf) {
@@ -70,7 +70,7 @@ class BalanceCalculator
     /**
      * Invalide le cache des soldes (à appeler après une validation d'écriture).
      */
-    public function invalidateCache(ChartOfAccount $account, Carbon $date): void
+    public function invalidateCache(ChartOfAccount $account, CarbonImmutable $date): void
     {
         Cache::forget("account_balance.{$account->id}.{$date->format('Y-m-d')}");
 

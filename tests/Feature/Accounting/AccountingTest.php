@@ -45,7 +45,6 @@ beforeEach(function () {
         'tenants_id' => $this->tenantId,
         'account_number' => '401000',
         'account_label' => 'Fournisseurs',
-        'account_type' => 'Liability',
         'nature' => AccountType::Liability,
     ]);
 
@@ -53,9 +52,11 @@ beforeEach(function () {
         'tenants_id' => $this->tenantId,
         'account_number' => '601000',
         'account_label' => 'Achats de matières',
-        'account_type' => 'Expense',
         'nature' => AccountType::Expense,
     ]);
+
+    Notification::fake();
+    Queue::fake();
 });
 
 test('une écriture doit être équilibrée pour être validée', function () {
@@ -65,7 +66,7 @@ test('une écriture doit être équilibrée pour être validée', function () {
     $date = Carbon::instance(now());
 
     // Création d'une écriture déséquilibrée
-    $entry = $service->create(
+    expect(fn() => $service->create(
         $this->journal,
         $date,
         'Achat Ciment',
@@ -73,10 +74,7 @@ test('une écriture doit être équilibrée pour être validée', function () {
             ['chart_of_account_id' => $this->account601->id, 'debit' => 100.00, 'credit' => 0],
             ['chart_of_account_id' => $this->account401->id, 'debit' => 0, 'credit' => 99.99], // Erreur de 0.01
         ]
-    );
-
-    // Tentative de validation
-    expect(fn() => $service->validate($entry))->toThrow(\Illuminate\Validation\ValidationException::class);
+    ))->toThrow(\Illuminate\Validation\ValidationException::class);
 });
 
 test('une écriture validée devient immuable', function () {
@@ -113,6 +111,7 @@ test('on ne peut pas créer d\'écriture dans une période clôturée', function
         'period_end' => $lastMonth->copy()->endOfMonth(),
         'is_locked' => true,
         'closed_at' => now(),
+        'closed_by' => $this->user->id,
     ]);
 
     $service = app(AccountingEntryService::class);
@@ -165,7 +164,7 @@ test('l\'imputation analytique BTP est correctement enregistrée sur les lignes'
 test('le solde d\'un compte est calculé avec précision via le service', function () {
     $service = app(AccountingEntryService::class);
     $calc = app(\App\Services\Accounting\BalanceCalculator::class);
-    $date = Carbon::instance(now());
+    $date = Carbon::today();
 
     // Plusieurs écritures sur le compte 601
     $entries = [
