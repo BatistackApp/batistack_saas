@@ -34,6 +34,11 @@ class Employee extends Model
         return $this->belongsTo(User::class, 'manager_user_id');
     }
 
+    public function skills(): HasMany
+    {
+        return $this->hasMany(EmployeeSkill::class);
+    }
+
     protected function casts(): array
     {
         return [
@@ -41,6 +46,15 @@ class Employee extends Model
             'is_active' => 'boolean',
             'hourly_cost_charged' => 'decimal:2',
         ];
+    }
+
+    public function activeCertifications(): HasMany
+    {
+        return $this->skills()->whereHas('skill', function ($query) {
+            $query->where('type', '!=', \App\Enums\HR\SkillType::HardSkill);
+        })->where(function ($query) {
+            $query->whereNull('expiry_date')->orWhere('expiry_date', '>', now());
+        });
     }
 
     public function getFullNameAttribute(): string
