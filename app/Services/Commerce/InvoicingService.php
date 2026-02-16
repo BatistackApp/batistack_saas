@@ -136,7 +136,7 @@ class InvoicingService
             $invoice->save();
 
             // 3. Génération du PDF (Placeholder pour l'étape future)
-            $this->document->generatePdf($invoice, 'pdf.commerce.invoices', 'invoices');
+            // $this->document->generatePdf($invoice, 'pdf.commerce.invoice', 'invoices');
 
             Log::info("Facture scellée : {$invoice->reference} pour le client ID {$invoice->tiers_id}");
 
