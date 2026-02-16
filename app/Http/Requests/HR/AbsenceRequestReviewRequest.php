@@ -23,6 +23,6 @@ class AbsenceRequestReviewRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return auth()->user()->can('payroll.manage');
+        return auth()->user()->can('absences.validate') || auth()->user()->can('absences.manage_all');
     }
 }

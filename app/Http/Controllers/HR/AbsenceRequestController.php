@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers\HR;
 
+use App\Enums\HR\AbsenceRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\HR\AbsenceRequestReviewRequest;
 use App\Http\Requests\HR\AbsenceRequestStoreRequest;
 use App\Models\HR\AbsenceRequest;
+use App\Models\HR\Employee;
+use App\Services\HR\AbsenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class AbsenceRequestController extends Controller
 {
+    public function __construct(
+        protected AbsenceService $absenceService
+    ) {}
+
     /**
      * Liste des demandes (Filtres pour manager ou employé)
      */
@@ -40,7 +47,21 @@ class AbsenceRequestController extends Controller
             $data['justification_path'] = $path;
         }
 
-        $absence = AbsenceRequest::create($data);
+        // Récupération de l'employé lié à l'utilisateur connecté
+        // On suppose ici que l'utilisateur connecté est un employé ou qu'on passe l'ID de l'employé
+        // Si c'est l'employé lui-même :
+        $employee = Employee::where('user_id', auth()->id())->first();
+
+        // Si le request contient un employee_id (cas d'un RH qui saisit pour un employé), on pourrait l'utiliser :
+        if ($request->has('employee_id') && auth()->user()->can('payroll.manage')) {
+             $employee = Employee::findOrFail($request->employee_id);
+        }
+
+        if (!$employee) {
+            return response()->json(['error' => 'Employé non trouvé pour cet utilisateur.'], 404);
+        }
+
+        $absence = $this->absenceService->createRequest($employee, $data);
 
         return response()->json([
             'message' => 'Demande d\'absence enregistrée',
@@ -67,7 +88,7 @@ class AbsenceRequestController extends Controller
     public function destroy(AbsenceRequest $absenceRequest): JsonResponse
     {
         // On ne peut supprimer que si la demande est encore en attente
-        if ($absenceRequest->status->value !== 'pending') {
+        if ($absenceRequest->status !== AbsenceRequestStatus::Pending) {
             return response()->json(['error' => 'Impossible de supprimer une demande déjà traitée'], 422);
         }
 

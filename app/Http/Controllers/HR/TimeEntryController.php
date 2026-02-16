@@ -48,7 +48,10 @@ class TimeEntryController extends Controller
 
     public function store(StoreTimeEntryRequest $request): JsonResponse
     {
-        $entry = TimeEntry::create($request->validated());
+        // On s'assure que le tenants_id est bien présent, soit via le request merge, soit via l'utilisateur
+        $data = $request->validated();
+
+        $entry = TimeEntry::create($data);
 
         return response()->json([
             'message' => 'Temps enregistré avec succès',

@@ -18,13 +18,15 @@ class VerifyTimeEntryRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        return $this->user() && $this->user()->can('payroll.manage');
     }
 
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'verified_by' => $this->user()->id,
-        ]);
+        if ($this->user()) {
+            $this->merge([
+                'verified_by' => $this->user()->id,
+            ]);
+        }
     }
 }

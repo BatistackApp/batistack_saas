@@ -12,7 +12,7 @@ class AbsenceRequestStoreRequest extends FormRequest
     {
         return [
             'employee_id' => ['required', 'exists:employees,id'],
-            'absence_type' => ['required', new Enum(AbsenceType::class)],
+            'type' => ['required', new Enum(AbsenceType::class)],
             'starts_at' => ['required', 'date', 'after_or_equal:today'],
             'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
             'reason' => ['nullable', 'string', 'max:500'],

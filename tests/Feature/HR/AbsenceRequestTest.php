@@ -1,13 +1,14 @@
 <?php
 
-use App\Enums\HR\TimeEntryStatus;
+use App\Enums\HR\AbsenceRequestStatus;
+use App\Enums\HR\AbsenceType;
 use App\Models\Core\Tenants;
+use App\Models\HR\AbsenceRequest;
 use App\Models\HR\Employee;
-use App\Models\HR\TimeEntry;
-use App\Models\Projects\Project;
-use App\Models\Projects\ProjectPhase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -15,154 +16,140 @@ beforeEach(function () {
     \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'tenant.settings.edit', 'guard_name' => 'web']);
     \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'payroll.manage', 'guard_name' => 'web']);
     \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'absences.create', 'guard_name' => 'web']);
+    \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'absences.validate', 'guard_name' => 'web']);
+
     // Création du contexte de base (Tenant et Admin)
     $this->tenant = Tenants::factory()->create();
     $this->admin = User::factory()->create(['tenants_id' => $this->tenant->id]);
+    $this->admin->givePermissionTo('payroll.manage', 'absences.create', 'absences.validate');
 
     // Création des entités nécessaires
     $this->manager = User::factory()->create(['tenants_id' => $this->tenant->id]);
-    $this->employee = Employee::factory()->create(['tenants_id' => $this->tenant->id, 'manager_user_id' => $this->manager->id]);
-    $this->project = Project::factory()->create(['tenants_id' => $this->tenant->id]);
-    $this->phase = ProjectPhase::factory()->create(['project_id' => $this->project->id]);
+    $this->employee = Employee::factory()->create([
+        'tenants_id' => $this->tenant->id,
+        'manager_user_id' => $this->manager->id,
+        'user_id' => $this->admin->id, // L'admin est aussi l'employé pour les tests de soumission
+    ]);
 
     $this->actingAs($this->admin);
 
     Notification::fake();
     Queue::fake();
+    Storage::fake('public');
 });
 
-it('peut lister tous les pointages du tenant', function () {
-    TimeEntry::factory()->count(3)->create([
-        'tenants_id' => $this->tenant->id,
-        'employee_id' => $this->employee->id,
-        'project_id' => $this->project->id,
-    ]);
-
-    $response = $this->getJson(route('time-entries.index'));
-
-    $response->assertStatus(200)
-        ->assertJsonCount(3, 'data');
-});
-
-it('peut lister les pointages d\'un employé avec filtres et résumé', function () {
-    // Création de pointages sur différentes dates
-    // 1. Un pointage le mois dernier
-    TimeEntry::factory()->create([
-        'tenants_id' => $this->tenant->id,
-        'employee_id' => $this->employee->id,
-        'date' => now()->subMonth(),
-        'hours' => 8,
-    ]);
-
-    // 2. Deux pointages cette semaine (période cible)
-    TimeEntry::factory()->create([
-        'tenants_id' => $this->tenant->id,
-        'employee_id' => $this->employee->id,
-        'date' => now()->startOfWeek(),
-        'hours' => 7.5,
-        'has_meal_allowance' => true,
-        'travel_time' => 1.0,
-    ]);
-
-    TimeEntry::factory()->create([
-        'tenants_id' => $this->tenant->id,
-        'employee_id' => $this->employee->id,
-        'date' => now()->startOfWeek()->addDay(),
-        'hours' => 8,
-        'has_meal_allowance' => false,
-        'travel_time' => 0.5,
-    ]);
-
-    $startDate = now()->startOfWeek()->format('Y-m-d');
-    $endDate = now()->endOfWeek()->format('Y-m-d');
-
-    $response = $this->getJson(route('employees.time-entries', [
-        'employee' => $this->employee->id,
-        'start_date' => $startDate,
-        'end_date' => $endDate,
-    ]));
-
-    $response->assertStatus(200)
-        ->assertJsonCount(2, 'entries')
-        ->assertJsonPath('summary.total_hours', 15.5)
-        ->assertJsonPath('summary.total_meal_allowances', 1)
-        ->assertJsonPath('summary.total_travel_time', 1.5);
-});
-
-/**
- * Test de création
- */
-it('peut enregistrer un nouveau pointage', function () {
+it('peut créer une demande d\'absence', function () {
     $payload = [
+        'type' => AbsenceType::PaidLeave->value,
+        'starts_at' => now()->addDays(5)->format('Y-m-d'),
+        'ends_at' => now()->addDays(7)->format('Y-m-d'),
+        'reason' => 'Vacances d\'été',
         'employee_id' => $this->employee->id,
-        'project_id' => $this->project->id,
-        'phase_id' => $this->phase->id,
-        'date' => now()->format('Y-m-d'),
-        'hours' => 8.5,
-        'travel_time' => 1,
-        'has_meal_allowance' => true,
-        'notes' => 'Travaux de fondation',
     ];
 
-    $response = $this->postJson(route('time-entries.store'), $payload);
+    $response = $this->postJson(route('absences.store'), $payload);
 
     $response->assertStatus(201)
-        ->assertJsonPath('data.hours', '8.50');
+        ->assertJsonPath('data.type', AbsenceType::PaidLeave->value);
 
-    $this->assertDatabaseHas('time_entries', [
+    $this->assertDatabaseHas('absence_requests', [
         'employee_id' => $this->employee->id,
-        'hours' => 8.5,
+        'type' => AbsenceType::PaidLeave->value,
+        'status' => AbsenceRequestStatus::Pending->value,
     ]);
 });
 
-/**
- * Test de vérification/approbation
- */
-it('peut approuver un pointage et enregistre le validateur', function () {
-    $entry = TimeEntry::factory()->create([
-        'tenants_id' => $this->tenant->id,
-        'status' => TimeEntryStatus::Submitted->value,
-    ]);
+it('calcule correctement la durée en jours ouvrés via le service', function () {
+    // Lundi au Vendredi (5 jours)
+    $start = now()->next('Monday');
+    $end = $start->copy()->addDays(4);
 
-    $response = $this->patchJson(route('time-entries.verify', $entry), [
-        'status' => TimeEntryStatus::Approved->value,
-        'notes' => 'RAS, validé.',
-    ]);
+    $payload = [
+        'type' => AbsenceType::PaidLeave->value,
+        'starts_at' => $start->format('Y-m-d'),
+        'ends_at' => $end->format('Y-m-d'),
+        'employee_id' => $this->employee->id,
+    ];
 
-    $response->assertStatus(200);
+    $response = $this->postJson(route('absences.store'), $payload);
 
-    $this->assertDatabaseHas('time_entries', [
-        'id' => $entry->id,
-        'status' => TimeEntryStatus::Approved->value,
-        'verified_by' => $this->admin->id, // Vérifie que l'admin connecté est le validateur
-    ]);
+    $response->assertStatus(201)
+        ->assertJsonPath('data.duration_days', '5.00');
 });
 
-/**
- * Test de sécurité sur la suppression
- */
-it('ne peut pas supprimer un pointage déjà approuvé', function () {
-    $entry = TimeEntry::factory()->create([
-        'tenants_id' => $this->tenant->id,
-        'status' => TimeEntryStatus::Approved->value,
+it('gère le fichier de justification', function () {
+    $file = UploadedFile::fake()->create('arret_maladie.pdf', 100);
+
+    $payload = [
+        'type' => AbsenceType::SickLeave->value,
+        'starts_at' => now()->format('Y-m-d'),
+        'ends_at' => now()->addDays(2)->format('Y-m-d'),
+        'justification_file' => $file,
+        'employee_id' => $this->employee->id,
+    ];
+
+    $response = $this->postJson(route('absences.store'), $payload);
+
+    $response->assertStatus(201);
+
+    $absence = AbsenceRequest::first();
+    expect($absence->justification_path)->not->toBeNull();
+    Storage::disk('public')->assertExists($absence->justification_path);
+});
+
+it('empêche la création de demande en conflit', function () {
+    // Création d'une absence existante
+    AbsenceRequest::factory()->create([
+        'employee_id' => $this->employee->id,
+        'starts_at' => now()->addDays(5),
+        'ends_at' => now()->addDays(7),
+        'status' => AbsenceRequestStatus::Approved,
     ]);
 
-    $response = $this->deleteJson(route('time-entries.destroy', $entry));
+    // Tentative de création sur la même période
+    $payload = [
+        'type' => AbsenceType::PaidLeave->value,
+        'starts_at' => now()->addDays(6)->format('Y-m-d'),
+        'ends_at' => now()->addDays(8)->format('Y-m-d'),
+        'employee_id' => $this->employee->id,
+    ];
+
+    $response = $this->postJson(route('absences.store'), $payload);
 
     $response->assertStatus(422)
-        ->assertJsonStructure(['error']);
-
-    $this->assertDatabaseHas('time_entries', ['id' => $entry->id]);
+        ->assertJsonValidationErrors(['starts_at']);
 });
 
-it('peut supprimer un pointage en mode brouillon', function () {
-    $entry = TimeEntry::factory()->create([
-        'tenants_id' => $this->tenant->id,
-        'status' => TimeEntryStatus::Draft->value,
+it('permet au manager de valider une demande', function () {
+    $absence = AbsenceRequest::factory()->create([
+        'employee_id' => $this->employee->id,
+        'status' => AbsenceRequestStatus::Pending,
     ]);
 
-    $response = $this->deleteJson(route('time-entries.destroy', $entry));
+    // On se connecte en tant que manager (ou admin avec droits)
+    $this->actingAs($this->admin);
 
-    $response->assertStatus(200);
-    $this->assertDatabaseMissing('time_entries', ['id' => $entry->id]);
+    $response = $this->patchJson(route('absences.review', $absence), [
+        'status' => AbsenceRequestStatus::Approved->value,
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.status', AbsenceRequestStatus::Approved->value);
+
+    $this->assertDatabaseHas('absence_requests', [
+        'id' => $absence->id,
+        'status' => AbsenceRequestStatus::Approved->value,
+    ]);
+});
+
+it('ne peut pas supprimer une demande déjà traitée', function () {
+    $absence = AbsenceRequest::factory()->create([
+        'employee_id' => $this->employee->id,
+        'status' => AbsenceRequestStatus::Approved->value,
+    ]);
+
+    $response = $this->deleteJson(route('absences.destroy', $absence));
+
+    $response->assertStatus(422);
+    $this->assertDatabaseHas('absence_requests', ['id' => $absence->id]);
 });
