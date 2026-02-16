@@ -36,11 +36,11 @@ class ReconciliationService
             $payment = Payment::create([
                 'tenants_id' => $transaction->tenants_id,
                 'bank_transaction_id' => $transaction->id,
-                'invoice_id' => $model->id,
+                'invoices_id' => $model->id,
                 'amount' => $amount,
                 'payment_date' => $transaction->value_date,
-                'method' => $this->guessMethod($transaction->label, $transaction->type),
-                'created_by' => auth()->user()->id,
+                'payment_method' => $this->guessMethod($transaction->label, $transaction->type),
+                'created_by' => auth()->id(),
             ]);
 
             $this->updateInvoiceStatus($model);
@@ -111,7 +111,7 @@ class ReconciliationService
             if ($score > 0) {
                 $suggestions[] = [
                     'type' => ($tierTypeCode === 'client') ? 'sale' : 'purchase',
-                    'model' => $invoice,
+                    'invoice' => $invoice,
                     'score' => $score,
                     'reason' => $this->getMatchingReason($score)
                 ];
