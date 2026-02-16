@@ -13,7 +13,7 @@ return new class extends Migration
             $table->id();
             $table->foreignIdFor(Tenants::class)->constrained()->cascadeOnDelete();
             $table->date('date');
-            $table->string('label')->nullable();
+            $table->string('label');
             $table->timestamps();
         });
     }
