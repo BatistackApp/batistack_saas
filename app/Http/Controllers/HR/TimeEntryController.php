@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\HR;
 
+use App\Enums\HR\TimeEntryStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\HR\StoreTimeEntryRequest;
 use App\Http\Requests\HR\VerifyTimeEntryRequest;
@@ -67,7 +68,7 @@ class TimeEntryController extends Controller
     {
         $timeEntry->update([
             'status' => $request->status,
-            'verified_by' => $request->verified_by,
+            'verified_by' => $request->user()->id,
         ]);
 
         return response()->json([
@@ -78,6 +79,10 @@ class TimeEntryController extends Controller
 
     public function destroy(TimeEntry $timeEntry): JsonResponse
     {
+        if ($timeEntry->status === TimeEntryStatus::Approved) {
+            return response()->json(['error' => 'Impossible de supprimer un pointage approuvé.'], 422);
+        }
+
         $timeEntry->delete();
 
         return response()->json(['message' => 'Pointage supprimé']);
