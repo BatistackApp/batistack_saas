@@ -2,14 +2,22 @@
 
 namespace App\Observers\HR;
 
+use App\Enums\HR\AbsenceRequestStatus;
 use App\Enums\HR\TimeEntryStatus;
+use App\Models\HR\AbsenceRequest;
 use App\Models\HR\TimeEntry;
 use App\Notifications\HR\TimeEntryApprovedNotification;
 use App\Notifications\HR\TimeEntrySubmittedNotification;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Validation\ValidationException;
 
 class TimeEntryObserver
 {
+    public function creating(TimeEntry $timeEntry): void
+    {
+        $this->checkAbsenceConflict($timeEntry);
+    }
+
     public function created(TimeEntry $timeEntry): void
     {
         if ($timeEntry->status === TimeEntryStatus::Submitted) {
@@ -20,6 +28,11 @@ class TimeEntryObserver
                 Notification::send($manager, new TimeEntrySubmittedNotification($timeEntry));
             }
         }
+    }
+
+    public function updating(TimeEntry $timeEntry): void
+    {
+        $this->checkAbsenceConflict($timeEntry);
     }
 
     public function updated(TimeEntry $timeEntry): void
@@ -41,5 +54,20 @@ class TimeEntryObserver
         }
 
         return true;
+    }
+
+    protected function checkAbsenceConflict(TimeEntry $timeEntry): void
+    {
+        $exists = AbsenceRequest::where('employee_id', $timeEntry->employee_id)
+            ->where('status', AbsenceRequestStatus::Approved)
+            ->whereDate('starts_at', '<=', $timeEntry->date)
+            ->whereDate('ends_at', '>=', $timeEntry->date)
+            ->exists();
+
+        if ($exists) {
+            throw ValidationException::withMessages([
+                'date' => "Un congé validé existe déjà pour cette date. Saisie d'heures impossible.",
+            ]);
+        }
     }
 }

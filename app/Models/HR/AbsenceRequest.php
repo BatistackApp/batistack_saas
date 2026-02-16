@@ -6,12 +6,15 @@ use App\Enums\HR\AbsenceRequestStatus;
 use App\Enums\HR\AbsenceType;
 use App\Models\Core\Tenants;
 use App\Models\User;
+use App\Observers\HR\AbsenceRequestObserver;
 use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([AbsenceRequestObserver::class])]
 class AbsenceRequest extends Model
 {
     use HasFactory, SoftDeletes, HasTenant;
