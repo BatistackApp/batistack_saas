@@ -9,7 +9,6 @@ class StoreEmployeeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tenants_id' => ['required', 'exists:tenants,id'],
             'user_id' => ['nullable', 'exists:users,id'],
             'external_id' => ['nullable', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
@@ -26,6 +25,6 @@ class StoreEmployeeRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->hasRole('tenant_admin');
     }
 }

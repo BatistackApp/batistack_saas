@@ -8,14 +8,19 @@ use App\Http\Requests\HR\StoreTimeEntryRequest;
 use App\Http\Requests\HR\VerifyTimeEntryRequest;
 use App\Models\HR\Employee;
 use App\Models\HR\TimeEntry;
+use App\Services\HR\TimeTrackingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class TimeEntryController extends Controller
 {
+    public function __construct(
+        protected TimeTrackingService $timeTrackingService
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
-        $entries = TimeEntry::with(['employee', 'project'])
+        $entries = TimeEntry::with(['employee', 'project', 'phase'])
             ->orderBy('date', 'desc')
             ->paginate();
 
@@ -33,14 +38,13 @@ class TimeEntryController extends Controller
             ->when($request->start_date, fn ($q) => $q->where('date', '>=', $request->start_date))
             ->when($request->end_date, fn ($q) => $q->where('date', '<=', $request->end_date))
             ->orderBy('date', 'desc')
-            ->get(); // On peut utiliser get() ou paginate() selon le besoin du front
+            ->get();
 
         return response()->json([
             'employee' => $employee->only(['id', 'first_name', 'last_name']),
             'entries' => $entries,
             'summary' => [
                 'total_hours' => $entries->sum('hours'),
-                'total_meal_allowances' => $entries->where('has_meal_allowance', true)->count(),
                 'total_travel_time' => $entries->sum('travel_time'),
             ],
         ]);
@@ -48,10 +52,7 @@ class TimeEntryController extends Controller
 
     public function store(StoreTimeEntryRequest $request): JsonResponse
     {
-        // On s'assure que le tenants_id est bien présent, soit via le request merge, soit via l'utilisateur
-        $data = $request->validated();
-
-        $entry = TimeEntry::create($data);
+        $entry = TimeEntry::create($request->validated());
 
         return response()->json([
             'message' => 'Temps enregistré avec succès',
@@ -69,10 +70,11 @@ class TimeEntryController extends Controller
      */
     public function verify(VerifyTimeEntryRequest $request, TimeEntry $timeEntry): JsonResponse
     {
-        $timeEntry->update([
-            'status' => $request->status,
-            'verified_by' => $request->user()->id,
-        ]);
+        if ($request->status === TimeEntryStatus::Approved->value) {
+            $this->timeTrackingService->approveEntry($timeEntry);
+        } else {
+            $timeEntry->update($request->validated());
+        }
 
         return response()->json([
             'message' => 'Statut du pointage mis à jour',
@@ -83,7 +85,7 @@ class TimeEntryController extends Controller
     public function destroy(TimeEntry $timeEntry): JsonResponse
     {
         if ($timeEntry->status === TimeEntryStatus::Approved) {
-            return response()->json(['error' => 'Impossible de supprimer un pointage approuvé.'], 422);
+            return response()->json(['error' => 'Impossible de supprimer un pointage déjà approuvé.'], 422);
         }
 
         $timeEntry->delete();

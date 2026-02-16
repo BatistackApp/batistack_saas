@@ -41,24 +41,12 @@ class AbsenceRequestController extends Controller
     public function store(AbsenceRequestStoreRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $employee = Employee::findOrFail($data['employee_id']);
 
+        // Gestion de l'upload si présent
         if ($request->hasFile('justification_file')) {
-            $path = $request->file('justification_file')->store('tenant/'.auth()->user()->tenants_id.'/hr/absences', 'public');
+            $path = $request->file('justification_file')->store('hr/absences', 'public');
             $data['justification_path'] = $path;
-        }
-
-        // Récupération de l'employé lié à l'utilisateur connecté
-        // On suppose ici que l'utilisateur connecté est un employé ou qu'on passe l'ID de l'employé
-        // Si c'est l'employé lui-même :
-        $employee = Employee::where('user_id', auth()->id())->first();
-
-        // Si le request contient un employee_id (cas d'un RH qui saisit pour un employé), on pourrait l'utiliser :
-        if ($request->has('employee_id') && auth()->user()->can('payroll.manage')) {
-             $employee = Employee::findOrFail($request->employee_id);
-        }
-
-        if (!$employee) {
-            return response()->json(['error' => 'Employé non trouvé pour cet utilisateur.'], 404);
         }
 
         $absence = $this->absenceService->createRequest($employee, $data);
@@ -74,7 +62,11 @@ class AbsenceRequestController extends Controller
      */
     public function review(AbsenceRequestReviewRequest $request, AbsenceRequest $absenceRequest): JsonResponse
     {
-        $absenceRequest->update($request->validated());
+        $data = $request->validated();
+        $data['validated_by'] = auth()->id();
+        $data['validated_at'] = now();
+
+        $absenceRequest->update($data);
 
         return response()->json([
             'message' => 'Décision enregistrée avec succès',

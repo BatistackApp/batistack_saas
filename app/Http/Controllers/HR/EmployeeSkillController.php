@@ -4,28 +4,38 @@ namespace App\Http\Controllers\HR;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\HR\StoreEmployeeSkillRequest;
+use App\Models\HR\Employee;
 use App\Models\HR\EmployeeSkill;
+use App\Models\HR\Skill;
+use App\Services\HR\SkillManagerService;
 use Illuminate\Http\JsonResponse;
 use Storage;
 
 class EmployeeSkillController extends Controller
 {
+    public function __construct(
+        protected SkillManagerService $skillManagerService
+    ) {}
+
     public function index(): JsonResponse
     {
-        $skills = EmployeeSkill::with(['employee', 'skill'])->latest()->paginate();
+        $skills = EmployeeSkill::with(['employee', 'skill'])
+            ->latest()
+            ->paginate();
         return response()->json($skills);
     }
 
     public function store(StoreEmployeeSkillRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $employee = Employee::findOrFail($data['employee_id']);
+        $skill = Skill::findOrFail($data['skill_id']);
 
         if ($request->hasFile('document_path')) {
-            $path = $request->file('document_path')->store('hr/compliance', 'public');
-            $data['document_path'] = $path;
+            $data['document_path'] = $request->file('document_path')->store('hr/compliance', 'public');
         }
 
-        $employeeSkill = EmployeeSkill::create($data);
+        $employeeSkill = $this->skillManagerService->assignSkill($employee, $skill, $data);
 
         return response()->json([
             'message' => 'Habilitation affectée avec succès',
@@ -53,6 +63,6 @@ class EmployeeSkillController extends Controller
     public function destroy(EmployeeSkill $employeeSkill): JsonResponse
     {
         $employeeSkill->delete();
-        return response()->json(['message' => 'Affectation supprimée']);
+        return response()->json(['message' => 'Affectation supprimée']);;
     }
 }
