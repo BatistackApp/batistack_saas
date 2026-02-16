@@ -21,8 +21,14 @@ class TimeEntryObserver
     public function created(TimeEntry $timeEntry): void
     {
         if ($timeEntry->status === TimeEntryStatus::Submitted) {
+            // On charge la relation employee si elle n'est pas déjà chargée
+            if (!$timeEntry->relationLoaded('employee')) {
+                $timeEntry->load('employee');
+            }
+
             // On récupère le manager direct de l'employé
-            $manager = $timeEntry->employee->manager;
+            // Attention : $timeEntry->employee peut être null si l'intégrité référentielle n'est pas stricte ou lors de tests
+            $manager = $timeEntry->employee?->manager;
 
             if ($manager) {
                 Notification::send($manager, new TimeEntrySubmittedNotification($timeEntry));
@@ -39,7 +45,12 @@ class TimeEntryObserver
     {
         // Détection du passage à l'état "Approuvé"
         if ($timeEntry->wasChanged('status') && $timeEntry->status === TimeEntryStatus::Approved) {
-            $timeEntry->employee->user->notify(new TimeEntryApprovedNotification($timeEntry));
+            // On s'assure que l'employé et son utilisateur sont chargés
+            if (!$timeEntry->relationLoaded('employee')) {
+                $timeEntry->load('employee.user');
+            }
+
+            $timeEntry->employee?->user?->notify(new TimeEntryApprovedNotification($timeEntry));
         }
     }
 
