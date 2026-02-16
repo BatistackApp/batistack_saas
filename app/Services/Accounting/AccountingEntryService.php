@@ -35,6 +35,7 @@ class AccountingEntryService
 
             // Créer l'en-tête de l'écriture
             $entry = AccountingEntry::create([
+                'tenants_id' => $journal->tenants_id,
                 'journal_id' => $journal->id,
                 'reference_number' => $referenceNumber,
                 'accounting_date' => $accountingDate,
@@ -58,11 +59,14 @@ class AccountingEntryService
                 $credit = isset($lineData['credit']) ? bcadd('0', (string) $lineData['credit'], 4) : '0';
 
                 AccountingEntryLine::create([
+                    'tenants_id' => $journal->tenants_id,
                     'accounting_entry_id' => $entry->id,
                     'chart_of_account_id' => $account->id,
                     'debit' => $debit,
                     'credit' => $credit,
                     'description' => $lineData['description'] ?? null,
+                    'project_id' => $lineData['project_id'] ?? null,
+                    'project_phase_id' => $lineData['project_phase_id'] ?? null,
                     'line_order' => $lineOrder++,
                 ]);
 

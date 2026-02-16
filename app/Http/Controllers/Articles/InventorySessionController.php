@@ -99,7 +99,7 @@ class InventorySessionController extends Controller
 
             return response()->json([
                 'message' => "L'inventaire {$inventorySession->reference} a été validé. Les stocks ont été régularisés.",
-                'status' => $inventorySession->refresh()->status->value
+                'status' => $inventorySession->status->value
             ]);
 
         } catch (\Exception $e) {

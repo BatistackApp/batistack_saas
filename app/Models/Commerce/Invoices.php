@@ -24,9 +24,9 @@ class Invoices extends Model
 
     protected $guarded = [];
 
-    public function tiers(): BelongsTo
+    public function customer(): BelongsTo
     {
-        return $this->belongsTo(Tiers::class);
+        return $this->belongsTo(Tiers::class, 'tiers_id');
     }
 
     public function project(): BelongsTo

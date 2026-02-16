@@ -12,10 +12,12 @@ uses(RefreshDatabase::class);
 describe("API: Articles Controller", function () {
     beforeEach(function () {
         // Création du tenant de test et de l'utilisateur associé
+        $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
         $this->tenant = Tenants::factory()->create();
         $this->user = User::factory()->create([
             'tenants_id' => $this->tenant->id
         ]);
+        $this->user->givePermissionTo('inventory.manage');
     });
 
     it('liste les articles du tenant avec pagination et calculs de stocks', function () {
@@ -31,7 +33,7 @@ describe("API: Articles Controller", function () {
         Article::factory()->create(['tenants_id' => $otherTenant->id]);
 
         $response = $this->actingAs($this->user)
-            ->getJson('/api/articles');
+            ->getJson('/api/articles/article');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -66,7 +68,7 @@ describe("API: Articles Controller", function () {
         ];
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/articles', $payload);
+            ->postJson('/api/articles/article', $payload);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('articles', [
@@ -82,7 +84,7 @@ describe("API: Articles Controller", function () {
         ]);
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/articles', [
+            ->postJson('/api/articles/article', [
                 'sku' => 'DUPLICATE-01',
                 'name' => 'Test',
                 'unit' => ArticleUnit::Unit->value,
@@ -108,7 +110,8 @@ describe("API: Articles Controller", function () {
         ]);
 
         $response = $this->actingAs($this->user)
-            ->getJson("/api/articles/{$article->id}");
+            ->getJson("/api/articles/article/{$article->id}");
+
 
         $response->assertStatus(200)
             ->assertJsonPath('sku', $article->sku);
@@ -119,7 +122,7 @@ describe("API: Articles Controller", function () {
         $article = Article::factory()->create(['tenants_id' => $otherTenant->id]);
 
         $response = $this->actingAs($this->user)
-            ->getJson("/api/articles/{$article->id}");
+            ->getJson("/api/articles/article/{$article->id}");
 
         // Doit retourner 404 via le Global Scope de Tenancy
         $response->assertStatus(404);

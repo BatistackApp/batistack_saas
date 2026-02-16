@@ -26,6 +26,7 @@ beforeEach(function () {
     app()[PermissionRegistrar::class]->forgetCachedPermissions();
     Role::findOrCreate('logistics_manager', 'web');
     $this->user->assignRole('logistics_manager');
+    Notification::fake();
 });
 
 describe("Flux de Stocks : Articles Standards (Quantité)", function () {
@@ -42,7 +43,7 @@ describe("Flux de Stocks : Articles Standards (Quantité)", function () {
         $article->warehouses()->attach($warehouse->id, ['quantity' => 100]);
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/stock/movements', [
+            ->postJson('/api/articles/stock/movements', [
                 'tenants_id' => $this->tenant->id,
                 'article_id' => $article->id,
                 'warehouse_id' => $warehouse->id,
@@ -66,7 +67,7 @@ describe("Flux de Stocks : Articles Standards (Quantité)", function () {
         $article->warehouses()->attach($from->id, ['quantity' => 5]);
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/stock/movements', [
+            ->postJson('/api/articles/stock/movements', [
                 'tenants_id' => $this->tenant->id,
                 'article_id' => $article->id,
                 'warehouse_id' => $from->id,
@@ -89,7 +90,7 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
         ]);
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/stock/movements', [
+            ->postJson('/api/articles/stock/movements', [
                 'tenants_id' => $this->tenant->id,
                 'article_id' => $article->id,
                 'warehouse_id' => $warehouse->id,
@@ -115,7 +116,7 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
         $warehouse = Warehouse::factory()->create(['tenants_id' => $this->tenant->id]);
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/stock/movements', [
+            ->postJson('/api/articles/stock/movements', [
                 'tenants_id' => $this->tenant->id,
                 'article_id' => $article->id,
                 'warehouse_id' => $warehouse->id,
@@ -133,6 +134,9 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
         $article = Article::factory()->create(['tenants_id' => $this->tenant->id, 'tracking_type' => TrackingType::SerialNumber]);
         $project = Project::factory()->create(['tenants_id' => $this->tenant->id]);
 
+        // Initialisation du stock dans la table pivot pour passer la validation de quantité
+        $article->warehouses()->attach($warehouse->id, ['quantity' => 1]);
+
         $sn = ArticleSerialNumber::create([
             'tenants_id' => $this->tenant->id,
             'article_id' => $article->id,
@@ -142,7 +146,7 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
         ]);
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/stock/movements', [
+            ->postJson('/api/articles/stock/movements', [
                 'tenants_id' => $this->tenant->id,
                 'article_id' => $article->id,
                 'warehouse_id' => $warehouse->id,
@@ -164,23 +168,24 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
     it('marque un SN comme "Lost" lors d\'un ajustement négatif', function () {
         $warehouse = Warehouse::factory()->create(['tenants_id' => $this->tenant->id]);
         $article = Article::factory()->create(['tenants_id' => $this->tenant->id, 'tracking_type' => TrackingType::SerialNumber]);
+        $article->warehouses()->attach($warehouse->id, ['quantity' => 1]);
 
         $sn = ArticleSerialNumber::create([
             'tenants_id' => $this->tenant->id,
             'article_id' => $article->id,
             'warehouse_id' => $warehouse->id,
             'serial_number' => 'LOST-MACHINE-99',
-            'status' => SerialNumberStatus::InStock
+            'status' => SerialNumberStatus::InStock->value
         ]);
 
         $response = $this->actingAs($this->user)
-            ->postJson('/api/stock/movements', [
+            ->postJson('/api/articles/stock/movements', [
                 'tenants_id' => $this->tenant->id,
                 'article_id' => $article->id,
                 'warehouse_id' => $warehouse->id,
                 'type' => StockMovementType::Adjustment->value,
-                'adjustment_type' => 'loss',
-                'quantity' => 1,
+                'adjustment_type' => \App\Enums\Articles\AdjustementType::Loss->value,
+                'quantity' => -1,
                 'serial_number_id' => $sn->id,
                 'notes' => 'Matériel volé sur site'
             ]);
@@ -191,8 +196,6 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
 });
 
 it('déclenche une notification d\'alerte quand le seuil critique est atteint', function () {
-    Notification::fake();
-
     $warehouse = Warehouse::factory()->create(['tenants_id' => $this->tenant->id]);
     $article = Article::factory()->create([
         'tenants_id' => $this->tenant->id,
@@ -202,7 +205,7 @@ it('déclenche une notification d\'alerte quand le seuil critique est atteint', 
 
     $article->warehouses()->attach($warehouse->id, ['quantity' => 55]);
 
-    $this->actingAs($this->user)->postJson('/api/stock/movements', [
+    $this->actingAs($this->user)->postJson('/api/articles/stock/movements', [
         'tenants_id' => $this->tenant->id,
         'article_id' => $article->id,
         'warehouse_id' => $warehouse->id,

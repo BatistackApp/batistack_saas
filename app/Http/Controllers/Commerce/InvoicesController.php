@@ -32,7 +32,7 @@ class InvoicesController extends Controller
 
     public function store(InvoicesRequest $request): JsonResponse
     {
-        $invoice = Invoices::create($request->validated());
+        $invoice = Invoices::create($request->safe()->except(['items']));
 
         if ($request->has('items')) {
             $invoice->items()->createMany($request->items);

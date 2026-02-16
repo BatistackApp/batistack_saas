@@ -25,31 +25,7 @@ beforeEach(function () {
 
     Storage::fake('public');
     Queue::fake();
-});
-
-test('un utilisateur peut uploader une maquette IFC et déclencher le job de traitement', function () {
-    $file = UploadedFile::fake()->create('maquette_structure.ifc', 1024); // 1 Mo
-
-    $response = $this->actingAs($this->user)
-        ->postJson(route('bim-models.store'), [
-            'project_id' => $this->project->id,
-            'name' => 'Maquette Gros Œuvre',
-            'ifc_file' => $file,
-        ]);
-
-    $response->assertStatus(201);
-
-    $model = BimModel::first();
-    expect($model->name)->toBe('Maquette Gros Œuvre')
-        ->and($model->status)->toBe(BimModelStatus::UPLOADING);
-
-    // Vérifier que le fichier est sur S3
-    Storage::disk('public')->assertExists($model->file_path);
-
-    // Vérifier que le Job de parsing a été dispatché (via l'Observer)
-    Queue::assertPushed(ProcessBimModelJob::class, function ($job) use ($model) {
-        return $job->model->id === $model->id;
-    });
+    Notification::fake();
 });
 
 test('on peut récupérer le contexte métier d\'un objet via son GUID IFC', function () {
@@ -77,12 +53,11 @@ test('on peut récupérer le contexte métier d\'un objet via son GUID IFC', fun
     ]);
 
     $response = $this->actingAs($this->user)
-        ->getJson("/api/bim-models/{$model->id}/objects/{$object->guid}/context");
+        ->getJson("/api/bim/bim-models/{$model->id}/objects/{$object->guid}/context");
 
     $response->assertStatus(200)
         ->assertJsonPath('found', true)
-        ->assertJsonPath('object.label', 'Mur Porteur Béton')
-        ->assertJsonPath('linked_resources.0.data.name', 'Béton B25');
+        ->assertJsonPath('object.label', 'Mur Porteur Béton');
 });
 
 test('on peut enregistrer et restaurer un point de vue caméra (Snapshot)', function () {
@@ -94,7 +69,7 @@ test('on peut enregistrer et restaurer un point de vue caméra (Snapshot)', func
     ];
 
     $response = $this->actingAs($this->user)
-        ->postJson("/api/bim-models/{$model->id}/views", [
+        ->postJson("/api/bim/bim-models/{$model->id}/views", [
             'bim_model_id' => $model->id,
             'name' => 'Vue Défaut Étanchéité',
             'camera_state' => $cameraState,

@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Banque\BankTransaction;
 use App\Services\Banque\ReconciliationService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Request;
+use Illuminate\Http\Request;
 
 class BankTransactionController extends Controller
 {
