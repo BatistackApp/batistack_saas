@@ -29,4 +29,13 @@ class StoreTimeEntryRequest extends FormRequest
     {
         return true;
     }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->user() && $this->user()->tenants_id) {
+            $this->merge([
+                'tenants_id' => $this->user()->tenants_id,
+            ]);
+        }
+    }
 }

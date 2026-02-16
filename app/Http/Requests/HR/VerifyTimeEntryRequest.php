@@ -12,12 +12,21 @@ class VerifyTimeEntryRequest extends FormRequest
     {
         return [
             'status' => ['required', new Enum(TimeEntryStatus::class)],
-            'verified_by' => ['required', 'exists:users,id'],
+            'notes' => ['nullable', 'string'],
         ];
     }
 
     public function authorize(): bool
     {
-        return true;
+        return $this->user() && $this->user()->can('payroll.manage');
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if ($this->user()) {
+            $this->merge([
+                'verified_by' => $this->user()->id,
+            ]);
+        }
     }
 }

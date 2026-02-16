@@ -24,10 +24,17 @@ class RoleAndPermissionSeeder extends Seeder
             'tiers.view', 'tiers.manage', 'tiers.compliance_validate',
             // Administration Tenant
             'tenant.users.manage', 'tenant.settings.edit',
+            'payroll.manage', 'payroll.validate',
+            'employee.manage', // Gestion des fiches salariés
             // Expense
             'tenant.expenses.manage', 'tenant.expenses.validate',
-            // Payroll
-            'payroll.manage', 'payroll.validate',
+            // MODULE ABSENCES (Nouveau)
+            'absences.view_own',   // Voir ses propres congés (Collaborateur)
+            'absences.create',     // Soumettre une demande (Collaborateur)
+            'absences.view_team',  // Voir le calendrier d'équipe (Manager)
+            'absences.validate',   // Valider/Refuser (Manager)
+            'absences.manage_all', // Paramétrage et ajustement des soldes (RH)
+            'absences.export',     // Export vers la paie (RH)
             // GPAO
             'gpao.manage',
             // Locations
@@ -48,11 +55,22 @@ class RoleAndPermissionSeeder extends Seeder
         $admin = Role::findOrCreate('tenant_admin', 'web');
         $admin->givePermissionTo(Permission::all());
 
+        // --- RESPONSABLE RH (Persona 3) ---
+        $hr = Role::findOrCreate('hr_manager', 'web');
+        $hr->syncPermissions([
+            'absences.view_own', 'absences.create', 'absences.view_team',
+            'absences.manage_all', 'absences.export',
+            'employee.manage', 'payroll.manage', 'payroll.validate',
+            'tenant.users.manage'
+        ]);
+
         // CONDUCTEUR DE TRAVAUX (Focus opérationnel et budget)
+        // --- CONDUCTEUR DE TRAVAUX / MANAGER (Persona 2) ---
         $manager = Role::findOrCreate('project_manager', 'web');
-        $manager->givePermissionTo([
+        $manager->syncPermissions([
             'projects.view', 'projects.create', 'projects.edit', 'projects.manage_budget',
-            'inventory.view', 'tiers.view', 'locations.manage', 'pilotage.view'
+            'inventory.view', 'tiers.view', 'pilotage.view',
+            'absences.view_own', 'absences.create', 'absences.view_team', 'absences.validate'
         ]);
 
         // RESPONSABLE LOGISTIQUE (Focus Stock)
@@ -65,13 +83,23 @@ class RoleAndPermissionSeeder extends Seeder
         // CHEF DE CHANTIER (Consultation et saisie terrain)
         $foreman = Role::findOrCreate('foreman', 'web');
         $foreman->givePermissionTo([
-            'projects.view', 'inventory.view', 'locations.view'
+            'projects.view', 'inventory.view', 'locations.view',
+            'absences.view_own', 'absences.create', 'absences.view_team', 'absences.validate'
         ]);
 
         // CHEF D'ATELIER
         $atl = Role::findOrCreate('chef_atelier', 'web');
         $atl->givePermissionTo([
-            'projects.view', 'inventory.view', 'gpao.manage', 'locations.view'
+            'projects.view', 'inventory.view', 'gpao.manage', 'locations.view',
+            'absences.view_own', 'absences.create', 'absences.view_team', 'absences.validate'
+        ]);
+
+        // --- COLLABORATEUR / OUVRIER (Persona 1) ---
+        $employee = Role::findOrCreate('employee', 'web');
+        $employee->syncPermissions([
+            'absences.view_own',
+            'absences.create',
+            'projects.view'
         ]);
     }
 }

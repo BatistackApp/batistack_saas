@@ -31,6 +31,11 @@ class Tenants extends Model
             ->where('type', self::class);
     }
 
+    public function infoHolidays(): HasMany
+    {
+        return $this->hasMany(TenantInfoHolidays::class);
+    }
+
     protected function casts(): array
     {
         return [
