@@ -29,5 +29,12 @@ return [
         'approved' => 'Validé',
         'rejected' => 'Rejeté',
         'cancelled' => 'Annulé',
-    ]
+    ],
+    'skill_type' => [
+        'hard_skill' => 'Compétence technique',
+        'habilitation' => 'Habilitation',
+        'certification' => 'Certification',
+        'medical' => 'Visite médicale d\'aptitude',
+        'license' => 'Permis de conduire',
+    ],
 ];
