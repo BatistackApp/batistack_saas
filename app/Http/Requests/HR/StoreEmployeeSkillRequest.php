@@ -28,7 +28,7 @@ class StoreEmployeeSkillRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'document.required' => 'La preuve documentaire est obligatoire pour enregistrer une habilitation.',
+            'document_path.required' => 'La preuve documentaire est obligatoire pour enregistrer une habilitation.',
             'expiry_date.after' => 'La date d\'expiration doit être postérieure à la date d\'émission.',
         ];
     }

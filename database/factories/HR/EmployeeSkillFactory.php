@@ -18,7 +18,7 @@ class EmployeeSkillFactory extends Factory
             'issue_date' => Carbon::now(),
             'expiry_date' => Carbon::now(),
             'reference_number' => $this->faker->word(),
-            'document_path' => $this->faker->word(),
+            'document_path' => $this->faker->filePath(),
             'level' => $this->faker->randomNumber(),
             'notes' => $this->faker->word(),
             'created_at' => Carbon::now(),
