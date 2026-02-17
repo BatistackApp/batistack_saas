@@ -23,17 +23,18 @@ class ExpenseWorkflowService
 
     /**
      * Soumet une note de frais pour validation.
+     *
      * * @throws SubmitExpenseException
      * @throws EmptyReportException
      */
     public function submit(ExpenseReport $report): void
     {
-        if (!in_array($report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
-            throw new SubmitExpenseException("Seule une note en brouillon ou rejetée peut être soumise.");
+        if (! in_array($report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
+            throw new SubmitExpenseException('Seule une note en brouillon ou rejetée peut être soumise.');
         }
 
         if ($report->items()->count() === 0) {
-            throw new EmptyReportException("Impossible de soumettre une note de frais ne contenant aucune ligne.");
+            throw new EmptyReportException('Impossible de soumettre une note de frais ne contenant aucune ligne.');
         }
 
         $report->update([
@@ -41,12 +42,13 @@ class ExpenseWorkflowService
             'submitted_at' => now(),
         ]);
 
-        $validators = User::permission('validate-expenses')->get();
+        $validators = User::permission('tenant.expenses.validate')->get();
         Notification::send($validators, new ExpenseSubmittedNotification($report));
     }
 
     /**
      * Approuve une note de frais et déclenche l'imputation chantier.
+     *
      * * @throws ApprovalExpenseException
      */
     public function approve(ExpenseReport $report, int $validatorId): void
@@ -60,25 +62,31 @@ class ExpenseWorkflowService
                 'status' => ExpenseStatus::Approved,
                 'validated_at' => now(),
                 'validated_by' => $validatorId,
+                'rejection_reason' => null, // On nettoie si c'était un ancien rejet
             ]);
+
+            // Déclenchement de l'imputation sur les chantiers via le service dédié
             ProcessChantierImputationJob::dispatch($report);
+
             $report->user->notify(new ExpenseStatusChangedNotification($report));
         });
     }
 
     /**
      * Rejette une note de frais.
+     *
      * * @throws ReportLockedException
      */
-    public function reject(ExpenseReport $report): void
+    public function reject(ExpenseReport $report, string $reason): void
     {
         if ($report->status === ExpenseStatus::Paid) {
-            throw new ReportLockedException("Impossible de rejeter une note déjà remboursée.");
+            throw new ReportLockedException('Impossible de rejeter une note déjà remboursée.');
         }
 
         $report->update([
             'status' => ExpenseStatus::Rejected,
-            'submitted_at' => null,
+            'rejection_reason' => $reason,
+            'submitted_at' => null, // Permet à l'utilisateur de la modifier à nouveau
         ]);
 
         $report->user->notify(new ExpenseStatusChangedNotification($report));

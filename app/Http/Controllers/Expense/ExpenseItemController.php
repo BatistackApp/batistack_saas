@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Expense;
 
+use App\Enums\Expense\ExpenseStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Expense\StoreExpenseItemRequest;
 use App\Models\Expense\ExpenseItem;
@@ -21,32 +22,52 @@ class ExpenseItemController extends Controller
     public function store(StoreExpenseItemRequest $request): JsonResponse
     {
         $data = $request->validated();
+        $amounts = [];
 
-        // Calcul des montants HT/TVA
-        $amounts = $this->calcService->calculateFromTtc($data['amount_ttc'], $data['tax_rate']);
+        // Logique de bascule Kilométrage vs Standard
+        if ($request->boolean('is_mileage')) {
+            $ttc = $this->calcService->calculateMileage(
+                auth()->user()->tenants_id,
+                $data['distance_km'],
+                $data['vehicle_power'] ?? 5
+            );
 
-        // Gestion du justificatif
+            $amounts = [
+                'amount_ttc' => $ttc,
+                'amount_ht'  => $ttc, // Pas de TVA sur les IK
+                'amount_tva' => 0,
+                'tax_rate'   => 0
+            ];
+        } else {
+            $amounts = $this->calcService->calculateFromTtc($data['amount_ttc'], $data['tax_rate']);
+        }
+
         if ($request->hasFile('receipt_path')) {
-            $fileName = $request->file('receipt_path')->getFilename();
-            $data['receipt_path'] = $request->file('receipt_path')->store('receipts/' . auth()->id().'/'.$fileName, 'public');
+            $tenantId = auth()->user()->tenants_id;
+            $data['receipt_path'] = $request->file('receipt_path')->store("tenants/{$tenantId}/expenses", 'public');
         }
 
         $item = ExpenseItem::create(array_merge($data, $amounts));
 
-        return response()->json($item, 201);
+        return response()->json($item->load('category'), 201);
     }
 
     /**
      * Suppression d'une ligne (l'Observer gère le recalcul du total).
      */
-    public function destroy(ExpenseItem $item): JsonResponse
+    public function destroy(ExpenseItem $expenseItem): JsonResponse
     {
-        if ($item->receipt_path) {
-            Storage::disk('public')->delete($item->receipt_path);
+        // On vérifie que le rapport parent est modifiable
+        if (!in_array($expenseItem->report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
+            return response()->json(['error' => 'Ligne verrouillée.'], 422);
         }
 
-        $item->delete();
+        if ($expenseItem->receipt_path) {
+            Storage::disk('public')->delete($expenseItem->receipt_path);
+        }
 
-        return response()->json(null, 204);
+        $expenseItem->delete();
+
+        return response()->json(['message' => 'Ligne supprimée.']);
     }
 }

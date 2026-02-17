@@ -17,22 +17,40 @@ class ExpenseApprovalController extends Controller
     ) {}
 
     /**
+     * Liste des notes en attente de validation
+     */
+    public function pending(): JsonResponse
+    {
+        $reports = ExpenseReport::where('status', ExpenseStatus::Submitted)
+            ->with(['user', 'items'])
+            ->latest()
+            ->paginate();
+
+        return response()->json($reports);
+    }
+
+    /**
      * Approbation ou Refus d'une note.
      */
-    public function updateStatus(UpdateExpenseStatusRequest $request, ExpenseReport $report): JsonResponse
+    public function updateStatus(UpdateExpenseStatusRequest $request, ExpenseReport $expenseReport): JsonResponse
     {
         try {
-            if ($request->status === ExpenseStatus::Approved) {
-                $this->workflowService->approve($report, auth()->id());
-                $msg = 'Note de frais approuvée et coûts imputés aux chantiers.';
-            } else {
-                $this->workflowService->reject($report);
-                $msg = 'Note de frais rejetée.';
+            if ($request->status === ExpenseStatus::Approved->value) {
+                $this->workflowService->approve($expenseReport, auth()->id());
+                return response()->json(['message' => 'Note approuvée et imputation lancée.']);
             }
 
-            return response()->json(['message' => $msg]);
+            if ($request->status === ExpenseStatus::Rejected->value) {
+                // On met à jour le motif avant de rejeter
+                $expenseReport->update(['rejection_reason' => $request->reason]);
+                $this->workflowService->reject($expenseReport, $request->reason);
+                return response()->json(['message' => 'Note rejetée. L\'employé a été notifié.']);
+            }
+
+            return response()->json(['error' => 'Action non supportée.'], 400);
+
         } catch (ExpenseModuleException $e) {
-            return response()->json(['error' => $e->getMessage()], $e->getCode());
+            return response()->json(['error' => $e->getMessage()], 422);
         }
     }
 }

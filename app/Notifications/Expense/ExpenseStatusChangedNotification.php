@@ -2,6 +2,7 @@
 
 namespace App\Notifications\Expense;
 
+use App\Enums\Expense\ExpenseStatus;
 use App\Models\Expense\ExpenseReport;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,10 +22,18 @@ class ExpenseStatusChangedNotification extends Notification implements ShouldQue
 
     public function toMail($notifiable): MailMessage
     {
-        return (new MailMessage)
-            ->subject("Mise à jour de votre note de frais")
-            ->line("Votre note de frais '{$this->report->label}' est désormais au statut : {$status}.");
-            // ->action('Consulter ma note', url('/my-expenses/' . $this->report->id));
+        $statusLabel = $this->report->status->getLabel();
+
+        $message = (new MailMessage)
+            ->subject("Mise à jour de votre note de frais : {$statusLabel}")
+            ->line("Votre note de frais '{$this->report->label}' a été mise à jour.")
+            ->line("Nouveau statut : **{$statusLabel}**.");
+
+        if ($this->report->status === ExpenseStatus::Rejected && $this->report->rejection_reason) {
+            $message->line("Motif du refus : {$this->report->rejection_reason}");
+        }
+
+        return $message->action('Consulter ma note', url('/expenses/'.$this->report->id));
     }
 
     public function toArray($notifiable): array
@@ -32,7 +41,8 @@ class ExpenseStatusChangedNotification extends Notification implements ShouldQue
         return [
             'report_id' => $this->report->id,
             'status' => $this->report->status->value,
-            'message' => "Le statut de votre note de frais a été mis à jour : " . $this->report->status->getLabel()
+            'message' => "Votre note de frais est désormais : " . $this->report->status->getLabel(),
+            'reason' => $this->report->rejection_reason ?? null
         ];
     }
 }

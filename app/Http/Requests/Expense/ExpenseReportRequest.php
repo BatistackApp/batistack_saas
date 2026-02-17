@@ -17,9 +17,19 @@ class ExpenseReportRequest extends FormRequest
 
     public function authorize(): bool
     {
-        // Si c'est une mise à jour, on vérifie que la note appartient à l'utilisateur
-        // et qu'elle n'est pas verrouillée (statut Draft ou Rejected).
-        return true;
+        $report = $this->route('expense_report');
+
+        // Création : Autorisée pour tous les utilisateurs connectés
+        if (! $report) {
+            return true;
+        }
+
+        // Mise à jour : Propriétaire du rapport + Statut modifiable
+        $isOwner = $report->user_id === auth()->id();
+        $isEditable = in_array($report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected]);
+        $isAdmin = auth()->user()->hasRole('tenant_admin');
+
+        return $isAdmin || ($isOwner && $isEditable);
     }
 
     public function messages(): array

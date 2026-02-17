@@ -18,6 +18,7 @@ class ExpenseCategory extends Model
         return [
             'requires_distance' => 'boolean',
             'is_active' => 'boolean',
+            'default_tax_rate' => 'decimal:2',
         ];
     }
 

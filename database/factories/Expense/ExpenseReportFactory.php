@@ -18,11 +18,27 @@ class ExpenseReportFactory extends Factory
         return [
             'tenants_id' => Tenants::factory(),
             'user_id' => User::factory(),
-            'label' => 'Frais de ' . $this->faker->monthName() . ' ' . date('Y'),
+            'label' => $this->faker->sentence(3),
             'status' => ExpenseStatus::Draft,
             'amount_ht' => 0,
             'amount_tva' => 0,
             'amount_ttc' => 0,
         ];
+    }
+
+    public function submitted(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => ExpenseStatus::Submitted,
+            'submitted_at' => now(),
+        ]);
+    }
+
+    public function rejected(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => ExpenseStatus::Rejected,
+            'rejection_reason' => 'Justificatif illisible.',
+        ]);
     }
 }

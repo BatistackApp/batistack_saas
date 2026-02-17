@@ -11,32 +11,43 @@ class StoreExpenseItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'expense_report_id' => ['required', 'exists:expense_reports,id'],
+            'expense_report_id'   => ['required', 'exists:expense_reports,id'],
             'expense_category_id' => ['required', 'exists:expense_categories,id'],
-            'project_id' => ['nullable', 'exists:projects,id'],
-            'date' => ['required', 'date', 'before_or_equal:today'],
-            'description' => ['required', 'string', 'max:500'],
-            'amount_ttc' => ['required', 'numeric', 'min:0.01'],
-            'tax_rate' => ['required', 'numeric', 'in:0,2.1,5.5,10,20'],
-            'receipt' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'], // 5MB max
-            'metadata' => ['nullable', 'array'],
-            'metadata.distance' => ['required_if:requires_distance,true', 'numeric', 'min:0'],
+            'project_id'          => ['nullable', 'exists:projects,id'],
+            'date'                => ['required', 'date', 'before_or_equal:today'],
+            'description'         => ['required', 'string', 'max:500'],
+
+            // Types de frais
+            'is_mileage'          => ['boolean'],
+            'is_fixed_allowance'  => ['boolean'],
+            'is_billable'         => ['boolean'],
+
+            // Logique conditionnelle pour les IK
+            'distance_km'         => ['required_if:is_mileage,true', 'nullable', 'numeric', 'min:0.1'],
+            'vehicle_power'       => ['required_if:is_mileage,true', 'nullable', 'integer', 'min:1'],
+            'start_location'      => ['nullable', 'string', 'max:255'],
+            'end_location'        => ['nullable', 'string', 'max:255'],
+
+            // Montants financiers (Non requis si c'est de l'IK, car calculé par le service)
+            'amount_ttc'          => ['required_unless:is_mileage,true', 'nullable', 'numeric', 'min:0'],
+            'tax_rate'            => ['required_unless:is_mileage,true', 'nullable', 'numeric', 'in:0,2.1,5.5,10,20'],
+
+            'receipt_path'             => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'amount_ttc.min' => 'Le montant doit être supérieur à zéro.',
-            'tax_rate.in' => 'Le taux de TVA sélectionné n\'est pas valide.',
-            'date.before_or_equal' => 'La date du frais ne peut pas être dans le futur.',
-            'receipt.max' => 'Le justificatif est trop lourd (maximum 5 Mo).',
-            'metadata.distance.required_if' => 'La distance est obligatoire pour cette catégorie de frais.',
+            'distance_km.required_if'   => 'La distance est obligatoire pour les frais kilométriques.',
+            'vehicle_power.required_if' => 'La puissance fiscale est requise pour le calcul du barème.',
+            'amount_ttc.required_unless' => 'Le montant TTC est obligatoire pour les frais hors kilométriques.',
+            'receipt.max'               => 'Le justificatif ne doit pas dépasser 5 Mo.',
         ];
     }
 
     public function authorize(): bool
     {
-        return true;
+        return auth()->user()->can('tenant.expenses.manage');
     }
 }

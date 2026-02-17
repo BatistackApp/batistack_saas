@@ -3,6 +3,7 @@
 namespace App\Services\Expense;
 
 use App\Models\Expense\ExpenseReport;
+use DB;
 
 /**
  * Service de calcul pour les lignes de frais (TVA, IK, Totaux).
@@ -18,18 +19,28 @@ class ExpenseCalculationService
         $tva = $ttc - $ht;
 
         return [
-            'amount_ht'  => round($ht, 2),
+            'amount_ht' => round($ht, 2),
             'amount_tva' => round($tva, 2),
             'amount_ttc' => round($ttc, 2),
         ];
     }
 
     /**
-     * Calcule le montant des indemnités kilométriques.
+     * Calcule les IK en fonction du barème du Tenant.
      */
-    public function calculateKm(float $distance, float $ratePerKm): float
+    public function calculateMileage(int $tenantId, float $distance, int $vehiclePower): float
     {
-        return round($distance * $ratePerKm, 2);
+        // On récupère le barème spécifique au tenant
+        $scale = DB::table('expense_mileage_scales')
+            ->where('tenants_id', $tenantId)
+            ->where('vehicle_power', $vehiclePower)
+            ->where('active_year', now()->year)
+            ->first();
+
+        // Fallback sur un taux par défaut (0.60) si non configuré pour éviter le 0.00
+        $rate = $scale ? (float) $scale->rate_per_km : 0.60;
+
+        return round($distance * $rate, 2);
     }
 
     /**
@@ -37,7 +48,9 @@ class ExpenseCalculationService
      */
     public function refreshReportTotals(ExpenseReport $report): void
     {
-        $totals = $report->items()
+        // On force le rafraîchissement des calculs depuis la base
+        $totals = DB::table('expense_items')
+            ->where('expense_report_id', $report->id)
             ->selectRaw('SUM(amount_ht) as ht, SUM(amount_tva) as tva, SUM(amount_ttc) as ttc')
             ->first();
 

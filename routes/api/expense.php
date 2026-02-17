@@ -18,7 +18,7 @@ Route::prefix('expense')->group(function () {
 
     // --- Routes Managers / Validateurs ---
 
-    Route::middleware(['can:validate-expenses'])->group(function () {
+    Route::middleware(['can:tenant.expenses.manage'])->group(function () {
         Route::patch('expense-reports/{expense_report}/status', [ExpenseApprovalController::class, 'updateStatus'])
             ->name('expense-reports.update-status');
     });
