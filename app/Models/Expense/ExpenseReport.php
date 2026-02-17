@@ -3,7 +3,6 @@
 namespace App\Models\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +13,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ExpenseReport extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
+
     protected $guarded = [];
 
     public function user(): BelongsTo
@@ -38,6 +38,17 @@ class ExpenseReport extends Model
             'submitted_at' => 'datetime',
             'validated_at' => 'datetime',
             'status' => ExpenseStatus::class,
+            'amount_ht' => 'decimal:2',
+            'amount_tva' => 'decimal:2',
+            'amount_ttc' => 'decimal:2',
         ];
+    }
+
+    /**
+     * Vérifie si la note est modifiable (Brouillon ou Rejetée).
+     */
+    public function isEditable(): bool
+    {
+        return in_array($this->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected]);
     }
 }

@@ -35,7 +35,21 @@ class ExpenseItem extends Model
         return [
             'date' => 'date',
             'metadata' => 'array',
-            'tax_rate' => 'decimal:2'
+            'tax_rate' => 'decimal:2',
+            'amount_ht' => 'decimal:2',
+            'amount_tva' => 'decimal:2',
+            'amount_ttc' => 'decimal:2',
+            'distance_km' => 'decimal:2',
+            'vehicle_power' => 'integer',
+            'is_billable' => 'boolean',
         ];
+    }
+
+    /**
+     * Détermine s'il s'agit d'un frais kilométrique.
+     */
+    public function isMileage(): bool
+    {
+        return $this->category->requires_distance === true;
     }
 }
