@@ -18,13 +18,10 @@ class CheckOverdueInvoicesJob implements ShouldQueue
 
     public int $timeout = 300; // 5 minutes
 
-    public function __construct(
-        private BillingHistoryService $historyService,
-    ) {}
-
     public function handle(): void
     {
         try {
+            $historyService = app(BillingHistoryService::class);
             Log::info('Checking overdue invoices...');
 
             $overdueThreshold = now()->subDays(30);
@@ -37,8 +34,8 @@ class CheckOverdueInvoicesJob implements ShouldQueue
             })->get();
 
             foreach ($tenantsWithOverdueInvoices as $tenant) {
-                if ($tenant->status === TenantStatus::Active->value) {
-                    $tenant->update(['status' => TenantStatus::Suspended->value]);
+                if ($tenant->status === TenantStatus::Active) {
+                    $tenant->update(['status' => TenantStatus::Suspended]);
 
                     Log::warning('Tenant suspended due to overdue invoices', [
                         'tenant_id' => $tenant->id,
@@ -46,7 +43,7 @@ class CheckOverdueInvoicesJob implements ShouldQueue
 
                     dispatch(new SendTenantSuspensionNotificationJob($tenant->id));
 
-                    $this->historyService->logEvent(
+                    $historyService->logEvent(
                         tenant: $tenant,
                         eventType: 'tenant_suspended_overdue',
                         description: 'Tenant suspendu pour non-paiement',
