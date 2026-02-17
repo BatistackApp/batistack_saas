@@ -7,6 +7,7 @@ use App\Exceptions\Expense\ApprovalExpenseException;
 use App\Exceptions\Expense\EmptyReportException;
 use App\Exceptions\Expense\ReportLockedException;
 use App\Exceptions\Expense\SubmitExpenseException;
+use App\Jobs\Expense\ProcessChantierImputationJob;
 use App\Models\Expense\ExpenseReport;
 use App\Models\User;
 use App\Notifications\Expense\ExpenseStatusChangedNotification;
@@ -65,7 +66,7 @@ class ExpenseWorkflowService
             ]);
 
             // Déclenchement de l'imputation sur les chantiers via le service dédié
-            (new ChantierImputationService)->imputeReportToChantiers($report);
+            ProcessChantierImputationJob::dispatch($report);
 
             $report->user->notify(new ExpenseStatusChangedNotification($report));
         });
