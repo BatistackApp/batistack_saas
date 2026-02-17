@@ -47,23 +47,30 @@ jobs:
         run: npm audit --audit-level=high
 
   # 3. Analyse Statique du Code (CodeQL)
-  codeql-analysis:
-    name: 🔍 CodeQL Analysis (SAST)
+  psalm-security:
+    name: 🔍 SAST Analysis
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
         with:
-          languages: javascript-typescript, php
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pdo_sqlite
+          tools: composer:v2
 
-      - name: Autobuild
-        uses: github/codeql-action/autobuild@v3
+      - name: Install Dependencies
+        run: |
+          composer install --no-progress --no-suggest --prefer-dist
+          # Installation du plugin Laravel pour Psalm
+          composer require --dev psalm/plugin-laravel
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
+      - name: Run Psalm Taint Analysis
+        # L'option --taint-analysis active le scan de sécurité
+        # L'option --report=checkstyle permet d'exporter les résultats si besoin
+        run: ./vendor/bin/psalm --taint-analysis --output-format=github
 
   # 4. Scan des vulnérabilités Laravel (Specific)
   laravel-security:

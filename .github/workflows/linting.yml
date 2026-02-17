@@ -29,7 +29,7 @@ jobs:
         run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
 
       - name: Exécuter Laravel Pint (Correction)
-        run: ./vendor/bin/pint
+        run: ./vendor/bin/pint --repair
 
       - name: Commit des corrections
         uses: stefanzweifel/git-auto-commit-action@v5
