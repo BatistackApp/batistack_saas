@@ -363,10 +363,10 @@ jobs:
         run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
       - name: Copy .env.testing
-        run: cp .env.example .env.testing
+        run: cp .env.testing .env
 
       - name: Generate Key
-        run: php artisan key:generate --env=testing
+        run: php artisan key:generate
 
       # 2. Exécution conditionnelle des tests avec SQLite
       # Note : On utilise DB_DATABASE=:memory: pour une vitesse maximale
