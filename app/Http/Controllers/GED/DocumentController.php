@@ -16,6 +16,7 @@ class DocumentController extends Controller
     public function __construct(
         protected GEDService $gedService
     ) {}
+
     /**
      * Liste des documents et dossiers (Explorateur)
      */
@@ -45,7 +46,7 @@ class DocumentController extends Controller
             'current_folder' => $currentFolder,
             'folders' => $folders,
             'documents' => $documents,
-            'quota' => $this->gedService->getTenantQuota(auth()->user()->tenant)
+            'quota' => $this->gedService->getTenantQuota(auth()->user()->tenant),
         ]);
     }
 
@@ -61,7 +62,7 @@ class DocumentController extends Controller
 
         return response()->json([
             'message' => 'Document uploadé avec succès',
-            'document' => $document
+            'document' => $document,
         ], 201);
     }
 
@@ -96,12 +97,14 @@ class DocumentController extends Controller
         $action = $request->action;
 
         if ($action === 'delete') {
-            Document::whereIn('id', $ids)->each(fn($doc) => $this->gedService->deleteDocument($doc));
+            Document::whereIn('id', $ids)->each(fn ($doc) => $this->gedService->deleteDocument($doc));
+
             return response()->json(['message' => 'Documents supprimés']);
         }
 
         if ($action === 'move') {
             Document::whereIn('id', $ids)->update(['folder_id' => $request->target_folder_id]);
+
             return response()->json(['message' => 'Documents déplacés']);
         }
 
@@ -114,6 +117,7 @@ class DocumentController extends Controller
     public function destroy(Document $document)
     {
         $this->gedService->deleteDocument($document);
+
         return response()->json(['message' => 'Document supprimé']);
     }
 }

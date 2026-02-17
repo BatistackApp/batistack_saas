@@ -24,7 +24,7 @@ class CheckModuleExpirationJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            Log::info("Checking module expirations...");
+            Log::info('Checking module expirations...');
 
             // Récupérer les modules expirés (ends_at <= now())
             $expiredModules = TenantModule::where('status', '!=', \App\Enums\Core\TenantModuleStatus::Expired->value)
@@ -38,7 +38,7 @@ class CheckModuleExpirationJob implements ShouldQueue
                     'status' => \App\Enums\Core\TenantModuleStatus::Expired->value,
                 ]);
 
-                Log::info("Module marked as expired", [
+                Log::info('Module marked as expired', [
                     'tenants_id' => $tenantId,
                     'module_id' => $tenantModule->module_id,
                 ]);
@@ -52,7 +52,7 @@ class CheckModuleExpirationJob implements ShouldQueue
 
             Log::info("Module expiration check completed. Modules expired: {$expiredModules->count()}");
         } catch (\Exception $e) {
-            Log::error("Module expiration check failed", [
+            Log::error('Module expiration check failed', [
                 'error' => $e->getMessage(),
             ]);
 

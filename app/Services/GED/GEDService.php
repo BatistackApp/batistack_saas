@@ -28,7 +28,7 @@ class GEDService
         $tenant = auth()->user()->tenant;
 
         // Vérifier le quota avant upload
-        if (!$this->quotaService->canUpload($tenant, $file->getSize())) {
+        if (! $this->quotaService->canUpload($tenant, $file->getSize())) {
             throw new QuotaExceededException(
                 $tenant->storage_used,
                 $file->getSize(),
@@ -41,8 +41,8 @@ class GEDService
 
         return $this->processUpload($file, $tenant, $path, [
             'documentable_type' => get_class($resource),
-            'documentable_id'   => $resource->id,
-            'folder_id'         => $options['folder_id'] ?? null,
+            'documentable_id' => $resource->id,
+            'folder_id' => $options['folder_id'] ?? null,
         ]);
     }
 
@@ -55,7 +55,7 @@ class GEDService
         $fileSize = $file->getSize();
 
         // 1. Vérification du quota avant upload
-        if (!$this->quotaService->canUpload($tenant, $fileSize)) {
+        if (! $this->quotaService->canUpload($tenant, $fileSize)) {
             throw new QuotaExceededException(
                 $tenant->storage_used,
                 $fileSize,
@@ -134,13 +134,14 @@ class GEDService
     /**
      * Récupère les statistiques de quota pour le tenant actuel
      */
-    public function getQuotaStats(Tenants $tenants = null): array
+    public function getQuotaStats(?Tenants $tenants = null): array
     {
         $tenant = $tenant ?? auth()->user()?->tenant; // Fallback pour le tenant actuel si non fourni
-        if (!$tenant) {
+        if (! $tenant) {
             // Gérer l'erreur si aucun tenant ne peut être déterminé
             throw new \RuntimeException('Tenant not found for quota statistics.');
         }
+
         return $this->quotaService->getUsageStats($tenant);
     }
 

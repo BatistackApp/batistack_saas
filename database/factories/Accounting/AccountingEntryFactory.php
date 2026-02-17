@@ -5,10 +5,8 @@ namespace Database\Factories\Accounting;
 use App\Enums\Accounting\EntryStatus;
 use App\Models\Accounting\AccountingEntry;
 use App\Models\Accounting\Journal;
-use App\Models\Core\Tenants;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class AccountingEntryFactory extends Factory
 {

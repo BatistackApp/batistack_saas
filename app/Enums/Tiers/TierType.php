@@ -6,13 +6,12 @@ use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum TierType: string implements HasLabel, HasColor
+enum TierType: string implements HasColor, HasLabel
 {
     case Customer = 'customer';
     case Supplier = 'supplier';
     case Subcontractor = 'subcontractor';
     case Employee = 'employee';
-
 
     public function getColor(): string|array|null
     {

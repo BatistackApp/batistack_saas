@@ -5,14 +5,12 @@ use App\Enums\Articles\StockMovementType;
 use App\Enums\Articles\TrackingType;
 use App\Models\Articles\Article;
 use App\Models\Articles\ArticleSerialNumber;
-use App\Models\Articles\StockMovement;
 use App\Models\Articles\Warehouse;
 use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\User;
 use App\Notifications\Articles\LowStockAlertNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -29,7 +27,7 @@ beforeEach(function () {
     Notification::fake();
 });
 
-describe("Flux de Stocks : Articles Standards (Quantité)", function () {
+describe('Flux de Stocks : Articles Standards (Quantité)', function () {
 
     it('enregistre une sortie chantier et décrémente le stock du bon dépôt', function () {
         $project = Project::factory()->create(['tenants_id' => $this->tenant->id]);
@@ -37,7 +35,7 @@ describe("Flux de Stocks : Articles Standards (Quantité)", function () {
         $article = Article::factory()->create([
             'tenants_id' => $this->tenant->id,
             'tracking_type' => TrackingType::Quantity,
-            'cump_ht' => 50.00
+            'cump_ht' => 50.00,
         ]);
 
         $article->warehouses()->attach($warehouse->id, ['quantity' => 100]);
@@ -50,7 +48,7 @@ describe("Flux de Stocks : Articles Standards (Quantité)", function () {
                 'type' => StockMovementType::Exit->value,
                 'quantity' => 10,
                 'project_id' => $project->id,
-                'adjustement_type' => 'loss'
+                'adjustement_type' => 'loss',
             ]);
 
         $response->assertStatus(201);
@@ -80,7 +78,7 @@ describe("Flux de Stocks : Articles Standards (Quantité)", function () {
     });
 });
 
-describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
+describe('Flux de Stocks : Articles Sérialisés (SN)', function () {
 
     it('crée un numéro de série lors d\'une entrée en stock d\'un article sérialisé', function () {
         $warehouse = Warehouse::factory()->create(['tenants_id' => $this->tenant->id]);
@@ -107,7 +105,7 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
             'serial_number' => 'SN-PERCEUSE-001',
             'article_id' => $article->id,
             'status' => SerialNumberStatus::InStock->value,
-            'warehouse_id' => $warehouse->id
+            'warehouse_id' => $warehouse->id,
         ]);
     });
 
@@ -142,7 +140,7 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
             'article_id' => $article->id,
             'warehouse_id' => $warehouse->id,
             'serial_number' => 'HILTI-TE60-01',
-            'status' => SerialNumberStatus::InStock
+            'status' => SerialNumberStatus::InStock,
         ]);
 
         $response = $this->actingAs($this->user)
@@ -154,7 +152,7 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
                 'quantity' => 1,
                 'serial_number_id' => $sn->id,
                 'project_id' => $project->id,
-                'adjustement_type' => 'loss'
+                'adjustement_type' => 'loss',
             ]);
 
         $response->assertStatus(201);
@@ -175,7 +173,7 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
             'article_id' => $article->id,
             'warehouse_id' => $warehouse->id,
             'serial_number' => 'LOST-MACHINE-99',
-            'status' => SerialNumberStatus::InStock->value
+            'status' => SerialNumberStatus::InStock->value,
         ]);
 
         $response = $this->actingAs($this->user)
@@ -187,7 +185,7 @@ describe("Flux de Stocks : Articles Sérialisés (SN)", function () {
                 'adjustment_type' => \App\Enums\Articles\AdjustementType::Loss->value,
                 'quantity' => -1,
                 'serial_number_id' => $sn->id,
-                'notes' => 'Matériel volé sur site'
+                'notes' => 'Matériel volé sur site',
             ]);
 
         $response->assertStatus(201);
@@ -200,7 +198,7 @@ it('déclenche une notification d\'alerte quand le seuil critique est atteint', 
     $article = Article::factory()->create([
         'tenants_id' => $this->tenant->id,
         'alert_stock' => 50,
-        'tracking_type' => TrackingType::Quantity
+        'tracking_type' => TrackingType::Quantity,
     ]);
 
     $article->warehouses()->attach($warehouse->id, ['quantity' => 55]);

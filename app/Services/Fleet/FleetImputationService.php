@@ -15,7 +15,7 @@ class FleetImputationService
      */
     public function imputeCostsToProject(VehicleAssignment $assignment, ?CarbonImmutable $explicitEndDate = null): void
     {
-        if (!$assignment->project_id) {
+        if (! $assignment->project_id) {
             return;
         }
 
@@ -56,7 +56,7 @@ class FleetImputationService
                         'period' => [
                             'from' => $start->toDateTimeString(),
                             'to' => $end->toDateTimeString(),
-                        ]
+                        ],
                     ]),
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -81,7 +81,9 @@ class FleetImputationService
         $dailyRate = bcdiv($purchasePrice, '1825', 4);
 
         $days = $start->diffInDays($end);
-        if ($days <= 0) $days = 1;
+        if ($days <= 0) {
+            $days = 1;
+        }
 
         return bcmul($dailyRate, (string) $days, 2);
     }

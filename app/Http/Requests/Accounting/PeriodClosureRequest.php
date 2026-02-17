@@ -10,7 +10,7 @@ class PeriodClosureRequest extends FormRequest
     {
         return [
             'month' => ['required', 'integer', 'between:1,12'],
-            'year' => ['required', 'integer', 'min:2020', 'max:' . (now()->year + 1)],
+            'year' => ['required', 'integer', 'min:2020', 'max:'.(now()->year + 1)],
             'confirm_lock' => ['required', 'accepted'], // Force la confirmation consciente
         ];
     }

@@ -25,7 +25,7 @@ class CashFlowForecastService
         // OPTIMISATION : Agrégation SQL groupée des flux entrants (Tiers = Client)
         $incomingsByDate = Invoices::where('tenants_id', $tenantId)
             ->whereIn('status', ['validated', 'partially_paid'])
-            ->whereHas('tiers.types', fn($q) => $q->where('type', 'client'))
+            ->whereHas('tiers.types', fn ($q) => $q->where('type', 'client'))
             ->whereBetween('due_date', [$today, $endDate])
             ->select('due_date', DB::raw('SUM(total_ttc) as total')) // Note: total_ttc car net_to_pay est un accesseur
             ->groupBy('due_date')
@@ -34,7 +34,7 @@ class CashFlowForecastService
         // OPTIMISATION : Agrégation SQL groupée des flux sortants (Tiers = Fournisseur)
         $outgoingsByDate = Invoices::where('tenants_id', $tenantId)
             ->whereIn('status', ['validated', 'partially_paid'])
-            ->whereHas('tiers.types', fn($q) => $q->where('type', 'fournisseur'))
+            ->whereHas('tiers.types', fn ($q) => $q->where('type', 'fournisseur'))
             ->whereBetween('due_date', [$today, $endDate])
             ->select('due_date', DB::raw('SUM(total_ttc) as total'))
             ->groupBy('due_date')
@@ -55,14 +55,14 @@ class CashFlowForecastService
                 'date' => $dateString,
                 'in' => (float) $dayIn,
                 'out' => (float) $dayOut,
-                'balance' => (float) $runningBalance
+                'balance' => (float) $runningBalance,
             ];
         }
 
         return [
             'initial_balance' => (float) $currentBalance,
             'final_balance' => (float) $runningBalance,
-            'data' => $projections
+            'data' => $projections,
         ];
     }
 }

@@ -20,11 +20,13 @@ class InterventionStockManager
      */
     public function validateStockAvailability(Intervention $intervention): void
     {
-        if (!$intervention->warehouse) return;
+        if (! $intervention->warehouse) {
+            return;
+        }
 
         foreach ($intervention->items as $item) {
             if ($item->article_id) {
-                if (!$this->inventoryService->hasEnoughStock($item->article, $intervention->warehouse, $item->quantity)) {
+                if (! $this->inventoryService->hasEnoughStock($item->article, $intervention->warehouse, $item->quantity)) {
                     throw new InsufficientStockException("Stock insuffisant pour l'article : {$item->label}");
                 }
             }

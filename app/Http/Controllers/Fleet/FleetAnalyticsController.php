@@ -36,7 +36,7 @@ class FleetAnalyticsController extends Controller
                 'from' => $startDate->toDateString(),
                 'to' => $endDate->toDateString(),
             ],
-            'analytics' => $tcoData
+            'analytics' => $tcoData,
         ]);
     }
 
@@ -52,7 +52,7 @@ class FleetAnalyticsController extends Controller
         $complianceReport = [
             'total_compliant' => 0,
             'total_critical' => 0,
-            'critical_vehicles' => []
+            'critical_vehicles' => [],
         ];
 
         $stats = $vehicles->map(function ($vehicle) use (&$complianceReport) {
@@ -65,18 +65,18 @@ class FleetAnalyticsController extends Controller
 
             if ($vehicle->currentAssignment?->user) {
                 $check = $this->complianceService->checkDriverCompliance($vehicle, $vehicle->currentAssignment->user);
-                if (!$check['status']) {
+                if (! $check['status']) {
                     $isCompliant = false;
                     $driverIssue = $check['message'];
                 }
             }
 
-            if (!$isCompliant) {
+            if (! $isCompliant) {
                 $complianceReport['total_critical']++;
                 $complianceReport['critical_vehicles'][] = [
                     'id' => $vehicle->id,
                     'internal_code' => $vehicle->internal_code,
-                    'issue' => $driverIssue
+                    'issue' => $driverIssue,
                 ];
             } else {
                 $complianceReport['total_compliant']++;
@@ -87,7 +87,7 @@ class FleetAnalyticsController extends Controller
                 'odometer' => $vehicle->current_odometer,
                 'consumption' => $this->analyticsService->calculateAverageConsumption($vehicle),
                 'tco_year_ht' => $tco['total_tco_ht'],
-                'status' => $isCompliant ? 'ok' : 'alert'
+                'status' => $isCompliant ? 'ok' : 'alert',
             ];
         });
 
@@ -96,7 +96,7 @@ class FleetAnalyticsController extends Controller
                 'total_vehicles' => $vehicles->count(),
                 'compliance' => $complianceReport,
             ],
-            'fleet_details' => $stats
+            'fleet_details' => $stats,
         ]);
     }
 }

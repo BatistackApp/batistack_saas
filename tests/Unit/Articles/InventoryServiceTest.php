@@ -6,7 +6,7 @@ use App\Models\Core\Tenants;
 use App\Services\Articles\InventoryService;
 
 beforeEach(function () {
-    $this->inventoryService = new InventoryService();
+    $this->inventoryService = new InventoryService;
 });
 
 it('calcule correctement le nouveau CUMP après une réception', function () {
@@ -17,7 +17,7 @@ it('calcule correctement le nouveau CUMP après une réception', function () {
     $article = Article::factory()->create([
         'tenants_id' => $tenant->id,
         'cump_ht' => 10.00,
-        'total_stock' => 10
+        'total_stock' => 10,
     ]);
 
     $article->warehouses()->attach($warehouse->id, ['quantity' => 10]);
@@ -48,7 +48,7 @@ it('ne modifie pas le CUMP si la quantité totale devient nulle ou négative', f
     $tenant = Tenants::factory()->create();
     $article = Article::factory()->create([
         'tenants_id' => $tenant->id,
-        'cump_ht' => 10.00
+        'cump_ht' => 10.00,
     ]);
 
     $this->inventoryService->updateCump($article, -10, 5.00);

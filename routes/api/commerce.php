@@ -1,4 +1,5 @@
 <?php
+
 Route::prefix('commerce')->group(function () {
     Route::prefix('invoices')->group(function () {
         Route::get('/', [\App\Http\Controllers\Commerce\InvoicesController::class, 'index']);

@@ -13,13 +13,13 @@ class KpiThresholdRequest extends FormRequest
         return [
             'kpi_indicator_id' => [
                 'required',
-                Rule::exists('kpi_indicators', 'id')->where(fn ($q) => $q->where('tenants_id', auth()->user()->tenants_id))
+                Rule::exists('kpi_indicators', 'id')->where(fn ($q) => $q->where('tenants_id', auth()->user()->tenants_id)),
             ],
             'min_value' => ['nullable', 'numeric'],
             'max_value' => [
                 'nullable',
                 'numeric',
-                'greater_than_field:min_value' // Règle personnalisée ou logique manuelle requise
+                'greater_than_field:min_value', // Règle personnalisée ou logique manuelle requise
             ],
             'severity' => ['required', Rule::enum(ThresholdSeverity::class)],
             'is_notifiable' => ['boolean'],

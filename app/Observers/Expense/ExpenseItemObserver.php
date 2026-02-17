@@ -6,7 +6,6 @@ use App\Enums\Expense\ExpenseStatus;
 use App\Exceptions\Expense\ReportLockedException;
 use App\Models\Expense\ExpenseItem;
 use App\Services\Expense\ExpenseCalculationService;
-use Illuminate\Validation\ValidationException;
 
 class ExpenseItemObserver
 {
@@ -19,13 +18,14 @@ class ExpenseItemObserver
 
     /**
      * Empêche la modification d'un item si la note est déjà soumise ou validée.
+     *
      * @throws ReportLockedException
      */
     public function saving(ExpenseItem $item): void
     {
         $report = $item->report;
         // Si le rapport n'est pas chargé, on essaie de le charger
-        if (!$report && $item->expense_report_id) {
+        if (! $report && $item->expense_report_id) {
             $report = $item->report()->first();
         }
 
@@ -49,7 +49,7 @@ class ExpenseItemObserver
         // On s'assure de recharger la relation pour avoir l'objet frais
         $report = $item->report;
 
-        if (!$report && $item->expense_report_id) {
+        if (! $report && $item->expense_report_id) {
             $report = $item->report()->first();
         }
 

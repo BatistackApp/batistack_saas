@@ -9,13 +9,13 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-describe("API: Articles Controller", function () {
+describe('API: Articles Controller', function () {
     beforeEach(function () {
         // Création du tenant de test et de l'utilisateur associé
         $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
         $this->tenant = Tenants::factory()->create();
         $this->user = User::factory()->create([
-            'tenants_id' => $this->tenant->id
+            'tenants_id' => $this->tenant->id,
         ]);
         $this->user->givePermissionTo('inventory.manage');
     });
@@ -25,7 +25,7 @@ describe("API: Articles Controller", function () {
         $articleLow = Article::factory()->create([
             'tenants_id' => $this->tenant->id,
             'alert_stock' => 10,
-            'total_stock' => 5 // Persisté via l'observer
+            'total_stock' => 5, // Persisté via l'observer
         ]);
 
         // Création d'un article d'un autre tenant (ne doit pas apparaître)
@@ -39,8 +39,8 @@ describe("API: Articles Controller", function () {
             ->assertJsonStructure([
                 'data' => [
                     '*' => [
-                        'id', 'sku', 'name', 'unit', 'total_stock', 'is_low_stock'
-                    ]
+                        'id', 'sku', 'name', 'unit', 'total_stock', 'is_low_stock',
+                    ],
                 ],
                 'links',
             ]);
@@ -73,14 +73,14 @@ describe("API: Articles Controller", function () {
         $response->assertStatus(201);
         $this->assertDatabaseHas('articles', [
             'sku' => 'ART-2026-X1',
-            'tenants_id' => $this->tenant->id
+            'tenants_id' => $this->tenant->id,
         ]);
     });
 
     it('échoue à la création si le SKU est déjà utilisé dans le même tenant', function () {
         Article::factory()->create([
             'tenants_id' => $this->tenant->id,
-            'sku' => 'DUPLICATE-01'
+            'sku' => 'DUPLICATE-01',
         ]);
 
         $response = $this->actingAs($this->user)
@@ -111,7 +111,6 @@ describe("API: Articles Controller", function () {
 
         $response = $this->actingAs($this->user)
             ->getJson("/api/articles/article/{$article->id}");
-
 
         $response->assertStatus(200)
             ->assertJsonPath('sku', $article->sku);

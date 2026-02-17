@@ -10,6 +10,7 @@ class InterventionItemObserver
     public function __construct(
         protected InterventionFinancialService $financialService
     ) {}
+
     public function saved(InterventionItem $item): void
     {
         $this->financialService->refreshValuation($item->intervention);

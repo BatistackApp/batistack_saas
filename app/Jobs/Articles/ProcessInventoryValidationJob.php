@@ -16,9 +16,7 @@ class ProcessInventoryValidationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private InventorySession $session)
-    {
-    }
+    public function __construct(private InventorySession $session) {}
 
     public function handle(StockMovementService $movementService): void
     {

@@ -15,7 +15,6 @@ class EmployeeService
         $employee = Employee::create($data);
         $passwordCase = \Str::random(10);
 
-
         $user = $this->createUser($employee, $passwordCase, $email);
         $user->notify(new EmployeeCreateUserNotification($employee, $passwordCase));
 

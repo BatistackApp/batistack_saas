@@ -76,10 +76,10 @@ class AccountingEntryController extends Controller
 
         try {
             $this->entryService->validate($entry);
+
             return response()->json(['message' => 'Écriture validée et inscrite définitivement au Grand Livre.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
-
 }

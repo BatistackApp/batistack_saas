@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Fleet;
 
-use App\Enums\Fleet\MaintenanceStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Fleet\MaintenanceCompletionRequest;
 use App\Http\Requests\Fleet\MaintenanceRequest;
@@ -10,7 +9,6 @@ use App\Models\Fleet\VehicleMaintenance;
 use App\Services\Fleet\FleetMaintenanceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class MaintenanceController extends Controller
 {
@@ -22,8 +20,8 @@ class MaintenanceController extends Controller
     public function index(Request $request): JsonResponse
     {
         $maintenances = VehicleMaintenance::with(['vehicle', 'plan', 'reporter'])
-            ->when($request->vehicle_id, fn($q) => $q->where('vehicle_id', $request->vehicle_id))
-            ->when($request->status, fn($q) => $q->where('maintenance_status', $request->status))
+            ->when($request->vehicle_id, fn ($q) => $q->where('vehicle_id', $request->vehicle_id))
+            ->when($request->status, fn ($q) => $q->where('maintenance_status', $request->status))
             ->latest()
             ->paginate(20);
 
@@ -42,7 +40,7 @@ class MaintenanceController extends Controller
 
         return response()->json([
             'message' => 'Demande de maintenance enregistrée.',
-            'data'    => $maintenance
+            'data' => $maintenance,
         ], 201);
     }
 
@@ -63,7 +61,7 @@ class MaintenanceController extends Controller
 
         return response()->json([
             'message' => 'La maintenance est désormais en cours.',
-            'data'    => $maintenance->fresh()
+            'data' => $maintenance->fresh(),
         ]);
     }
 
@@ -77,7 +75,7 @@ class MaintenanceController extends Controller
 
         return response()->json([
             'message' => 'La maintenance a été clôturée avec succès.',
-            'data'    => $maintenance->fresh()
+            'data' => $maintenance->fresh(),
         ]);
     }
 
@@ -90,7 +88,7 @@ class MaintenanceController extends Controller
 
         return response()->json([
             'message' => 'La maintenance a été annulée.',
-            'data'    => $maintenance->fresh()
+            'data' => $maintenance->fresh(),
         ]);
     }
 }

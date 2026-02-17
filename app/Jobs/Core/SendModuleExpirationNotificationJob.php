@@ -17,15 +17,14 @@ class SendModuleExpirationNotificationJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 60; // 1 minute
+
     public int $tries = 3;
 
     public function __construct(
-        public int     $tenantId,
-        public int     $moduleId,
+        public int $tenantId,
+        public int $moduleId,
         private string $type = 'expired', // 'warning' ou 'expired'
-    )
-    {
-    }
+    ) {}
 
     public function handle(): void
     {
@@ -33,7 +32,7 @@ class SendModuleExpirationNotificationJob implements ShouldQueue
             $tenant = Tenants::findOrFail($this->tenantId);
             $module = ModuleCatalog::findOrFail($this->moduleId);
 
-            Log::info("Sending module expiration notification", [
+            Log::info('Sending module expiration notification', [
                 'tenant_id' => $this->tenantId,
                 'module_id' => $this->moduleId,
                 'type' => $this->type,
@@ -43,7 +42,7 @@ class SendModuleExpirationNotificationJob implements ShouldQueue
             $tenant->notify(new ModuleExpirationNotification($tenant, $module, $this->type));
 
         } catch (\Exception $e) {
-            Log::error("Failed to send module expiration notification", [
+            Log::error('Failed to send module expiration notification', [
                 'tenant_id' => $this->tenantId,
                 'module_id' => $this->moduleId,
                 'error' => $e->getMessage(),

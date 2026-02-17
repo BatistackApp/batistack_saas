@@ -6,18 +6,17 @@ Route::post('/stripe/webhook', \App\Http\Controllers\Api\StripeWebhookController
     ->name('stripe.webhook')
     ->withoutMiddleware([\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class]);
 
-include("api/articles.php");
-include("api/commerce.php");
-include("api/fleet.php");
-include("api/hr.php");
-include("api/ged.php");
-include("api/expense.php");
-include("api/payroll.php");
-include("api/intervention.php");
-include("api/banque.php");
-include("api/gpao.php");
-include("api/locations.php");
-include("api/bim.php");
-include("api/accounting.php");
-include("api/pilotage.php");
-
+include 'api/articles.php';
+include 'api/commerce.php';
+include 'api/fleet.php';
+include 'api/hr.php';
+include 'api/ged.php';
+include 'api/expense.php';
+include 'api/payroll.php';
+include 'api/intervention.php';
+include 'api/banque.php';
+include 'api/gpao.php';
+include 'api/locations.php';
+include 'api/bim.php';
+include 'api/accounting.php';
+include 'api/pilotage.php';

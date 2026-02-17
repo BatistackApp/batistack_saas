@@ -25,13 +25,13 @@ class PayrollPeriodRequest extends FormRequest
                             $query->where('start_date', '<=', $value)
                                 ->where('end_date', '>=', $this->start_date);
                         })
-                        ->when($periodId, fn($q) => $q->where('id', '!=', $periodId))
+                        ->when($periodId, fn ($q) => $q->where('id', '!=', $periodId))
                         ->exists();
 
                     if ($overlap) {
                         $fail('Cette période chevauche une période de paie existante.');
                     }
-                }
+                },
             ],
         ];
     }

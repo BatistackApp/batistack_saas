@@ -6,7 +6,7 @@ use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum TierDocumentStatus: string implements HasLabel, HasColor
+enum TierDocumentStatus: string implements HasColor, HasLabel
 {
     case Valid = 'valid';
     case ToRenew = 'to_renew';

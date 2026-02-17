@@ -48,7 +48,7 @@ class FleetAnalyticsService
 
         // 4. Coût au kilomètre
         $kmTraveled = (float) $this->getDistanceTraveled($vehicle, $startDate, $endDate);
-        $costPerKm = ($kmTraveled > 0) ? (float) bcdiv($totalTco, (string)$kmTraveled, 4) : 0;
+        $costPerKm = ($kmTraveled > 0) ? (float) bcdiv($totalTco, (string) $kmTraveled, 4) : 0;
 
         return [
             'energy_ht' => (float) $energyCosts,
@@ -90,7 +90,9 @@ class FleetAnalyticsService
         $first = $vehicle->consumptions()->where('date', '>=', $start)->orderBy('date', 'asc')->first();
         $last = $vehicle->consumptions()->where('date', '<=', $end)->orderBy('date', 'desc')->first();
 
-        if (!$first || !$last) return 0.0;
+        if (! $first || ! $last) {
+            return 0.0;
+        }
 
         return (float) ($last->odometer_reading - $first->odometer_reading);
     }

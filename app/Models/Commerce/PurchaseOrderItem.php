@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PurchaseOrderItem extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
     protected function casts(): array

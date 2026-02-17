@@ -33,7 +33,6 @@ beforeEach(function () {
 /**
  * --- TESTS DE VALIDATION DE CONFORMITÉ (AFFECTATIONS) ---
  */
-
 it('refuse l\'affectation si le conducteur n\'a aucun permis enregistré', function () {
     $driver = User::factory()->create(['tenants_id' => $this->tenant->id]);
 
@@ -44,7 +43,7 @@ it('refuse l\'affectation si le conducteur n\'a aucun permis enregistré', funct
     $response = $this->actingAs($this->user)
         ->postJson('/api/fleet/vehicles/assignments', [
             'vehicle_id' => $this->vehicle->id,
-            'user_id'    => $driver->id,
+            'user_id' => $driver->id,
             'started_at' => now()->toDateTimeString(),
         ]);
 
@@ -65,13 +64,13 @@ it('refuse l\'affectation si le permis est expiré même sans certification spé
         'type' => \App\Enums\Tiers\TierDocumentType::DRIVERLICENCE,
         'status' => TierDocumentStatus::Expired->value,
         'expires_at' => now()->subDays(1),
-        'file_path' => 'tests/expired.pdf'
+        'file_path' => 'tests/expired.pdf',
     ]);
 
     $response = $this->actingAs($this->user)
         ->postJson('/api/fleet/vehicles/assignments', [
             'vehicle_id' => $this->vehicle->id,
-            'user_id'    => $driver->id,
+            'user_id' => $driver->id,
             'started_at' => now()->toDateTimeString(),
         ]);
 
@@ -91,14 +90,14 @@ it('autorise l\'affectation si le conducteur est parfaitement en règle', functi
         'type' => \App\Enums\Tiers\TierDocumentType::DRIVERLICENCE,
         'status' => TierDocumentStatus::Valid,
         'expires_at' => now()->addDays(200),
-        'file_path' => 'tests/expired.pdf'
+        'file_path' => 'tests/expired.pdf',
     ]);
 
     // Dans ce test, nous mockons ou créons les conditions de succès
     $response = $this->actingAs($this->user)
         ->postJson('/api/fleet/vehicles/assignments', [
             'vehicle_id' => $this->vehicle->id,
-            'user_id'    => $driver->id,
+            'user_id' => $driver->id,
             'started_at' => now()->toDateTimeString(),
         ]);
 
@@ -109,7 +108,7 @@ it('autorise l\'affectation si le conducteur est parfaitement en règle', functi
         $this->assertDatabaseHas('vehicle_assignments', [
             'vehicle_id' => $this->vehicle->id,
             'user_id' => $driver->id,
-            'ended_at' => null
+            'ended_at' => null,
         ]);
     }
 });
@@ -117,7 +116,6 @@ it('autorise l\'affectation si le conducteur est parfaitement en règle', functi
 /**
  * --- TESTS DES RAPPORTS ANALYTIQUES (TCO) ---
  */
-
 it('calcule correctement le TCO incluant carburant et péages', function () {
     // 1. On crée des données de coût
     $this->vehicle->consumptions()->create([
@@ -142,14 +140,13 @@ it('calcule correctement le TCO incluant carburant et péages', function () {
         ->assertJsonStructure([
             'vehicle',
             'period',
-            'analytics' => ['energy_ht', 'tolls_ht', 'total_tco_ht', 'km_traveled']
+            'analytics' => ['energy_ht', 'tolls_ht', 'total_tco_ht', 'km_traveled'],
         ]);
 });
 
 /**
  * --- TESTS DU DASHBOARD GLOBAL ---
  */
-
 it('identifie les véhicules en alerte dans les statistiques globales', function () {
     // Véhicule 1 : En règle (pas de conducteur)
     Vehicle::factory()->create(['tenants_id' => $this->tenant->id, 'internal_code' => 'V-OK']);
@@ -168,7 +165,6 @@ it('identifie les véhicules en alerte dans les statistiques globales', function
 
     $response = $this->actingAs($this->user)
         ->getJson('/api/fleet/analytics/global');
-
 
     $response->assertStatus(200)
         ->assertJsonFragment(['internal_code' => 'V-ALERT'])

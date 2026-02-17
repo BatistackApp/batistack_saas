@@ -14,6 +14,7 @@ class ChartOfAccountController extends Controller
     public function index(): JsonResponse
     {
         $accounts = ChartOfAccount::orderBy('account_number')->get();
+
         return response()->json($accounts);
     }
 
@@ -28,7 +29,7 @@ class ChartOfAccountController extends Controller
         return response()->json([
             'account' => $account->account_number,
             'balance' => $balance,
-            'formatted_balance' => number_format((float)$balance, 2, ',', ' ') . ' €'
+            'formatted_balance' => number_format((float) $balance, 2, ',', ' ').' €',
         ]);
     }
 }

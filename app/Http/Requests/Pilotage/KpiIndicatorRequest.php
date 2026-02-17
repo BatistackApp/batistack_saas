@@ -21,7 +21,7 @@ class KpiIndicatorRequest extends FormRequest
                 'string',
                 'max:50',
                 // Unicité du code par tenant
-                Rule::unique('kpi_indicators')->where(fn ($q) => $q->where('tenants_id', $tenantId))->ignore($indicatorId)
+                Rule::unique('kpi_indicators')->where(fn ($q) => $q->where('tenants_id', $tenantId))->ignore($indicatorId),
             ],
             'description' => ['nullable', 'string', 'max:1000'],
             'category' => ['required', Rule::enum(KpiCategory::class)],

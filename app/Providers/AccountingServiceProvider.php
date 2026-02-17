@@ -3,23 +3,19 @@
 namespace App\Providers;
 
 use App\Jobs\Accounting\RefreshAccountBalanceCacheJob;
-use App\Models\Accounting\AccountingEntry;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
 
 class AccountingServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
         $this->app->booted(function () {
             $schedule = $this->app->make(Schedule::class);
 
-            $schedule->job(new RefreshAccountBalanceCacheJob())
+            $schedule->job(new RefreshAccountBalanceCacheJob)
                 ->dailyAt('02:00');
 
             $schedule->call(function () {
@@ -34,7 +30,7 @@ class AccountingServiceProvider extends ServiceProvider
                         now()->endOfMonth()
                     );
 
-                    if (!empty($gaps)) {
+                    if (! empty($gaps)) {
                         \Illuminate\Support\Facades\Log::warning(
                             "Trous de séquence détectés pour journal {$journal->code}",
                             $gaps

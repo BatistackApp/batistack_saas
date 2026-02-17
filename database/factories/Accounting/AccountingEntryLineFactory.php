@@ -6,7 +6,6 @@ use App\Models\Accounting\AccountingEntry;
 use App\Models\Accounting\AccountingEntryLine;
 use App\Models\Accounting\ChartOfAccount;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class AccountingEntryLineFactory extends Factory
 {

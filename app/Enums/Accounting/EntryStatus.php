@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum EntryStatus: string implements HasLabel, HasColor, HasIcon
+enum EntryStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Draft = 'draft';
     case Validated = 'validated';
@@ -36,7 +36,7 @@ enum EntryStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getLabel(): string|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Draft => __('accounting.entry_status.draft'),
             self::Validated => __('accounting.entry_status.validated'),
             self::Closed => __('accounting.entry_status.closed'),

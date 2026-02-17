@@ -9,13 +9,10 @@ use App\Models\Articles\Warehouse;
 use App\Models\Commerce\PurchaseOrder;
 use App\Services\Commerce\PurchaseOrderService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class PurchaseOrderController extends Controller
 {
-    public function __construct(protected PurchaseOrderService $purchaseService)
-    {
-    }
+    public function __construct(protected PurchaseOrderService $purchaseService) {}
 
     public function index(): JsonResponse
     {

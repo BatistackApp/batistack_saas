@@ -2,8 +2,4 @@
 
 namespace App\Exceptions\Payroll;
 
-use Exception;
-
-class CalculationException extends PayrollModuleException
-{
-}
+class CalculationException extends PayrollModuleException {}

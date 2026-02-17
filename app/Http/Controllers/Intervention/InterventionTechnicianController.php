@@ -12,7 +12,7 @@ class InterventionTechnicianController extends Controller
     public function store(StoreInterventionTechnicianRequest $request, Intervention $intervention): JsonResponse
     {
         $intervention->technicians()->syncWithoutDetaching([
-            $request->employee_id => ['hours_spent' => $request->hours_spent]
+            $request->employee_id => ['hours_spent' => $request->hours_spent],
         ]);
 
         return response()->json(['message' => 'Technicien affecté et heures enregistrées.']);
@@ -25,6 +25,7 @@ class InterventionTechnicianController extends Controller
         }
 
         $intervention->technicians()->detach($employeeId);
+
         return response()->json(null, 204);
     }
 }

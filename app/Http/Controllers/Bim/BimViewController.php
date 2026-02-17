@@ -28,6 +28,7 @@ class BimViewController extends Controller
     public function destroy(BimView $bimView): JsonResponse
     {
         $bimView->delete();
+
         return response()->json(null, 204);
     }
 }

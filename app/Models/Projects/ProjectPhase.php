@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProjectPhase extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
     protected $casts = [
@@ -22,7 +23,7 @@ class ProjectPhase extends Model
         'allocated_budget' => 'decimal:2',
         'rad_labor' => 'decimal:2',
         'rad_materials' => 'decimal:2',
-        'rad_subcontracting' => 'decimal:2'
+        'rad_subcontracting' => 'decimal:2',
     ];
 
     public function project(): BelongsTo
@@ -35,7 +36,8 @@ class ProjectPhase extends Model
         return $this->belongsTo(ProjectPhase::class, 'depends_on_phase_id');
     }
 
-    public function totalRad(): float {
+    public function totalRad(): float
+    {
         return (float) ($this->rad_labor + $this->rad_materials + $this->rad_subcontracting);
     }
 }

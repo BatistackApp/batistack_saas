@@ -14,24 +14,23 @@ class VerifyUrssafAttestationJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private TierDocument $document)
-    {
-    }
+    public function __construct(private TierDocument $document) {}
 
     public function handle(UrssafApiService $api): void
     {
-        if (!$this->document->relationLoaded('tier')) {
+        if (! $this->document->relationLoaded('tier')) {
             $this->document->load('tier');
         }
 
         $tier = $this->document->tier;
 
-        if (!$tier) {
+        if (! $tier) {
             $this->fail(new \Exception('Document tier not found'));
+
             return;
         }
 
-        if (!$tier->siret || !$this->document->verification_key) {
+        if (! $tier->siret || ! $this->document->verification_key) {
             return;
         }
 
@@ -40,7 +39,7 @@ class VerifyUrssafAttestationJob implements ShouldQueue
         // Mise à jour du statut du document selon le retour de l'API
         $this->document->update([
             'status' => $isValid ? 'valid' : 'invalid_key',
-            'verified_at' => $isValid ? now() : null
+            'verified_at' => $isValid ? now() : null,
         ]);
     }
 }

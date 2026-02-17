@@ -3,7 +3,6 @@
 namespace App\Models\Locations;
 
 use App\Enums\Locations\RentalStatus;
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use App\Models\Tiers\Tiers;
@@ -19,12 +18,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([RentalContractObserver::class])]
 class RentalContract extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
 
     protected $fillable = [
         'tenants_id', 'provider_id', 'project_id', 'project_phase_id',
         'reference', 'label', 'start_date_planned', 'end_date_planned',
-        'actual_pickup_at', 'actual_return_at', 'status', 'notes'
+        'actual_pickup_at', 'actual_return_at', 'status', 'notes',
     ];
 
     public function provider(): BelongsTo

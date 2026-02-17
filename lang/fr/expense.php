@@ -6,6 +6,6 @@ return [
         'submitted' => 'Envoyé',
         'approved' => 'Validé',
         'rejected' => 'Rejeté',
-        'paid' => 'Payé'
+        'paid' => 'Payé',
     ],
 ];

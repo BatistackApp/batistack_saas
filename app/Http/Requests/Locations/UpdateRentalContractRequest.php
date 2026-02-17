@@ -22,6 +22,7 @@ class UpdateRentalContractRequest extends FormRequest
     public function authorize(): bool
     {
         $contract = $this->route('rental_contract');
+
         // Un contrat facturé ne peut plus être modifié au niveau administratif
         return $contract && $contract->status !== RentalStatus::INVOICED;
     }

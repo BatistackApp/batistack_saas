@@ -3,16 +3,14 @@
 namespace App\Models\Fleet;
 
 use App\Enums\Fleet\VehicleType;
-use App\Models\Core\Tenants;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class VehicleMaintenancePlan extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
 
     protected $fillable = [
         'tenants_id',
@@ -24,6 +22,7 @@ class VehicleMaintenancePlan extends Model
         'operations',
         'is_active',
     ];
+
     protected function casts(): array
     {
         return [

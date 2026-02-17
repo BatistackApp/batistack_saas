@@ -24,19 +24,19 @@ beforeEach(function () {
     // Création d'un loueur conforme
     $this->provider = Tiers::factory()->create([
         'tenants_id' => $this->tenantsId,
-        'status' => \App\Enums\Tiers\TierStatus::Active
+        'status' => \App\Enums\Tiers\TierStatus::Active,
     ]);
 
     $this->project = Project::factory()->create(['tenants_id' => $this->tenantsId]);
     $this->phase = ProjectPhase::factory()->create(['project_id' => $this->project->id]);
 
-    $this->calcService = new RentalCalculationService();
+    $this->calcService = new RentalCalculationService;
 });
 
 test('le calcul des jours facturables exclut les weekends par défaut', function () {
     $item = new RentalItem([
         'is_weekend_included' => false,
-        'quantity' => 1
+        'quantity' => 1,
     ]);
 
     // Du vendredi au lundi suivant = 4 jours calendaires, mais seulement 2 jours ouvrés (ven, lun)
@@ -58,7 +58,7 @@ test('le moteur de calcul choisit le tarif hebdomadaire pour une durée de 6 jou
         'weekly_rate_ht' => 400, // Moins cher que 6 * 100
         'monthly_rate_ht' => 1500,
         'insurance_pct' => 0,
-        'is_weekend_included' => true
+        'is_weekend_included' => true,
     ]);
 
     $start = now();
@@ -67,7 +67,7 @@ test('le moteur de calcul choisit le tarif hebdomadaire pour une durée de 6 jou
     $cost = $this->calcService->calculateItemCost($item, $start, $end);
 
     // 6 jours >= 5 jours -> Utilise le tarif semaine au prorata (6/5 * 400) = 480
-    expect((float)$cost)->toBe(480.0);
+    expect((float) $cost)->toBe(480.0);
 });
 
 test('on ne peut pas activer une location si le loueur est non conforme', function () {
@@ -78,13 +78,13 @@ test('on ne peut pas activer une location si le loueur est non conforme', functi
     $contract = RentalContract::factory()->create([
         'tenants_id' => $this->tenantsId,
         'provider_id' => $this->provider->id,
-        'status' => RentalStatus::DRAFT
+        'status' => RentalStatus::DRAFT,
     ]);
 
     $response = $this->actingAs($this->user)
         ->patchJson(route('locations.contracts.update-status', $contract), [
             'status' => RentalStatus::ACTIVE->value,
-            'actual_date' => now()->toDateTimeString()
+            'actual_date' => now()->toDateTimeString(),
         ]);
 
     $response->assertStatus(422);
@@ -105,7 +105,7 @@ test('le job d\'imputation journalière crée des lignes de coûts sur le projet
         'daily_rate_ht' => 250,
         'weekly_rate_ht' => 1000,
         'monthly_rate_ht' => 3000,
-        'is_weekend_included' => true
+        'is_weekend_included' => true,
     ]);
 
     $service = app(RentalCostImputationService::class);
@@ -114,7 +114,7 @@ test('le job d\'imputation journalière crée des lignes de coûts sur le projet
     $this->assertDatabaseHas('project_imputations', [
         'project_id' => $this->project->id,
         'type' => 'rental',
-        'amount' => 250.00
+        'amount' => 250.00,
     ]);
 });
 
@@ -122,13 +122,13 @@ test('la clôture d\'un contrat calcule le coût final et fige les dates', funct
     $contract = RentalContract::factory()->create([
         'tenants_id' => $this->tenantsId,
         'status' => RentalStatus::ACTIVE,
-        'actual_pickup_at' => now()->subDays(2)
+        'actual_pickup_at' => now()->subDays(2),
     ]);
 
     $response = $this->actingAs($this->user)
         ->patchJson(route('locations.contracts.update-status', $contract), [
             'status' => RentalStatus::ENDED->value,
-            'actual_date' => now()->toDateTimeString()
+            'actual_date' => now()->toDateTimeString(),
         ]);
 
     $response->assertStatus(200);

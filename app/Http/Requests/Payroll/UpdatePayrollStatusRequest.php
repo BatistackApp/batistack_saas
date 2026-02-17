@@ -12,7 +12,7 @@ class UpdatePayrollStatusRequest extends FormRequest
     {
         return [
             'status' => ['required', Rule::enum(PayrollStatus::class)],
-            'confirm_lock' => ['required_if:status,' . PayrollStatus::Validated->value, 'accepted'],
+            'confirm_lock' => ['required_if:status,'.PayrollStatus::Validated->value, 'accepted'],
         ];
     }
 

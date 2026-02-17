@@ -24,7 +24,7 @@ class ProjectPhaseRequest extends FormRequest
     {
         $validator->after(function ($validator) {
             $project = \App\Models\Projects\Project::find($this->project_id);
-            if (!$project) {
+            if (! $project) {
                 return;
             }
 

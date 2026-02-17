@@ -25,7 +25,7 @@ class ProductionFinishedNotification extends Notification implements ShouldQueue
             'reference' => $this->workOrder->reference,
             'ouvrage' => $this->workOrder->ouvrage->name,
             'quantity' => $this->workOrder->quantity_produced,
-            'message' => "La production de {$this->workOrder->quantity_produced} unités de {$this->workOrder->ouvrage->name} est terminée."
+            'message' => "La production de {$this->workOrder->quantity_produced} unités de {$this->workOrder->ouvrage->name} est terminée.",
         ];
     }
 }

@@ -13,9 +13,9 @@ class UpdateOperationStatusRequest extends FormRequest
         return [
             'status' => ['required', Rule::enum(OperationStatus::class)],
             'time_actual_minutes' => [
-                'required_if:status,' . OperationStatus::Finished->value,
+                'required_if:status,'.OperationStatus::Finished->value,
                 'numeric',
-                'min:0'
+                'min:0',
             ],
         ];
     }
@@ -30,6 +30,7 @@ class UpdateOperationStatusRequest extends FormRequest
     public function authorize(): bool
     {
         $operation = $this->route('operation');
+
         // On ne peut modifier une opération que si l'OF n'est pas clôturé
         return $operation && $operation->workOrder->status !== \App\Enums\GPAO\WorkOrderStatus::Completed;
     }

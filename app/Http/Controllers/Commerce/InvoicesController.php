@@ -15,9 +15,7 @@ class InvoicesController extends Controller
 {
     public function __construct(
         protected InvoicingService $invoicingService,
-    )
-    {
-    }
+    ) {}
 
     public function index(Request $request): JsonResponse
     {
@@ -77,7 +75,7 @@ class InvoicesController extends Controller
             return response()->json([
                 'message' => 'Facture validée et scellée avec succès.',
                 'reference' => $validatedInvoice->reference,
-                'status' => $validatedInvoice->status->value
+                'status' => $validatedInvoice->status->value,
             ]);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);

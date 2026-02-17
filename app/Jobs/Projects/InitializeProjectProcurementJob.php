@@ -14,9 +14,7 @@ class InitializeProjectProcurementJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(protected Project $project)
-    {
-    }
+    public function __construct(protected Project $project) {}
 
     public function handle(): void
     {
@@ -43,6 +41,7 @@ class InitializeProjectProcurementJob implements ShouldQueue
 
         if ($materialBudget <= 0) {
             Log::warning("Alerte Achat : Aucun budget matériaux défini pour le projet {$this->project->code_project}");
+
             return;
         }
 

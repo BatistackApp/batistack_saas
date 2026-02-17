@@ -25,7 +25,7 @@ class TierDocument extends Model
             'expires_at' => 'date',
             'verified_at' => 'date',
             'montant_garantie' => 'decimal:2',
-            'lots_couverts' => 'array'
+            'lots_couverts' => 'array',
         ];
     }
 

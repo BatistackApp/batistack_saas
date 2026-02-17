@@ -42,6 +42,7 @@ class ArticleController extends Controller
     public function store(ArticleRequest $request): JsonResponse
     {
         $article = Article::create($request->validated());
+
         return response()->json($article, 201);
     }
 
@@ -53,12 +54,14 @@ class ArticleController extends Controller
     public function update(ArticleRequest $request, Article $article): JsonResponse
     {
         $article->update($request->validated());
+
         return response()->json($article);
     }
 
     public function destroy(Article $article): JsonResponse
     {
         $article->delete();
+
         return response()->json(null, 204);
     }
 }

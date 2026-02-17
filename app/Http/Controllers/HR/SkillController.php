@@ -42,6 +42,7 @@ class SkillController extends Controller
     public function destroy(Skill $skill): JsonResponse
     {
         $skill->delete();
+
         return response()->json(['message' => 'Habilitation supprimée']);
     }
 }

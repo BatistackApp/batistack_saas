@@ -48,7 +48,10 @@ class EmployeeSkill extends Model
      */
     public function isExpired(): bool
     {
-        if (!$this->expiry_date) return false;
+        if (! $this->expiry_date) {
+            return false;
+        }
+
         return $this->expiry_date->isPast();
     }
 
@@ -57,7 +60,10 @@ class EmployeeSkill extends Model
      */
     public function expiresSoon(int $days = 30): bool
     {
-        if (!$this->expiry_date) return false;
+        if (! $this->expiry_date) {
+            return false;
+        }
+
         return $this->expiry_date->isFuture() && $this->expiry_date->diffInDays(now()) <= $days;
     }
 }

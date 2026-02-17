@@ -21,6 +21,7 @@ class SirenService
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+
             return null;
         }
 
@@ -44,7 +45,9 @@ class SirenService
     {
         $data = $this->fetchCompanyData($siret);
 
-        if (!$data) return true;
+        if (! $data) {
+            return true;
+        }
 
         return ($data['etat_administratif'] ?? 'A') === 'A';
     }

@@ -53,7 +53,7 @@ class AbsenceRequestNotification extends Notification implements ShouldQueue
             'absence_request_id' => $this->request->id,
             'message' => $this->type === 'submitted'
                 ? "Nouvelle demande de {$this->request->employee->full_name}"
-                : "Votre demande d'absence est " . $this->request->status->value,
+                : "Votre demande d'absence est ".$this->request->status->value,
         ];
     }
 }

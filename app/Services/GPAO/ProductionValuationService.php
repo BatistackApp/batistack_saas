@@ -24,15 +24,15 @@ class ProductionValuationService
     public function finalizeWorkOrder(WorkOrder $wo, ?float $quantityProduced = null): void
     {
         if ($wo->status === WorkOrderStatus::Completed) {
-            throw new WorkOrderLockedException("Cet OF est déjà clôturé.");
+            throw new WorkOrderLockedException('Cet OF est déjà clôturé.');
         }
 
         DB::transaction(function () use ($wo, $quantityProduced) {
             $wo->load(['components', 'operations.workCenter']);
 
             // 1. Calcul des coûts réels engagés
-            $materialCost = $wo->components->sum(fn($c) => $c->quantity_consumed * $c->unit_cost_ht);
-            $machineCost = $wo->operations->sum(fn($op) => ($op->time_actual_minutes / 60) * $op->workCenter->hourly_rate);
+            $materialCost = $wo->components->sum(fn ($c) => $c->quantity_consumed * $c->unit_cost_ht);
+            $machineCost = $wo->operations->sum(fn ($op) => ($op->time_actual_minutes / 60) * $op->workCenter->hourly_rate);
             $totalCost = $materialCost + $machineCost;
 
             // 2. Détermination de la quantité finale
@@ -43,7 +43,7 @@ class ProductionValuationService
                 'status' => WorkOrderStatus::Completed,
                 'actual_end_at' => now(),
                 'total_cost_ht' => $totalCost,
-                'quantity_produced' => $finalQty
+                'quantity_produced' => $finalQty,
             ]);
 
             // 4. Calcul du coût de revient unitaire (spread cost)

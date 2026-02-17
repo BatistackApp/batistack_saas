@@ -19,7 +19,9 @@ class RentalCalculationService
     {
         $days = $this->getBillableDays($item, $start, $end);
 
-        if ($days <= 0) return 0.0;
+        if ($days <= 0) {
+            return 0.0;
+        }
 
         // Logique de dégressivité standard BTP
         // 1. Si >= 20 jours -> Tarif Mois
@@ -54,7 +56,7 @@ class RentalCalculationService
         }
 
         return (int) $start->diffInDaysFiltered(function (Carbon $date) {
-            return !$date->isWeekend();
+            return ! $date->isWeekend();
         }, $end);
     }
 }

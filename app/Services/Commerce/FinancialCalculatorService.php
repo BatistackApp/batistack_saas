@@ -83,7 +83,7 @@ class FinancialCalculatorService
             $document instanceof Quote => 'quote_items',
             $document instanceof Invoices => 'invoice_items',
             $document instanceof PurchaseOrder => 'purchase_order_items',
-            default => throw new \Exception("Modèle non supporté pour le calcul financier."),
+            default => throw new \Exception('Modèle non supporté pour le calcul financier.'),
         };
     }
 
@@ -96,7 +96,7 @@ class FinancialCalculatorService
             $document instanceof Quote => 'quote_id',
             $document instanceof Invoices => 'invoice_id',
             $document instanceof PurchaseOrder => 'purchase_order_id',
-            default => throw new \Exception("Clé étrangère inconnue."),
+            default => throw new \Exception('Clé étrangère inconnue.'),
         };
     }
 }

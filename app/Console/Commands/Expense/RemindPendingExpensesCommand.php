@@ -23,6 +23,7 @@ class RemindPendingExpensesCommand extends Command
 
         if ($pendingReports->isEmpty()) {
             $this->info('Aucune note de frais en attente de relance.');
+
             return;
         }
 

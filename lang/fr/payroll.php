@@ -4,12 +4,12 @@ return [
     'statuses' => [
         'draft' => 'Brouillon',
         'validated' => 'Validé',
-        'paid' => 'Payé'
+        'paid' => 'Payé',
     ],
     'lines' => [
         'earning' => 'Gains',
         'deduction' => 'Retenues',
         'employer' => 'Charges patronales',
-        'info' => 'Informations'
-    ]
+        'info' => 'Informations',
+    ],
 ];

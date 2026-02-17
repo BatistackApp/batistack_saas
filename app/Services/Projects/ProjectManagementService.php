@@ -11,18 +11,17 @@ use Exception;
 
 class ProjectManagementService
 {
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     /**
      * Change le statut du projet en appliquant les règles métier (Etape 3).
+     *
      * @throws Exception
      */
     public function transitionToStatus(Project $project, ProjectStatus $newStatus): void
     {
         if ($project->customer && $project->customer->status === TierStatus::Suspended) {
-            throw new Exception("Le client est suspendu ou non conforme");
+            throw new Exception('Le client est suspendu ou non conforme');
         }
 
         // Vérifier s'il existe des phases dépendantes non terminées
@@ -68,24 +67,27 @@ class ProjectManagementService
     {
         $customer = $project->customer;
 
-        if (!$customer) return false;
+        if (! $customer) {
+            return false;
+        }
 
         // On bloque si le client est suspendu ou archivé
-        return !in_array($customer->status, [
+        return ! in_array($customer->status, [
             TierStatus::Suspended,
-            TierStatus::Archived
+            TierStatus::Archived,
         ]);
     }
 
     /**
      * Validation des règles de clôture et de démarrage.
+     *
      * @throws Exception
      */
     private function validateTransition(Project $project, ProjectStatus $newStatus): void
     {
         if (in_array($newStatus, [ProjectStatus::InProgress->value, ProjectStatus::Study->value])) {
-            if (!$this->checkCustomerCompliance($project)) {
-                throw new Exception("Action impossible : Le client est suspendu ou non conforme.");
+            if (! $this->checkCustomerCompliance($project)) {
+                throw new Exception('Action impossible : Le client est suspendu ou non conforme.');
             }
         }
 
@@ -95,14 +97,14 @@ class ProjectManagementService
                 ->exists();
 
             if ($hasActivePhases) {
-                throw new Exception("Impossible de terminer le chantier : certaines phases sont encore en cours.");
+                throw new Exception('Impossible de terminer le chantier : certaines phases sont encore en cours.');
             }
         }
     }
 
     private function handleStartProject(Project $project): void
     {
-        if (!$project->actual_start_at) {
+        if (! $project->actual_start_at) {
             $project->actual_start_at = now();
         }
 

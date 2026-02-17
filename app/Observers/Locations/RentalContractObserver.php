@@ -17,7 +17,7 @@ class RentalContractObserver
                 ->first();
 
             $number = $latest ? ((int) Str::afterLast($latest->reference, '-') + 1) : 1;
-            $contract->reference = "LOC-{$year}-" . str_pad($number, 4, '0', STR_PAD_LEFT);
+            $contract->reference = "LOC-{$year}-".str_pad($number, 4, '0', STR_PAD_LEFT);
         }
     }
 

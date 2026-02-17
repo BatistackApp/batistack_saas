@@ -21,6 +21,7 @@ class VehicleFineFactory extends Factory
     {
         $offense = fake()->dateTimeBetween('-1 year', 'now');
         $project_imputable = $this->faker->boolean();
+
         return [
             'notice_number' => 'AB-'.fake()->numerify('###').'-CD',
             'offense_at' => $offense,

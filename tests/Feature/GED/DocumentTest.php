@@ -7,7 +7,6 @@ use App\Models\HR\Employee;
 use App\Models\Projects\Project;
 use App\Models\User;
 use App\Services\GED\GEDService;
-use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 
@@ -30,7 +29,7 @@ beforeEach(function () {
 | Tests de Polymorphisme
 |--------------------------------------------------------------------------
 */
-describe("GED - Polymorphisme", function() {
+describe('GED - Polymorphisme', function () {
     it('peut attacher un document à un Projet (Polymorphisme)', function () {
         $project = Project::factory()->create(['tenants_id' => $this->tenant->id]);
         $file = UploadedFile::fake()->create('devis_materiaux.pdf', 500);
@@ -63,7 +62,7 @@ describe("GED - Polymorphisme", function() {
 |--------------------------------------------------------------------------
 */
 
-describe("GED - Arborescence Virtuelle", function() {
+describe('GED - Arborescence Virtuelle', function () {
     it('supprime récursivement les fichiers S3 lors de la suppression d\'un dossier', function () {
         $folder = \App\Models\GED\DocumentFolder::create(['tenants_id' => $this->tenant->id, 'name' => 'Archives']);
         $file = UploadedFile::fake()->create('archive_2023.zip', 2000);
@@ -84,7 +83,7 @@ describe("GED - Arborescence Virtuelle", function() {
 | Tests de Quotas et Limites (SAAS)
 |--------------------------------------------------------------------------
 */
-describe("GED - Quotas et Limites (SAAS)", function() {
+describe('GED - Quotas et Limites (SAAS)', function () {
     it('bloque l\'upload si le quota du tenant est dépassé', function () {
         // On simule un tenant qui a déjà consommé 10 Go (limite théorique du plan)
         $this->tenant->update(['storage_used' => 10 * 1024 * 1024 * 1024]);

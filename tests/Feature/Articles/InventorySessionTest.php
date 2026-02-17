@@ -31,7 +31,7 @@ describe("Workflow : Session d'Inventaire", function () {
         $response = $this->actingAs($this->user)
             ->postJson('/api/articles/inventory/sessions', [
                 'warehouse_id' => $this->warehouse->id,
-                'notes' => 'Inventaire annuel 2026'
+                'notes' => 'Inventaire annuel 2026',
             ]);
 
         $response->assertStatus(201);
@@ -39,7 +39,7 @@ describe("Workflow : Session d'Inventaire", function () {
         $session = InventorySession::first();
         expect($session->status)->toBe(InventorySessionStatus::Open)
             ->and($session->lines)->toHaveCount(2)
-            ->and((float)$session->lines->first()->theoretical_quantity)->toBe(10.0);
+            ->and((float) $session->lines->first()->theoretical_quantity)->toBe(10.0);
     });
 
     it('bloque les mouvements de stock standard quand le dépôt est gelé', function () {
@@ -47,7 +47,7 @@ describe("Workflow : Session d'Inventaire", function () {
         $session = InventorySession::factory()->create([
             'warehouse_id' => $this->warehouse->id,
             'status' => InventorySessionStatus::Open,
-            'tenants_id' => $this->tenant->id
+            'tenants_id' => $this->tenant->id,
         ]);
 
         $article = Article::factory()->create(['tenants_id' => $this->tenant->id]);
@@ -60,13 +60,12 @@ describe("Workflow : Session d'Inventaire", function () {
                 'warehouse_id' => $this->warehouse->id,
                 'type' => StockMovementType::Entry->value,
                 'quantity' => 50,
-                'unit_cost_ht' => 10
+                'unit_cost_ht' => 10,
             ]);
 
         $response->assertStatus(422);
         $response->assertJsonPath('message', "Action impossible : Le dépôt {$this->warehouse->name} est gelé pour inventaire.");
     });
-
 
     it('valide la session et applique les ajustements de stock réels', function () {
         $article = Article::factory()->create(['tenants_id' => $this->tenant->id]);
@@ -78,7 +77,7 @@ describe("Workflow : Session d'Inventaire", function () {
             'status' => InventorySessionStatus::Counting,
             'tenants_id' => $this->tenant->id,
             'opened_at' => now(),
-            'created_by' => $this->user->id
+            'created_by' => $this->user->id,
         ]);
 
         $session->lines()->create([
@@ -91,12 +90,11 @@ describe("Workflow : Session d'Inventaire", function () {
         $response = $this->actingAs($this->user)
             ->postJson("/api/articles/inventory/sessions/{$session->id}/validate");
 
-
         $response->assertStatus(200);
 
         // Le stock doit être passé à 15
         $stock = $article->warehouses()->where('warehouse_id', $this->warehouse->id)->first()->pivot->quantity;
-        expect((float)$stock)->toBe(15.0)
+        expect((float) $stock)->toBe(15.0)
             ->and($session->refresh()->status)->toBe(InventorySessionStatus::Validated);
     });
 
@@ -104,7 +102,7 @@ describe("Workflow : Session d'Inventaire", function () {
         $session = InventorySession::factory()->create([
             'warehouse_id' => $this->warehouse->id,
             'status' => InventorySessionStatus::Open,
-            'tenants_id' => $this->tenant->id
+            'tenants_id' => $this->tenant->id,
         ]);
 
         $response = $this->actingAs($this->user)

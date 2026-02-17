@@ -39,6 +39,7 @@ class RentalContractController extends Controller
     public function update(UpdateRentalContractRequest $request, RentalContract $rentalContract): JsonResponse
     {
         $rentalContract->update($request->validated());
+
         return response()->json($rentalContract);
     }
 
@@ -55,6 +56,7 @@ class RentalContractController extends Controller
         }
 
         $rentalContract->delete();
+
         return response()->json(['message' => 'Contrat de location supprimé.']);
     }
 }

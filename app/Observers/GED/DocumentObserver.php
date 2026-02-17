@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Storage;
 class DocumentObserver
 {
     public function __construct(protected QuotaService $quotaService, protected GEDService $service) {}
+
     public function created(Document $document): void
     {
         $tenant = $document->tenant;

@@ -4,11 +4,9 @@ namespace App\Services\Tiers;
 
 use App\Models\Tiers\Tiers;
 use Illuminate\Support\Str;
-use Random\RandomException;
 
 class TierCodeGenerator
 {
-
     public function generate(): string
     {
         $prefix = Str::upper(Str::random(3));

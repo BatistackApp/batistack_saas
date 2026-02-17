@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services\Articles;
+
 use App\Jobs\Articles\RecalculateOuvrageCostsJob;
 use App\Models\Articles\Article;
 use App\Models\Articles\Warehouse;

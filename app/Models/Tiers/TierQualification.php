@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TierQualification extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
     public function tier(): BelongsTo

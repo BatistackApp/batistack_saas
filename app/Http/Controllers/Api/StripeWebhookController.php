@@ -23,9 +23,11 @@ class StripeWebhookController extends Controller
             $event = Webhook::constructEvent($payload, $sigHeader, $secret, (int) config('services.stripe.webhook.tolerance', 300));
         } catch (SignatureVerificationException $e) {
             Log::warning('Stripe webhook signature invalid', ['message' => $e->getMessage()]);
+
             return response()->noContent(400);
         } catch (\Throwable $e) {
             Log::error('Stripe webhook parse error', ['message' => $e->getMessage()]);
+
             return response()->noContent(400);
         }
 
@@ -69,6 +71,7 @@ class StripeWebhookController extends Controller
 
         if ($invoice === null) {
             Log::warning('Stripe webhook: Invoice not found for payment_failed', ['stripe_invoice_id' => $stripeInvoice->id]);
+
             return;
         }
 

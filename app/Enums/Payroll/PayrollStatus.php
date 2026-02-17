@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum PayrollStatus: string implements HasLabel, HasColor, HasIcon
+enum PayrollStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Draft = 'draft';
     case Validated = 'validated';
@@ -16,7 +16,7 @@ enum PayrollStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getColor(): string|array|null
     {
-        return match($this) {
+        return match ($this) {
             self::Draft => 'gray',
             self::Validated => 'blue',
             self::Paid => 'green',
@@ -25,7 +25,7 @@ enum PayrollStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getIcon(): string|BackedEnum|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Draft => 'heroicon-o-pencil',
             self::Validated => 'heroicon-o-check',
             self::Paid => 'heroicon-o-currency-dollar',
@@ -34,7 +34,7 @@ enum PayrollStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getLabel(): string|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Draft => __('payroll.statuses.draft'),
             self::Validated => __('payroll.statuses.validated'),
             self::Paid => __('payroll.statuses.paid'),

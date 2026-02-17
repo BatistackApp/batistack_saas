@@ -95,7 +95,7 @@ test('peut mettre à jour les informations d’un collaborateur', function () {
     $this->assertDatabaseHas('employees', [
         'id' => $employee->id,
         'job_title' => 'Nouveau Poste',
-        'is_active' => false
+        'is_active' => false,
     ]);
 });
 

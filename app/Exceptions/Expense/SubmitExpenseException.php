@@ -2,8 +2,4 @@
 
 namespace App\Exceptions\Expense;
 
-use Exception;
-
-class SubmitExpenseException extends ExpenseModuleException
-{
-}
+class SubmitExpenseException extends ExpenseModuleException {}

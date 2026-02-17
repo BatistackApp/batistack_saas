@@ -15,6 +15,7 @@ class MaintenancePlanController extends Controller
     public function index(): JsonResponse
     {
         $plans = VehicleMaintenancePlan::latest()->get();
+
         return response()->json($plans);
     }
 
@@ -24,6 +25,7 @@ class MaintenancePlanController extends Controller
     public function store(MaintenancePlanRequest $request): JsonResponse
     {
         $plan = VehicleMaintenancePlan::create($request->validated());
+
         return response()->json($plan, 201);
     }
 
@@ -41,6 +43,7 @@ class MaintenancePlanController extends Controller
     public function update(MaintenancePlanRequest $request, VehicleMaintenancePlan $maintenance_plan): JsonResponse
     {
         $maintenance_plan->update($request->validated());
+
         return response()->json($maintenance_plan);
     }
 
@@ -50,6 +53,7 @@ class MaintenancePlanController extends Controller
     public function destroy(VehicleMaintenancePlan $maintenance_plan): JsonResponse
     {
         $maintenance_plan->delete();
+
         return response()->json(null, 204);
     }
 }

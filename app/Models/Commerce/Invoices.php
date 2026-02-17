@@ -5,7 +5,6 @@ namespace App\Models\Commerce;
 use App\Enums\Commerce\InvoiceStatus;
 use App\Enums\Commerce\InvoiceType;
 use App\Models\Banque\Payment;
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Tiers\Tiers;
 use App\Observers\Commerce\InvoicesObserver;
@@ -20,7 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([InvoicesObserver::class])]
 class Invoices extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
 
     protected $guarded = [];
 

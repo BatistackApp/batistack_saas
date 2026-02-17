@@ -11,7 +11,6 @@ use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class StockMovementFactory extends Factory
 {
@@ -26,7 +25,7 @@ class StockMovementFactory extends Factory
             'type' => $this->faker->randomElement(StockMovementType::cases()),
             'quantity' => $this->faker->randomFloat(3, 1, 100),
             'unit_cost_ht' => $this->faker->randomFloat(2, 5, 200),
-            'reference' => 'REF-' . strtoupper($this->faker->bothify('??###')),
+            'reference' => 'REF-'.strtoupper($this->faker->bothify('??###')),
             'notes' => $this->faker->sentence(),
             'user_id' => User::factory(),
         ];

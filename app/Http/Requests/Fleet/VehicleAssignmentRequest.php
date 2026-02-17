@@ -37,7 +37,7 @@ class VehicleAssignmentRequest extends FormRequest
                 $userId = $this->input('user_id');
 
                 // Si aucun conducteur n'est assigné (véhicule en parc), on ignore le test
-                if (!$userId) {
+                if (! $userId) {
                     return;
                 }
 
@@ -47,20 +47,20 @@ class VehicleAssignmentRequest extends FormRequest
                 $vehicle = Vehicle::find($this->input('vehicle_id'));
                 $user = User::find($userId);
 
-                if (!$vehicle || !$user) {
+                if (! $vehicle || ! $user) {
                     return;
                 }
 
                 // Exécution du moteur de règles
                 $check = $complianceService->checkDriverCompliance($vehicle, $user);
 
-                if (!$check['status']) {
+                if (! $check['status']) {
                     $validator->errors()->add(
                         'user_id',
-                        "Alerte de conformité : " . $check['message']
+                        'Alerte de conformité : '.$check['message']
                     );
                 }
-            }
+            },
         ];
     }
 
@@ -70,9 +70,9 @@ class VehicleAssignmentRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'vehicle_id.required' => "Veuillez sélectionner un véhicule.",
+            'vehicle_id.required' => 'Veuillez sélectionner un véhicule.',
             'started_at.required' => "La date de début d'affectation est requise.",
-            'ended_at.after'      => "La date de fin doit être postérieure à la date de début.",
+            'ended_at.after' => 'La date de fin doit être postérieure à la date de début.',
         ];
     }
 

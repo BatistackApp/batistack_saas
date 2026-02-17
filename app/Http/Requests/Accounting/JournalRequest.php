@@ -19,7 +19,7 @@ class JournalRequest extends FormRequest
                 'max:3',
                 Rule::unique('journals', 'code')
                     ->where('tenants_id', auth()->user()->tenants_id)
-                    ->ignore($journalId)
+                    ->ignore($journalId),
             ],
             'label' => ['required', 'string', 'max:255'],
             'type' => ['required', Rule::enum(JournalType::class)],

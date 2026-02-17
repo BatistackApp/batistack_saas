@@ -11,6 +11,7 @@ class QuoteRequest extends FormRequest
     public function rules(): array
     {
         $quoteId = $this->route('quote')?->id;
+
         return [
             'tenants_id' => ['required', 'exists:tenants,id'],
             'customer_id' => ['required', 'exists:tiers,id'],

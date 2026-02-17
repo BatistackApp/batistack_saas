@@ -55,22 +55,22 @@ class VehicleController extends Controller
 
         $complianceData = [
             'is_compliant' => true,
-            'issues' => []
+            'issues' => [],
         ];
 
         if ($vehicle->currentAssignment?->user) {
             $check = $complianceService->checkDriverCompliance($vehicle, $vehicle->currentAssignment->user);
-            if (!$check['status']) {
+            if (! $check['status']) {
                 $complianceData = [
                     'is_compliant' => false,
-                    'issues' => [$check['message']]
+                    'issues' => [$check['message']],
                 ];
             }
         }
 
         return response()->json([
             'vehicle' => $vehicle,
-            'compliance' => $complianceData
+            'compliance' => $complianceData,
         ]);
     }
 

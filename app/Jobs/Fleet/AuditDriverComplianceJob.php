@@ -28,7 +28,7 @@ class AuditDriverComplianceJob implements ShouldQueue
             ->get();
 
         foreach ($activeAssignments as $assignment) {
-            if (!$assignment->user || !$assignment->vehicle) {
+            if (! $assignment->user || ! $assignment->vehicle) {
                 continue;
             }
 
@@ -39,7 +39,7 @@ class AuditDriverComplianceJob implements ShouldQueue
             );
 
             // 3. Si non conforme, on génère une alerte
-            if (!$check['status']) {
+            if (! $check['status']) {
                 $this->alertManagers($assignment, $check['message']);
             }
         }

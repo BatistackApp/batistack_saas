@@ -5,10 +5,10 @@ namespace App\Services\Articles;
 use App\Models\Articles\Article;
 use App\Models\Articles\ArticleSerialNumber;
 use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Color\Color;
 use Endroid\QrCode\Encoding\Encoding;
 use Endroid\QrCode\ErrorCorrectionLevel;
 use Endroid\QrCode\Writer\SvgWriter;
-use Endroid\QrCode\Color\Color;
 
 class QRCodeService
 {
@@ -19,7 +19,7 @@ class QRCodeService
     public function generateArticleLabel(Article $article): string
     {
         $result = Builder::create()
-            ->writer(new SvgWriter())
+            ->writer(new SvgWriter)
             ->writerOptions([])
             ->data($article->qr_code_base ?? $article->sku)
             ->encoding(new Encoding('UTF-8'))
@@ -38,7 +38,7 @@ class QRCodeService
     public function generateSNLabel(ArticleSerialNumber $sn): string
     {
         $result = Builder::create()
-            ->writer(new SvgWriter())
+            ->writer(new SvgWriter)
             ->data("SN:{$sn->serial_number}")
             ->encoding(new Encoding('UTF-8'))
             ->errorCorrectionLevel(ErrorCorrectionLevel::High)

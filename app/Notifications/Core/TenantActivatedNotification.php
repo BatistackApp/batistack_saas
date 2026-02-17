@@ -14,9 +14,7 @@ class TenantActivatedNotification extends Notification implements ShouldQueue
 
     public function __construct(
         private Tenants $tenant,
-    )
-    {
-    }
+    ) {}
 
     public function via($notifiable): array
     {

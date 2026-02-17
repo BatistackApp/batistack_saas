@@ -28,6 +28,7 @@ class PayrollPeriodController extends Controller
     public function index(): JsonResponse
     {
         $periods = PayrollPeriod::latest()->paginate();
+
         return response()->json($periods);
     }
 
@@ -85,6 +86,7 @@ class PayrollPeriodController extends Controller
     {
         try {
             $this->workflowService->validatePeriod($period);
+
             return response()->json(['message' => 'Période validée et clôturée avec succès.']);
         } catch (PayrollModuleException $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode());

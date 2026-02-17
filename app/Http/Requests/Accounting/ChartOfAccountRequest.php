@@ -20,7 +20,7 @@ class ChartOfAccountRequest extends FormRequest
                 // Unicité par tenant
                 Rule::unique('chart_of_accounts', 'account_number')
                     ->where('tenants_id', auth()->user()->tenants_id)
-                    ->ignore($accountId)
+                    ->ignore($accountId),
             ],
             'account_label' => ['required', 'string', 'max:255'],
             'nature' => ['required', 'string', Rule::enum(AccountType::class)],

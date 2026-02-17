@@ -2,12 +2,11 @@
 
 use App\Enums\Projects\ProjectStatus;
 use App\Models\Projects\Project;
-use App\Models\Tiers\Tiers;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
 
-describe("Observer du modèle: Project", function () {
+describe('Observer du modèle: Project', function () {
     beforeEach(function () {
         $this->tenant = \App\Models\Core\Tenants::factory()->create();
         $this->tier = \App\Models\Tiers\Tiers::factory()->create(['tenants_id' => $this->tenant->id]);

@@ -14,12 +14,14 @@ class HolidayController extends Controller
     public function index(): JsonResponse
     {
         $holidays = TenantInfoHolidays::orderBy('date', 'asc')->get();
+
         return response()->json($holidays);
     }
 
     public function store(HolidayRequest $request): JsonResponse
     {
         $holiday = TenantInfoHolidays::create($request->validated());
+
         return response()->json($holiday, 201);
     }
 
@@ -42,6 +44,7 @@ class HolidayController extends Controller
     public function destroy(TenantInfoHolidays $holiday): JsonResponse
     {
         $holiday->delete();
+
         return response()->json(['message' => 'Jour supprimé du calendrier.']);
     }
 }

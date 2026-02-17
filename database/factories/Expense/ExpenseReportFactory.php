@@ -7,7 +7,6 @@ use App\Models\Core\Tenants;
 use App\Models\Expense\ExpenseReport;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class ExpenseReportFactory extends Factory
 {

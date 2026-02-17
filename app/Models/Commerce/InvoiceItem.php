@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class InvoiceItem extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
     public function invoices(): BelongsTo

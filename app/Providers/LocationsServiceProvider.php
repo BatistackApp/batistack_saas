@@ -7,10 +7,7 @@ use Illuminate\Support\ServiceProvider;
 
 class LocationsServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
@@ -18,7 +15,7 @@ class LocationsServiceProvider extends ServiceProvider
             $schedule = $this->app->make(Schedule::class);
 
             $schedule->command('locations:check-expiring')
-                ->dailyAt("02:00")
+                ->dailyAt('02:00')
                 ->onOneServer();
         });
     }

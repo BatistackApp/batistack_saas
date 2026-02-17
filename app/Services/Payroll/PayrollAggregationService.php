@@ -26,7 +26,7 @@ class PayrollAggregationService
             'total_hours' => $totalHours,
             'meal_count' => $mealAllowancesCount,
             'travel_time' => $travelTime,
-            'entries' => $entries
+            'entries' => $entries,
         ];
     }
 }

@@ -16,7 +16,7 @@ class ProrataCostCalculator
             ->active()
             ->first();
 
-        if (!$subscription) {
+        if (! $subscription) {
             return 0;
         }
 

@@ -5,10 +5,8 @@ namespace App\Http\Controllers\Fleet;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Fleet\VehicleFineRequest;
 use App\Models\Fleet\VehicleFine;
-use App\Services\Fleet\AntaiExportService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Response;
 
 class VehicleFineController extends Controller
 {
@@ -18,8 +16,8 @@ class VehicleFineController extends Controller
     public function index(Request $request): JsonResponse
     {
         $fines = VehicleFine::with(['vehicle', 'driver'])
-            ->when($request->vehicle_id, fn($q) => $q->where('vehicle_id', $request->vehicle_id))
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->vehicle_id, fn ($q) => $q->where('vehicle_id', $request->vehicle_id))
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
             ->latest('offense_at')
             ->paginate(20);
 
@@ -35,7 +33,7 @@ class VehicleFineController extends Controller
 
         return response()->json([
             'message' => 'Contravention enregistrée avec succès.',
-            'data' => $fine
+            'data' => $fine,
         ], 201);
     }
 
@@ -56,7 +54,7 @@ class VehicleFineController extends Controller
 
         return response()->json([
             'message' => 'Contravention mise à jour.',
-            'data' => $fine
+            'data' => $fine,
         ]);
     }
 
@@ -66,6 +64,7 @@ class VehicleFineController extends Controller
     public function destroy(VehicleFine $fine): JsonResponse
     {
         $fine->delete();
+
         return response()->json(['message' => 'Contravention supprimée.']);
     }
 }

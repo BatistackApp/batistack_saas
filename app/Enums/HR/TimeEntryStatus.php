@@ -8,14 +8,13 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum TimeEntryStatus: string implements HasLabel, HasColor, HasIcon
+enum TimeEntryStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Draft = 'draft';         // En cours de saisie
     case Submitted = 'submitted'; // Envoyé pour validation
     case Verified = 'verified';   // Vérifié par le Chef de Chantier (Niveau 1)
     case Approved = 'approved';   // Approuvé par le Conducteur de Travaux (Niveau 2 - Final)
     case Rejected = 'rejected';   // Rejeté pour correction
-
 
     public function getColor(): string|array|null
     {

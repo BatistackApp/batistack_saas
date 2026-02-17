@@ -16,12 +16,16 @@ use Laravel\Cashier\Subscription;
 #[ObservedBy([TenantsObserver::class])]
 class Tenants extends Model
 {
-    use HasFactory, SoftDeletes, Billable, Notifiable;
+    use Billable, HasFactory, Notifiable, SoftDeletes;
+
     protected $guarded = [];
+
     protected $keyType = 'int';
+
     protected string $billableKey = 'id';
 
-    public function modules(): HasMany {
+    public function modules(): HasMany
+    {
         return $this->hasMany(TenantModule::class);
     }
 
@@ -46,9 +50,8 @@ class Tenants extends Model
         ];
     }
 
-    public function isActive(): bool {
+    public function isActive(): bool
+    {
         return $this->status === TenantStatus::Active->value;
     }
-
-
 }

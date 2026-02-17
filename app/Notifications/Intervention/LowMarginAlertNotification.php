@@ -25,8 +25,8 @@ class LowMarginAlertNotification extends Notification implements ShouldQueue
             ->error()
             ->subject("Alerte de Marge : {$this->intervention->reference}")
             ->line("La marge de l'intervention {$this->intervention->label} est inférieure au seuil critique.")
-            ->line("Marge actuelle : " . number_format($this->intervention->margin_ht, 2, ',', ' ') . " €");
-            // ->action('Vérifier l\'intervention', url('/admin/interventions/' . $this->intervention->id));
+            ->line('Marge actuelle : '.number_format($this->intervention->margin_ht, 2, ',', ' ').' €');
+        // ->action('Vérifier l\'intervention', url('/admin/interventions/' . $this->intervention->id));
     }
 
     public function toArray($notifiable): array
@@ -35,7 +35,7 @@ class LowMarginAlertNotification extends Notification implements ShouldQueue
             'intervention_id' => $this->intervention->id,
             'reference' => $this->intervention->reference,
             'margin_ht' => $this->intervention->margin_ht,
-            'message' => "Alerte : rentabilité faible sur l'intervention {$this->intervention->reference}."
+            'message' => "Alerte : rentabilité faible sur l'intervention {$this->intervention->reference}.",
         ];
     }
 }

@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('article_warehouse', function (Blueprint $table) {
@@ -12,7 +13,7 @@ return new class extends Migration {
             $table->foreignId('article_id')->constrained()->cascadeOnDelete();
             $table->foreignId('warehouse_id')->constrained()->cascadeOnDelete();
             $table->decimal('quantity', 15, 3)->default(0);
-            $table->string('bin_location')->nullable()->comment("Emplacement précis (allée, étagère)");
+            $table->string('bin_location')->nullable()->comment('Emplacement précis (allée, étagère)');
             $table->timestamps();
         });
     }

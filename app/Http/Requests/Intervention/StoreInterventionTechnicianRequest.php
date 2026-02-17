@@ -17,6 +17,7 @@ class StoreInterventionTechnicianRequest extends FormRequest
     public function authorize(): bool
     {
         $intervention = $this->route('intervention');
+
         return $intervention && $intervention->status === \App\Enums\Intervention\InterventionStatus::InProgress;
     }
 }

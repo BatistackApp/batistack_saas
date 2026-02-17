@@ -25,14 +25,14 @@ class QuotaWarningNotification extends Notification implements ShouldQueue
             ->subject('Alerte : Quota de stockage GED')
             ->line("Votre entreprise {$this->tenant->name} a utilisé {$this->percentage}% de son espace de stockage (1 Go).")
             ->line('Pour éviter tout blocage lors de vos prochains imports, pensez à libérer de l\'espace ou à souscrire à une extension.');
-            // ->action('Gérer mon stockage', url('/settings/storage'));
+        // ->action('Gérer mon stockage', url('/settings/storage'));
     }
 
     public function toArray($notifiable): array
     {
         return [
             'message' => "Quota de stockage à {$this->percentage}%",
-            'tenant_id' => $this->tenant->id
+            'tenant_id' => $this->tenant->id,
         ];
     }
 }

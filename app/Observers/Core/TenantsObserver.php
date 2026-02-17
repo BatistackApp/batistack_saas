@@ -29,13 +29,13 @@ class TenantsObserver
 
     public function updated(Tenants $tenant): void
     {
-        if (!$tenant->isDirty('status')) {
+        if (! $tenant->isDirty('status')) {
             return;
         }
 
         $newStatus = $tenant->status;
 
-        match($newStatus) {
+        match ($newStatus) {
             'suspended' => $this->handleSuspension($tenant),
             'active' => $this->handleReactivation($tenant),
             default => null,
@@ -63,7 +63,7 @@ class TenantsObserver
 
     private function handleSuspension(Tenants $tenant): void
     {
-        Log::warning("Tenant suspended", [
+        Log::warning('Tenant suspended', [
             'tenant_id' => $tenant->id,
             'reason' => 'Likely payment issue or manual suspension',
         ]);
@@ -73,7 +73,7 @@ class TenantsObserver
 
     private function handleReactivation(Tenants $tenant): void
     {
-        Log::info("Tenant reactivated", [
+        Log::info('Tenant reactivated', [
             'tenant_id' => $tenant->id,
         ]);
 

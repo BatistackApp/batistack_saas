@@ -1,14 +1,12 @@
 <?php
 
 use App\Enums\Bim\BimModelStatus;
-use App\Jobs\Bim\ProcessBimModelJob;
 use App\Models\Articles\Article;
 use App\Models\Bim\BimModel;
 use App\Models\Bim\BimObject;
 use App\Models\Projects\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
 
 uses(RefreshDatabase::class);
 

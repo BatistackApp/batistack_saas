@@ -24,7 +24,7 @@ class KpiSnapshotController extends Controller
         $this->orchestrator->takeGlobalSnapshots($tenantId);
 
         return response()->json([
-            'message' => 'Les indicateurs ont été recalculés et archivés avec succès.'
+            'message' => 'Les indicateurs ont été recalculés et archivés avec succès.',
         ]);
     }
 }

@@ -13,9 +13,7 @@ use Illuminate\Http\JsonResponse;
 
 class StockMovementController extends Controller
 {
-    public function __construct(protected StockMovementService $movementService)
-    {
-    }
+    public function __construct(protected StockMovementService $movementService) {}
 
     public function index(): JsonResponse
     {
@@ -75,7 +73,7 @@ class StockMovementController extends Controller
                     $data ?? []
                 ),
 
-                default => throw new \Exception("Type de mouvement non pris en charge par le système."),
+                default => throw new \Exception('Type de mouvement non pris en charge par le système.'),
             };
 
             return response()->json($movement, 201);

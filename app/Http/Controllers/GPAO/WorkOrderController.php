@@ -78,6 +78,7 @@ class WorkOrderController extends Controller
                 $workOrder,
                 $request->input('quantity_produced') // Passage de la quantité réelle
             );
+
             return response()->json(['message' => 'Ordre de fabrication clôturé et produit fini entré en stock.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);

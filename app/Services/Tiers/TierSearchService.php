@@ -5,11 +5,11 @@ namespace App\Services\Tiers;
 use App\Models\Tiers\Tiers;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Pagination\Paginator;
 
 class TierSearchService
 {
     private Builder $query;
+
     public function __construct()
     {
         $this->query = Tiers::query();

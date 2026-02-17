@@ -16,7 +16,7 @@ class ProjectBudgetService
         $costs = $this->calculateDetailedCosts($project);
         $totalSpent = array_sum($costs);
 
-        $totalRad = $project->phases->sum(fn($p) => $p->totalRad());
+        $totalRad = $project->phases->sum(fn ($p) => $p->totalRad());
         $forecastFinalCost = $totalSpent + $totalRad;
 
         $physicalProgress = $this->calculateWeightedProgress($project);
@@ -35,20 +35,24 @@ class ProjectBudgetService
         ];
     }
 
-    private function calculateDetailedCosts(Project $project): array {
+    private function calculateDetailedCosts(Project $project): array
+    {
         return [
             'labor' => 0, // Mock: Liaison Pointage
             'materials' => 0, // Mock: Liaison Achats
             'subcontracting' => 0, // Mock: Liaison Tiers (Sub)
             'rentals' => 0, // Mock: Liaison Flotte
             'overheads' => 0,
-            'management' => 0 // Mock: Payroll
+            'management' => 0, // Mock: Payroll
         ];
     }
 
-    private function calculateWeightedProgress(Project $project): float {
+    private function calculateWeightedProgress(Project $project): float
+    {
         $totalInternal = $project->totalInternalBudget();
-        if ($totalInternal <= 0) return 0;
+        if ($totalInternal <= 0) {
+            return 0;
+        }
 
         $weightedProgress = $project->phases->sum(function ($phase) {
             return ($phase->progress_percentage / 100) * $phase->allocated_budget;

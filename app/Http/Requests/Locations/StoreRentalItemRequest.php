@@ -23,10 +23,11 @@ class StoreRentalItemRequest extends FormRequest
     public function authorize(): bool
     {
         $contract = $this->route('rental_contract');
+
         // On ne peut ajouter du matériel que si le contrat n'est pas terminé
         return $contract && in_array($contract->status, [
-                \App\Enums\Locations\RentalStatus::DRAFT,
-                \App\Enums\Locations\RentalStatus::ACTIVE
-            ]);
+            \App\Enums\Locations\RentalStatus::DRAFT,
+            \App\Enums\Locations\RentalStatus::ACTIVE,
+        ]);
     }
 }

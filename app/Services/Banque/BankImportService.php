@@ -30,7 +30,7 @@ class BankImportService
                 } catch (\Exception $e) {
                     // Log l'erreur, ou ajoute à une liste d'erreurs pour le rapport d'import
                     // Ou throw une exception spécifique pour arrêter l'importation
-                    throw new \InvalidArgumentException("Invalid date format for row: " . json_encode($row));
+                    throw new \InvalidArgumentException('Invalid date format for row: '.json_encode($row));
                 }
 
                 BankTransaction::create([
@@ -40,16 +40,16 @@ class BankImportService
                     'label' => $row['label'],
                     'amount' => $amount,
                     'type' => bccomp($amount, '0', 2) > 0 ? BankTransactionType::Credit : BankTransactionType::Debit,
-                    'external_id' => 'MAN-' . bin2hex(random_bytes(8)),
+                    'external_id' => 'MAN-'.bin2hex(random_bytes(8)),
                     'is_reconciled' => false,
                 ]);
 
-                $totalAmountAdded = bcadd($totalAmountAdded, (string)$row['amount'], 2);
+                $totalAmountAdded = bcadd($totalAmountAdded, (string) $row['amount'], 2);
                 $count++;
             }
 
             // Mise à jour unique du solde du compte après la boucle
-            $newBalance = bcadd((string)$account->current_balance, $totalAmountAdded, 2);
+            $newBalance = bcadd((string) $account->current_balance, $totalAmountAdded, 2);
             $account->update(['current_balance' => $newBalance]);
             // Recharger le modèle si besoin plus tard dans la même transaction
             $account->refresh();

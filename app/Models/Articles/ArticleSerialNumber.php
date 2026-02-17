@@ -3,7 +3,6 @@
 namespace App\Models\Articles;
 
 use App\Enums\Articles\SerialNumberStatus;
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\User;
 use App\Traits\HasTenant;
@@ -14,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ArticleSerialNumber extends Model
 {
     use HasFactory, HasTenant;
+
     protected $guarded = [];
 
     public function article(): BelongsTo

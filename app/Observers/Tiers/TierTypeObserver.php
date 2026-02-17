@@ -13,7 +13,7 @@ class TierTypeObserver
                 ->where('is_primary', true)
                 ->exists();
 
-            if (!$hasPrimary) {
+            if (! $hasPrimary) {
                 $tierType->is_primary = true;
             }
         }

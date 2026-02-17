@@ -18,7 +18,7 @@ class AntaiExportService
     public function generateCsv(Collection $fines, int $tenantId): string
     {
         // Création du document CSV en mémoire
-        $csv = Writer::createFromFileObject(new SplTempFileObject());
+        $csv = Writer::createFromFileObject(new SplTempFileObject);
         $csv->setDelimiter(';'); // L'ANTAI utilise souvent le point-virgule
 
         // Entêtes réglementaires ANTAI (exemple type)
@@ -36,7 +36,7 @@ class AntaiExportService
             'Ville',
             'Pays',
             'NumeroPermis',
-            'PaysPermis'
+            'PaysPermis',
         ]);
 
         foreach ($fines as $fine) {
@@ -56,18 +56,18 @@ class AntaiExportService
                 $driver?->city ?? '',
                 'FR',
                 $driver?->license_number ?? '',
-                'FR'
+                'FR',
             ]);
 
             // Mise à jour du statut de la contravention
             $fine->update([
                 'designation_status' => DesignationStatus::Exported,
-                'exported_at' => now()
+                'exported_at' => now(),
             ]);
         }
 
         // Sauvegarde du fichier sur le disque sécurisé
-        $filename = 'tenant/'.$tenantId.'/antai/export_' . now()->format('Ymd_His') . '.csv';
+        $filename = 'tenant/'.$tenantId.'/antai/export_'.now()->format('Ymd_His').'.csv';
         Storage::disk('public')->put($filename, $csv->toString());
 
         return $filename;

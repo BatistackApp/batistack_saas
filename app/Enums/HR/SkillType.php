@@ -15,7 +15,7 @@ enum SkillType: string implements HasLabel
 
     public function getLabel(): string|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::HardSkill => __('hr.skill_type.hard_skill'),
             self::Habilitation => __('hr.skill_type.habilitation'),
             self::Certification => __('hr.skill_type.certification'),

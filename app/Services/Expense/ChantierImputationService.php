@@ -20,7 +20,9 @@ class ChantierImputationService
     {
         $chantier = $item->project;
 
-        if (!$chantier) return;
+        if (! $chantier) {
+            return;
+        }
 
         // Logique métier d'imputation analytique ici
     }

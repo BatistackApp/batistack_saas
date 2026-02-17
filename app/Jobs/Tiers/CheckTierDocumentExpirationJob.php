@@ -4,9 +4,7 @@ namespace App\Jobs\Tiers;
 
 use App\Enums\Tiers\TierDocumentStatus;
 use App\Models\Tiers\TierDocument;
-use App\Models\Tiers\Tiers;
 use App\Notifications\Tiers\DocumentExpirationNotification;
-use App\Services\Tiers\TierComplianceService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;

@@ -9,9 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ModuleCatalog extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
-    public function tenantModules(): HasMany {
+    public function tenantModules(): HasMany
+    {
         return $this->hasMany(TenantModule::class, 'module_id');
     }
 

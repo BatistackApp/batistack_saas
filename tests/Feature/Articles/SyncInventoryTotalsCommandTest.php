@@ -29,7 +29,7 @@ describe("Command: Test de Synchronisation d'inventaire", function () {
             // Tiers
             'tiers.view', 'tiers.manage', 'tiers.compliance_validate',
             // Administration Tenant
-            'tenant.users.manage', 'tenant.settings.edit'
+            'tenant.users.manage', 'tenant.settings.edit',
         ];
 
         foreach ($permissions as $permission) {
@@ -38,7 +38,7 @@ describe("Command: Test de Synchronisation d'inventaire", function () {
         $logistics = Role::findOrCreate('logistics_manager', 'web');
         $logistics->givePermissionTo([
             'inventory.view', 'inventory.manage', 'inventory.audit',
-            'projects.view', 'tiers.view'
+            'projects.view', 'tiers.view',
         ]);
     });
 
@@ -50,35 +50,35 @@ describe("Command: Test de Synchronisation d'inventaire", function () {
         $article = Article::factory()->create([
             'tenants_id' => $this->tenant->id,
             'sku' => 'TEST-SYNC-01',
-            'total_stock' => 0
+            'total_stock' => 0,
         ]);
 
         // Initialisation du pivot (la commande le fera, mais on simule un état existant erroné)
         $article->warehouses()->attach([
             $warehouseA->id => ['quantity' => 0],
-            $warehouseB->id => ['quantity' => 0]
+            $warehouseB->id => ['quantity' => 0],
         ]);
 
         // 2. Création d'un historique de mouvements complexe
         // Dépôt A : +100 (Entry) + 10 (Return) - 20 (Exit) - 5 (Adj Perte) = 85 avant transfert
         StockMovement::create([
             'tenants_id' => $this->tenant->id, 'article_id' => $article->id, 'warehouse_id' => $warehouseA->id,
-            'type' => StockMovementType::Entry, 'quantity' => 100, 'user_id' => $this->user->id
+            'type' => StockMovementType::Entry, 'quantity' => 100, 'user_id' => $this->user->id,
         ]);
 
         StockMovement::create([
             'tenants_id' => $this->tenant->id, 'article_id' => $article->id, 'warehouse_id' => $warehouseA->id,
-            'type' => StockMovementType::Return, 'quantity' => 10, 'user_id' => $this->user->id
+            'type' => StockMovementType::Return, 'quantity' => 10, 'user_id' => $this->user->id,
         ]);
 
         StockMovement::create([
             'tenants_id' => $this->tenant->id, 'article_id' => $article->id, 'warehouse_id' => $warehouseA->id,
-            'type' => StockMovementType::Exit, 'quantity' => 20, 'user_id' => $this->user->id
+            'type' => StockMovementType::Exit, 'quantity' => 20, 'user_id' => $this->user->id,
         ]);
 
         StockMovement::create([
             'tenants_id' => $this->tenant->id, 'article_id' => $article->id, 'warehouse_id' => $warehouseA->id,
-            'type' => StockMovementType::Adjustment, 'quantity' => -5, 'user_id' => $this->user->id
+            'type' => StockMovementType::Adjustment, 'quantity' => -5, 'user_id' => $this->user->id,
         ]);
 
         // Transfert : 30 unités de A vers B
@@ -86,7 +86,7 @@ describe("Command: Test de Synchronisation d'inventaire", function () {
         StockMovement::create([
             'tenants_id' => $this->tenant->id, 'article_id' => $article->id, 'warehouse_id' => $warehouseA->id,
             'target_warehouse_id' => $warehouseB->id, 'type' => StockMovementType::Transfer,
-            'quantity' => 30, 'user_id' => $this->user->id
+            'quantity' => 30, 'user_id' => $this->user->id,
         ]);
 
         // 3. Exécution de la commande

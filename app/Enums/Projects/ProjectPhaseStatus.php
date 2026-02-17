@@ -8,13 +8,12 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum ProjectPhaseStatus: string implements HasLabel, HasColor, HasIcon
+enum ProjectPhaseStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Pending = 'pending';     // En attente
     case InProgress = 'in_progress'; // En cours
     case OnHold = 'on_hold';      // En pause / Aléa technique
     case Finished = 'finished';   // Terminé / Réceptionné
-
 
     public function getColor(): string|array|null
     {

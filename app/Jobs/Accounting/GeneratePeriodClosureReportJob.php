@@ -3,7 +3,6 @@
 namespace App\Jobs\Accounting;
 
 use App\Models\Accounting\PeriodClosure;
-use App\Models\User;
 use App\Notifications\Accounting\PeriodClosedNotification;
 use App\Services\Accounting\PeriodClosureService;
 use Illuminate\Bus\Queueable;

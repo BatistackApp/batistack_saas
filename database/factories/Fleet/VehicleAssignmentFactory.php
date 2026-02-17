@@ -8,7 +8,6 @@ use App\Models\Fleet\VehicleAssignment;
 use App\Models\Projects\Project;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class VehicleAssignmentFactory extends Factory
 {

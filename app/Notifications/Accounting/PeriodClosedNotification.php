@@ -25,12 +25,13 @@ class PeriodClosedNotification extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject("Clôture de période : {$this->closure->month}/{$this->closure->year}")
-            ->greeting("Bonjour,")
+            ->greeting('Bonjour,')
             ->line("La période comptable {$this->closure->month}/{$this->closure->year} a été clôturée.")
-            ->line("Aucune modification ne sera possible après cette date.")
+            ->line('Aucune modification ne sera possible après cette date.')
             // ->action('Voir les détails', route('accounting.period-closures.show', $this->closure))
             ->line('Merci d\'utiliser Batistack.');
     }
+
     public function toArray($notifiable): array
     {
         return [

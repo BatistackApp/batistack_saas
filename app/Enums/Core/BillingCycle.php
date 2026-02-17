@@ -13,7 +13,7 @@ enum BillingCycle: string implements HasLabel
 
     public function getLabel(): string|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Monthly => __('core.billing_cycle.monthly'),
             self::Yearly => __('core.billing_cycle.yearly'),
             self::Quarterly => __('core.billing_cycle.quarterly'),
@@ -22,7 +22,7 @@ enum BillingCycle: string implements HasLabel
 
     public function getDays(): int
     {
-        return match($this) {
+        return match ($this) {
             self::Monthly => 30,
             self::Quarterly => 90,
             self::Yearly => 365,

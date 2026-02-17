@@ -26,7 +26,7 @@ class ProcessFineMatchingJob implements ShouldQueue
                 Log::info("Contravention #{$this->fine->notice_number} rapprochée avec succès.");
             }
         } catch (\Exception $e) {
-            Log::error("Erreur lors du matching de l'amende {$this->fine->id}: " . $e->getMessage());
+            Log::error("Erreur lors du matching de l'amende {$this->fine->id}: ".$e->getMessage());
         }
     }
 }

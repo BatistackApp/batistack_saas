@@ -21,13 +21,13 @@ class RentalWorkflowService
     public function startRental(RentalContract $contract, Carbon $actualDate): void
     {
         // Vérification de la conformité du Loueur (via ton modèle Tiers)
-        if (!$contract->provider->isCompliant()) {
+        if (! $contract->provider->isCompliant()) {
             throw new RentalWorkflowException("Le loueur n'est pas à jour de ses documents administratifs.");
         }
 
         $contract->update([
             'status' => RentalStatus::ACTIVE,
-            'actual_pickup_at' => $actualDate
+            'actual_pickup_at' => $actualDate,
         ]);
     }
 
@@ -37,7 +37,7 @@ class RentalWorkflowService
     public function endRental(RentalContract $contract, Carbon $actualDate): void
     {
         if ($contract->status !== RentalStatus::ACTIVE) {
-            throw new RentalWorkflowException("Seul un contrat actif peut être terminé.");
+            throw new RentalWorkflowException('Seul un contrat actif peut être terminé.');
         }
 
         DB::transaction(function () use ($contract, $actualDate) {
@@ -47,7 +47,7 @@ class RentalWorkflowService
             // 2. Clôture du contrat
             $contract->update([
                 'status' => RentalStatus::ENDED,
-                'actual_return_at' => $actualDate
+                'actual_return_at' => $actualDate,
             ]);
         });
     }

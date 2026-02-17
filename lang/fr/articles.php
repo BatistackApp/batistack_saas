@@ -31,5 +31,5 @@ return [
         'closed' => 'Fermé',
         'validated' => 'Validé',
         'cancelled' => 'Annulé',
-    ]
+    ],
 ];

@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum WorkOrderStatus: string implements HasLabel, HasColor, HasIcon
+enum WorkOrderStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Draft = 'draft';           // En conception
     case Planned = 'planned';       // Planifié (Matières réservées)
@@ -18,7 +18,7 @@ enum WorkOrderStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getColor(): string|array|null
     {
-        return match($this) {
+        return match ($this) {
             self::Draft => 'gray',
             self::Planned => 'blue',
             self::InProgress => 'orange',
@@ -29,7 +29,7 @@ enum WorkOrderStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getIcon(): string|BackedEnum|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Draft => 'heroicon-o-document-text',
             self::Planned => 'heroicon-o-clock',
             self::InProgress => 'heroicon-o-play',
@@ -40,7 +40,7 @@ enum WorkOrderStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getLabel(): string|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Draft => __('work_order.statuses.draft'),
             self::Planned => __('work_order.statuses.planned'),
             self::InProgress => __('work_order.statuses.in_progress'),

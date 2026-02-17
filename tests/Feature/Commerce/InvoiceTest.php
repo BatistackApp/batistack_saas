@@ -1,10 +1,7 @@
 <?php
 
 use App\Enums\Commerce\InvoiceStatus;
-use App\Enums\Commerce\InvoiceType;
 use App\Models\Commerce\Invoices;
-use App\Models\Commerce\Quote;
-use App\Models\Commerce\QuoteItem;
 use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Tiers\Tiers;
@@ -55,7 +52,7 @@ it('filtre les factures par projet', function () {
     ]);
 
     $response = $this->actingAs($this->user)
-        ->getJson('/api/commerce/invoices?project_id=' . $this->project->id);
+        ->getJson('/api/commerce/invoices?project_id='.$this->project->id);
 
     $response->assertStatus(200)
         ->assertJsonCount(1, 'data')
@@ -71,11 +68,11 @@ it('valide une facture via le service', function () {
     // Mock du service de validation
     $this->mock(InvoicingService::class, function (MockInterface $mock) use ($invoice) {
         $mock->shouldReceive('validateInvoice')
-            ->with(Mockery::on(fn($arg) => $arg->id === $invoice->id))
+            ->with(Mockery::on(fn ($arg) => $arg->id === $invoice->id))
             ->once()
             ->andReturn($invoice->fill([
                 'status' => InvoiceStatus::Validated,
-                'reference' => 'FAC-FINAL-001'
+                'reference' => 'FAC-FINAL-001',
             ]));
     });
 

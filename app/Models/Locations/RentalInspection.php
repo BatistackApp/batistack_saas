@@ -10,8 +10,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class RentalInspection extends Model
 {
     use HasFactory;
+
     protected $fillable = [
-        'rental_contract_id', 'inspector_id', 'type', 'notes', 'photos'
+        'rental_contract_id', 'inspector_id', 'type', 'notes', 'photos',
     ];
 
     public function contract(): BelongsTo

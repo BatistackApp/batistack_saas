@@ -24,7 +24,7 @@ class SendStockShortageReportJob implements ShouldQueue
         if ($shortageArticles->isNotEmpty()) {
             $recipients = User::role('logistics_manager')->get();
             // Logique d'envoi d'un email récapitulatif (Mailable) ici
-            Log::info("Rapport de rupture envoyé pour " . $shortageArticles->count() . " articles.");
+            Log::info('Rapport de rupture envoyé pour '.$shortageArticles->count().' articles.');
         }
     }
 }

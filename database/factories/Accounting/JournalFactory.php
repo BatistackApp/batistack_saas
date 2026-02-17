@@ -4,9 +4,7 @@ namespace Database\Factories\Accounting;
 
 use App\Enums\Accounting\JournalType;
 use App\Models\Accounting\Journal;
-use App\Models\Core\Tenants;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class JournalFactory extends Factory
 {

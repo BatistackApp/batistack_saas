@@ -3,7 +3,6 @@
 namespace App\Models\Commerce;
 
 use App\Enums\Commerce\PurchaseOrderStatus;
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Tiers\Tiers;
 use App\Models\User;
@@ -19,7 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([PurchaseOrderObserver::class])]
 class PurchaseOrder extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
+
     protected $guarded = [];
 
     public function supplier(): BelongsTo

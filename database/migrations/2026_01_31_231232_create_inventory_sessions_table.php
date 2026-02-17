@@ -7,7 +7,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('inventory_sessions', function (Blueprint $table) {
@@ -15,7 +16,7 @@ return new class extends Migration {
             $table->foreignIdFor(Tenants::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(Warehouse::class)->constrained()->cascadeOnDelete();
 
-            $table->string('reference')->unique()->comment("Ex: INV-2026-001");
+            $table->string('reference')->unique()->comment('Ex: INV-2026-001');
             $table->string('status')->default(\App\Enums\Articles\InventorySessionStatus::Open->value);
 
             $table->dateTime('opened_at');

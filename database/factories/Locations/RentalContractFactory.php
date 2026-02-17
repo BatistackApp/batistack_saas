@@ -18,8 +18,8 @@ class RentalContractFactory extends Factory
     public function definition(): array
     {
         return [
-            'reference' => 'LOC-' . $this->faker->unique()->numberBetween(1000, 9999),
-            'label' => 'Location ' . $this->faker->word(),
+            'reference' => 'LOC-'.$this->faker->unique()->numberBetween(1000, 9999),
+            'label' => 'Location '.$this->faker->word(),
             'start_date_planned' => now()->addDays(1),
             'end_date_planned' => now()->addDays(15),
             'actual_pickup_at' => Carbon::now(),

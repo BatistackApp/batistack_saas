@@ -15,6 +15,7 @@ class RentalStatusController extends Controller
     public function __construct(
         protected RentalWorkflowService $workflowService
     ) {}
+
     /**
      * Change le statut du contrat (Activation ou Fin).
      */
@@ -26,13 +27,13 @@ class RentalStatusController extends Controller
 
             if ($newStatus === RentalStatus::ACTIVE) {
                 $this->workflowService->startRental($rentalContract, $actualDate);
-                $message = "Location activée : le matériel est désormais sur site.";
+                $message = 'Location activée : le matériel est désormais sur site.';
             } elseif ($newStatus === RentalStatus::ENDED) {
                 $this->workflowService->endRental($rentalContract, $actualDate);
-                $message = "Location terminée : les derniers coûts ont été imputés.";
+                $message = 'Location terminée : les derniers coûts ont été imputés.';
             } else {
                 $rentalContract->update(['status' => $newStatus]);
-                $message = "Statut mis à jour.";
+                $message = 'Statut mis à jour.';
             }
 
             return response()->json(['message' => $message]);

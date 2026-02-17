@@ -61,7 +61,7 @@ class ProductionOrchestrator
         $hasShortage = false;
 
         foreach ($wo->components as $component) {
-            if (!$this->inventoryService->hasEnoughStock($component->article, $wo->warehouse, $component->quantity_planned)) {
+            if (! $this->inventoryService->hasEnoughStock($component->article, $wo->warehouse, $component->quantity_planned)) {
                 $hasShortage = true;
 
                 // AUTOMATISATION : Notification immédiate de rupture pour l'OF
@@ -70,7 +70,7 @@ class ProductionOrchestrator
             }
         }
 
-        return !$hasShortage;
+        return ! $hasShortage;
     }
 
     /**
@@ -79,8 +79,8 @@ class ProductionOrchestrator
     public function consumeComponents(WorkOrder $wo): void
     {
         // On vérifie une dernière fois avant de sortir les pièces
-        if (!$this->validateStockAvailability($wo)) {
-            throw new InsufficientMaterialException("Impossible de consommer les composants : stock insuffisant.", 422);
+        if (! $this->validateStockAvailability($wo)) {
+            throw new InsufficientMaterialException('Impossible de consommer les composants : stock insuffisant.', 422);
         }
 
         foreach ($wo->components as $component) {

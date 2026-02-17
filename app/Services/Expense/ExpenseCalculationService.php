@@ -55,7 +55,7 @@ class ExpenseCalculationService
             ->first();
 
         $report->update([
-            'amount_ht'  => $totals->ht ?? 0,
+            'amount_ht' => $totals->ht ?? 0,
             'amount_tva' => $totals->tva ?? 0,
             'amount_ttc' => $totals->ttc ?? 0,
         ]);

@@ -16,9 +16,7 @@ class RecalculateProjectBudgetJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    public function __construct(private Project $project)
-    {
-    }
+    public function __construct(private Project $project) {}
 
     public function handle(ProjectBudgetService $budgetService): void
     {

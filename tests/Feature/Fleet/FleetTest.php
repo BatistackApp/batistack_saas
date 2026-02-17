@@ -31,13 +31,13 @@ beforeEach(function () {
 it('isole les véhicules entre les différents tenants', function () {
     Vehicle::factory()->create([
         'tenants_id' => $this->tenant->id,
-        'internal_code' => 'V-OURS'
+        'internal_code' => 'V-OURS',
     ]);
 
     $otherTenant = Tenants::factory()->create();
     Vehicle::factory()->create([
         'tenants_id' => $otherTenant->id,
-        'internal_code' => 'V-OTHER'
+        'internal_code' => 'V-OTHER',
     ]);
 
     $response = $this->actingAs($this->user)->getJson('/api/fleet/vehicles');
@@ -128,7 +128,7 @@ it('impute les frais au chantier lors de la libération d\'un véhicule', functi
 
     $imputation = DB::table('project_imputations')->where('project_id', $project->id)->first();
     // Montant doit être >= 150 (Carburant) + l'amortissement calculé
-    expect((float)$imputation->amount)->toBeGreaterThanOrEqual(150.0);
+    expect((float) $imputation->amount)->toBeGreaterThanOrEqual(150.0);
 });
 
 /**
@@ -238,7 +238,7 @@ it('déclenche une notification de maintenance quand le seuil kilométrique appr
             'odometer_unit' => 'km',
             'hourly_rate' => 0,
             'km_rate' => 0,
-            'tenants_id' => $this->tenant->id
+            'tenants_id' => $this->tenant->id,
         ]);
 
     // Vérification que la notification a été envoyée au manager
@@ -254,7 +254,7 @@ it('déclenche une notification de maintenance quand le seuil kilométrique appr
 it('interdit d\'avoir deux véhicules avec le même code interne dans la même entreprise', function () {
     Vehicle::factory()->create([
         'tenants_id' => $this->tenant->id,
-        'internal_code' => 'CAMION-01'
+        'internal_code' => 'CAMION-01',
     ]);
 
     $response = $this->actingAs($this->user)
@@ -267,7 +267,7 @@ it('interdit d\'avoir deux véhicules avec le même code interne dans la même e
             'odometer_unit' => 'km',
             'hourly_rate' => 0,
             'km_rate' => 0,
-            'tenants_id' => $this->tenant->id
+            'tenants_id' => $this->tenant->id,
         ]);
 
     $response->assertStatus(422);

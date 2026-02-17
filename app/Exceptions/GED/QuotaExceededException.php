@@ -9,16 +9,16 @@ use Illuminate\Http\Request;
 class QuotaExceededException extends Exception
 {
     /**
-     * @param int $currentUsage Taille actuelle utilisée en octets
-     * @param int $requestedSize Taille du fichier qu'on tente d'uploader
-     * @param int $limit Limite totale autorisée par le plan du Tenant
+     * @param  int  $currentUsage  Taille actuelle utilisée en octets
+     * @param  int  $requestedSize  Taille du fichier qu'on tente d'uploader
+     * @param  int  $limit  Limite totale autorisée par le plan du Tenant
      */
     public function __construct(
         protected int $currentUsage,
         protected int $requestedSize,
         protected int $limit
     ) {
-        $message = "Quota de stockage dépassé. Disponible: " . ($limit - $currentUsage) . " octets.";
+        $message = 'Quota de stockage dépassé. Disponible: '.($limit - $currentUsage).' octets.';
         parent::__construct($message, 403);
     }
 
@@ -48,8 +48,8 @@ class QuotaExceededException extends Exception
                 'usage_formatted' => $this->formatBytes($this->currentUsage),
                 'limit_formatted' => $this->formatBytes($this->limit),
                 'file_size' => $this->formatBytes($this->requestedSize),
-                'upgrade_required' => true
-            ]
+                'upgrade_required' => true,
+            ],
         ], 403);
     }
 
@@ -64,6 +64,6 @@ class QuotaExceededException extends Exception
         $pow = min($pow, count($units) - 1);
         $bytes /= (1 << (10 * $pow));
 
-        return round($bytes, $precision) . ' ' . $units[$pow];
+        return round($bytes, $precision).' '.$units[$pow];
     }
 }

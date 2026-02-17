@@ -10,9 +10,7 @@ use Illuminate\Http\JsonResponse;
 
 class PayslipController extends Controller
 {
-    public function __construct(protected PayrollCalculationService $calculationService)
-    {
-    }
+    public function __construct(protected PayrollCalculationService $calculationService) {}
 
     /**
      * Détails d'un bulletin avec ses lignes.
@@ -40,7 +38,7 @@ class PayslipController extends Controller
 
         // On force le recalcul du net de l'en-tête
         $payslip->update([
-            'net_to_pay' => $this->calculationService->calculateNetToPay($payslip)
+            'net_to_pay' => $this->calculationService->calculateNetToPay($payslip),
         ]);
 
         return response()->json($line, 201);

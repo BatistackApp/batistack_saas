@@ -1,4 +1,5 @@
 <?php
+
 // --- Gestion des Interventions ---
 use App\Http\Controllers\Intervention\InterventionController;
 use App\Http\Controllers\Intervention\InterventionItemController;

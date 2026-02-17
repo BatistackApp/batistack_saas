@@ -8,14 +8,13 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum ExpenseStatus: string implements HasLabel, HasColor, HasIcon
+enum ExpenseStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Draft = 'draft';
     case Submitted = 'submitted';
     case Approved = 'approved';
     case Rejected = 'rejected';
     case Paid = 'paid';
-
 
     public function getColor(): string|array|null
     {

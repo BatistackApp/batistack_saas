@@ -67,7 +67,7 @@ class TimeTrackingService
     {
         if ($entry->status !== TimeEntryStatus::Submitted) {
             throw ValidationException::withMessages([
-                'status' => "Seuls les pointages soumis peuvent être vérifiés.",
+                'status' => 'Seuls les pointages soumis peuvent être vérifiés.',
             ]);
         }
 
@@ -84,7 +84,7 @@ class TimeTrackingService
     {
         if ($entry->status !== TimeEntryStatus::Verified) {
             throw ValidationException::withMessages([
-                'status' => "Le pointage doit être vérifié par un manager (N1) avant l'approbation finale."
+                'status' => "Le pointage doit être vérifié par un manager (N1) avant l'approbation finale.",
             ]);
         }
 

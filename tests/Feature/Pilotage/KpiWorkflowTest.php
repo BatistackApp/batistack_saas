@@ -17,7 +17,7 @@ beforeEach(function () {
 
     $this->tenant = Tenants::factory()->create();
     $this->user = User::factory()->create([
-        'tenants_id' => $this->tenant->id
+        'tenants_id' => $this->tenant->id,
     ]);
 
     $this->user->givePermissionTo('pilotage.manage');
@@ -38,7 +38,7 @@ test('un gestionnaire peut configurer un nouvel indicateur KPI via l\'API', func
 
     $this->assertDatabaseHas('kpi_indicators', [
         'tenants_id' => $this->tenant->id,
-        'code' => 'global_margin'
+        'code' => 'global_margin',
     ]);
 });
 
@@ -54,7 +54,7 @@ test('un utilisateur ne peut pas voir les indicateurs d\'un autre tenant', funct
             'code' => 'secret_kpi',
             'category' => KpiCategory::EQUIPMENT,
             'unit' => KpiUnit::COUNT,
-            'is_active' => true
+            'is_active' => true,
         ]);
     });
 
@@ -73,12 +73,12 @@ test('le déclenchement manuel d\'un snapshot génère des données historisées
     $indicator = KpiIndicator::factory()->create([
         'tenants_id' => $this->tenant->id,
         'code' => 'net_cash',
-        'is_active' => true
+        'is_active' => true,
     ]);
 
     $response = $this->actingAs($this->user)
         ->postJson(route('kpi.snapshots.trigger'), [
-            'kpi_indicator_id' => $indicator->id
+            'kpi_indicator_id' => $indicator->id,
         ]);
 
     $response->assertStatus(200);
@@ -86,14 +86,14 @@ test('le déclenchement manuel d\'un snapshot génère des données historisées
     // On vérifie l'existence dans la DB en ignorant les scopes si besoin pour le test
     $this->assertDatabaseHas('kpi_snapshots', [
         'tenants_id' => $this->tenant->id,
-        'kpi_indicator_id' => $indicator->id
+        'kpi_indicator_id' => $indicator->id,
     ]);
 });
 
 test('l\'historique d\'un indicateur retourne une série chronologique de valeurs', function () {
     $indicator = KpiIndicator::factory()->create([
         'tenants_id' => $this->tenant->id,
-        'is_active' => true
+        'is_active' => true,
     ]);
 
     // Création manuelle des snapshots pour ce tenant
@@ -101,8 +101,8 @@ test('l\'historique d\'un indicateur retourne une série chronologique de valeur
         KpiSnapshot::create([
             'tenants_id' => $this->tenant->id,
             'kpi_indicator_id' => $indicator->id,
-            'value' => (string)(100 + $i),
-            'measured_at' => now()->subDays($i)
+            'value' => (string) (100 + $i),
+            'measured_at' => now()->subDays($i),
         ]);
     }
 

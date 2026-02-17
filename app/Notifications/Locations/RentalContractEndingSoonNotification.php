@@ -12,9 +12,7 @@ class RentalContractEndingSoonNotification extends Notification implements Shoul
 {
     use Queueable;
 
-    public function __construct(public RentalContract $contract)
-    {
-    }
+    public function __construct(public RentalContract $contract) {}
 
     public function via($notifiable): array
     {
@@ -26,7 +24,7 @@ class RentalContractEndingSoonNotification extends Notification implements Shoul
         return (new MailMessage)
             ->subject("Fin de location imminente : {$this->contract->reference}")
             ->line("Le contrat de location '{$this->contract->label}' pour le chantier {$this->contract->project->name} arrive à échéance.")
-            ->line("Date de fin prévue : " . $this->contract->end_date_planned->format('d/m/Y'))
+            ->line('Date de fin prévue : '.$this->contract->end_date_planned->format('d/m/Y'))
             // ->action('Gérer le contrat', url('/admin/locations/contracts/' . $this->contract->id))
             ->line('Pensez à confirmer le rendu du matériel ou à prolonger le contrat pour éviter les surcoûts.');
     }
@@ -37,7 +35,7 @@ class RentalContractEndingSoonNotification extends Notification implements Shoul
             'contract_id' => $this->contract->id,
             'reference' => $this->contract->reference,
             'end_date' => $this->contract->end_date_planned,
-            'message' => "La location {$this->contract->reference} se termine dans 48h."
+            'message' => "La location {$this->contract->reference} se termine dans 48h.",
         ];
     }
 }

@@ -5,7 +5,6 @@ namespace App\Models\Intervention;
 use App\Enums\Intervention\BillingType;
 use App\Enums\Intervention\InterventionStatus;
 use App\Models\Articles\Warehouse;
-use App\Models\Core\Tenants;
 use App\Models\HR\Employee;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
@@ -23,7 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([InterventionObserver::class])]
 class Intervention extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
 
     protected $guarded = [];
 

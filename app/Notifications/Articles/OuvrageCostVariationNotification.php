@@ -31,9 +31,9 @@ class OuvrageCostVariationNotification extends Notification implements ShouldQue
         return (new MailMessage)
             ->error()
             ->subject("📈 Variation de coût : Ouvrage {$this->ouvrage->sku}")
-            ->line("Le coût de revient de l'ouvrage **{$this->ouvrage->name}** a augmenté de " . round($percent, 2) . "%.")
-            ->line("Ancien coût : " . number_format($this->oldCost, 2) . " € HT")
-            ->line("Nouveau coût : " . number_format($this->newCost, 2) . " € HT")
+            ->line("Le coût de revient de l'ouvrage **{$this->ouvrage->name}** a augmenté de ".round($percent, 2).'%.')
+            ->line('Ancien coût : '.number_format($this->oldCost, 2).' € HT')
+            ->line('Nouveau coût : '.number_format($this->newCost, 2).' € HT')
             ->action('Réviser les prix de vente', url("/admin/inventory/ouvrages/{$this->ouvrage->id}"))
             ->line('Cette hausse est due à la mise à jour du CUMP de l\'un de ses composants.');
     }

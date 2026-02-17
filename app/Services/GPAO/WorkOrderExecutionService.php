@@ -33,7 +33,7 @@ class WorkOrderExecutionService
         if ($wo->status === WorkOrderStatus::Planned) {
             $wo->update([
                 'status' => WorkOrderStatus::InProgress,
-                'actual_start_at' => now()
+                'actual_start_at' => now(),
             ]);
         }
     }
@@ -45,7 +45,7 @@ class WorkOrderExecutionService
     {
         $operation->update([
             'status' => OperationStatus::Finished,
-            'time_actual_minutes' => $actualMinutes
+            'time_actual_minutes' => $actualMinutes,
         ]);
     }
 }
