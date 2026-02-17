@@ -58,4 +58,9 @@ class ExpenseCalculationService
             'amount_ttc' => $totals->ttc ?? 0,
         ]);
     }
+
+    public function calculateKm(mixed $distance, float $ratePerKm): float
+    {
+        return round($distance * $ratePerKm, 2);
+    }
 }

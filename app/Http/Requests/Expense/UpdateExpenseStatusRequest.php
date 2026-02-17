@@ -12,12 +12,24 @@ class UpdateExpenseStatusRequest extends FormRequest
     {
         return [
             'status' => ['required', Rule::enum(ExpenseStatus::class)],
-            'reason' => ['required_if:status,' . ExpenseStatus::Rejected->value, 'string', 'max:1000'],
+            'reason' => [
+                'required_if:status,' . ExpenseStatus::Rejected->value,
+                'nullable',
+                'string',
+                'max:1000'
+            ],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'reason.required_if' => 'Un motif est obligatoire pour justifier le rejet de la note de frais.',
         ];
     }
 
     public function authorize(): bool
     {
-        return true;
+        return auth()->user()->hasPermissionTo('tenant.expenses.validate');
     }
 }
