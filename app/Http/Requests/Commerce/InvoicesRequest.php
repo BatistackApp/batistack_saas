@@ -12,6 +12,7 @@ class InvoicesRequest extends FormRequest
     public function rules(): array
     {
         $invoiceId = $this->route('invoice')?->id;
+
         return [
             'tenants_id' => ['required', 'exists:tenants,id'],
             'tiers_id' => ['required', 'exists:tiers,id'],

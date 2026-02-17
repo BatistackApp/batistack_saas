@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 #[ObservedBy([AccountingEntryLineObserver::class])]
 class AccountingEntryLine extends Model
 {
-    use HasFactory, HasUlids, HasTenant;
+    use HasFactory, HasTenant, HasUlids;
 
     protected $fillable = [
         'ulid',

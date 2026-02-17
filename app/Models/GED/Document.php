@@ -2,7 +2,6 @@
 
 namespace App\Models\GED;
 
-use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Observers\GED\DocumentObserver;
 use App\Traits\HasTenant;
@@ -16,7 +15,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([DocumentObserver::class])]
 class Document extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
+
     protected $guarded = [];
 
     public function uploader(): BelongsTo

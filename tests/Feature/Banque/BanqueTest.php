@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Banque\BankTransactionType;
 use App\Enums\Commerce\InvoiceStatus;
 use App\Models\Banque\BankAccount;
 use App\Models\Banque\BankTransaction;
@@ -111,7 +110,6 @@ describe('API Banque & Sécurité', function () {
 
         $response = $this->actingAs($this->user)
             ->getJson('/api/bank/bank-transactions');
-
 
         // Le scope global doit filtrer la transaction du voisin
         $data = $response->json('data');

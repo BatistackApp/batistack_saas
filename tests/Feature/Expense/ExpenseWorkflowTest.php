@@ -29,19 +29,18 @@ beforeEach(function () {
     $this->category = ExpenseCategory::factory()->create([
         'tenants_id' => $this->tenantA->id,
         'name' => 'Transport',
-        'requires_distance' => true
+        'requires_distance' => true,
     ]);
 });
 
 /**
  * TESTS DE SÉCURITÉ & MULTI-TENANCY
  */
-
 test('un utilisateur ne peut pas voir les notes de frais d\'un autre tenant', function () {
     $reportB = ExpenseReport::factory()->create([
         'tenants_id' => $this->tenantB->id,
         'user_id' => $this->userB->id,
-        'label' => 'Secret de Tenant B'
+        'label' => 'Secret de Tenant B',
     ]);
 
     $this->actingAs($this->userA)
@@ -53,7 +52,7 @@ test('un utilisateur ne peut pas voir les notes de frais d\'un autre tenant', fu
 test('un utilisateur ne peut pas modifier un rapport qui ne lui appartient pas (autre tenant)', function () {
     $reportB = ExpenseReport::factory()->create([
         'tenants_id' => $this->tenantB->id,
-        'user_id' => $this->userB->id
+        'user_id' => $this->userB->id,
     ]);
 
     // Doit retourner 404 car le scope global filtre par tenant, rendant le rapport invisible
@@ -65,12 +64,11 @@ test('un utilisateur ne peut pas modifier un rapport qui ne lui appartient pas (
 /**
  * TESTS DE FLUX (WORKFLOW)
  */
-
 test('une note de frais passe en statut soumis et bloque les modifications', function () {
     $expense_report = ExpenseReport::factory()->create([
         'tenants_id' => $this->tenantA->id,
         'user_id' => $this->userA->id,
-        'status' => ExpenseStatus::Draft
+        'status' => ExpenseStatus::Draft,
     ]);
 
     // On ajoute une ligne pour pouvoir soumettre
@@ -91,12 +89,11 @@ test('une note de frais passe en statut soumis et bloque les modifications', fun
 /**
  * TESTS DE CALCULS MÉTIER (IK vs Standard)
  */
-
 test('le système calcule automatiquement le montant pour les frais kilométriques', function () {
     $this->userA->givePermissionTo('tenant.expenses.manage');
     $report = ExpenseReport::factory()->create([
         'tenants_id' => $this->tenantA->id,
-        'user_id' => $this->userA->id
+        'user_id' => $this->userA->id,
     ]);
 
     $response = $this->actingAs($this->userA)
@@ -107,7 +104,7 @@ test('le système calcule automatiquement le montant pour les frais kilométriqu
             'description' => 'Trajet Chantier A',
             'is_mileage' => true,
             'distance_km' => 100,
-            'vehicle_power' => 5
+            'vehicle_power' => 5,
         ]);
 
     $response->assertStatus(201);
@@ -115,7 +112,7 @@ test('le système calcule automatiquement le montant pour les frais kilométriqu
     // 100km * 0.60 = 60.00
     $this->assertDatabaseHas('expense_items', [
         'expense_report_id' => $report->id,
-        'amount_ttc' => 60.00
+        'amount_ttc' => 60.00,
     ]);
 
     // On vérifie le total du rapport (mis à jour par l'Observer)
@@ -135,7 +132,7 @@ test('un justificatif est correctement stocké et lié à la ligne de frais', fu
             'description' => 'Déjeuner client',
             'amount_ttc' => 45.50,
             'tax_rate' => 10,
-            'receipt_path' => $file
+            'receipt_path' => $file,
         ]);
 
     $response->assertStatus(201);
@@ -148,7 +145,6 @@ test('un justificatif est correctement stocké et lié à la ligne de frais', fu
 /**
  * TESTS D'APPROBATION
  */
-
 test('l\'approbation déclenche l\'imputation comptable', function () {
     $report = ExpenseReport::factory()->create([
         'tenants_id' => $this->tenantA->id,
@@ -162,7 +158,7 @@ test('l\'approbation déclenche l\'imputation comptable', function () {
     // On donne la permission de valider à l'admin (simulé par le rôle ici)
     $this->actingAs($this->adminA)
         ->patchJson(route('expense-reports.update-status', $report), [
-            'status' => ExpenseStatus::Approved
+            'status' => ExpenseStatus::Approved,
         ])
         ->assertOk();
 
@@ -179,7 +175,7 @@ test('le rejet nécessite obligatoirement un motif', function () {
     $this->actingAs($this->adminA)
         ->patchJson(route('expense-reports.update-status', $report), [
             'status' => ExpenseStatus::Rejected->value,
-            'reason' => '' // Vide
+            'reason' => '', // Vide
         ])
         ->assertStatus(422)
         ->assertJsonValidationErrors(['reason']);

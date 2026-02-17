@@ -10,6 +10,7 @@ use App\Services\Accounting\PeriodClosureService;
 class AccountingEntryObserver
 {
     public function __construct(protected PeriodClosureService $closureService) {}
+
     public function creating(AccountingEntry $entry): void
     {
         $periodClosure = PeriodClosure::where('month', $entry->accounting_date->month)
@@ -29,7 +30,7 @@ class AccountingEntryObserver
     public function saving(AccountingEntry $entry): void
     {
         if ($this->closureService->isPeriodClosed($entry->accounting_date)) {
-            throw new \RuntimeException("Action impossible : La période comptable est clôturée.");
+            throw new \RuntimeException('Action impossible : La période comptable est clôturée.');
         }
     }
 
@@ -48,8 +49,8 @@ class AccountingEntryObserver
      */
     public function updating(AccountingEntry $entry): void
     {
-        if ($entry->status === EntryStatus::Validated && !$entry->isDirty('status')) {
-            throw new \RuntimeException("Une écriture validée ne peut plus être modifiée.");
+        if ($entry->status === EntryStatus::Validated && ! $entry->isDirty('status')) {
+            throw new \RuntimeException('Une écriture validée ne peut plus être modifiée.');
         }
     }
 

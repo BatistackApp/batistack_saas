@@ -2,7 +2,6 @@
 
 namespace App\Exceptions\Intervention;
 
-use Exception;
 use Illuminate\Http\Response;
 
 /**

@@ -13,9 +13,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WorkOrderOperation extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'work_order_id', 'work_center_id', 'sequence', 'label',
-        'time_planned_minutes', 'time_actual_minutes', 'status'
+        'time_planned_minutes', 'time_actual_minutes', 'status',
     ];
 
     protected function casts(): array

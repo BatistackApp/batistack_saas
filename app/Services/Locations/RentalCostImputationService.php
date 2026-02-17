@@ -3,7 +3,6 @@
 namespace App\Services\Locations;
 
 use App\Enums\Locations\RentalStatus;
-use App\Models\HR\Employee;
 use App\Models\Locations\RentalContract;
 use DB;
 
@@ -22,7 +21,9 @@ class RentalCostImputationService
      */
     public function imputeDailyCost(RentalContract $contract): void
     {
-        if ($contract->status !== RentalStatus::ACTIVE) return;
+        if ($contract->status !== RentalStatus::ACTIVE) {
+            return;
+        }
 
         $yesterday = now()->subDay()->startOfDay();
         $today = now()->startOfDay();
@@ -38,7 +39,7 @@ class RentalCostImputationService
                     DB::table('project_imputations')->insert([
                         'project_id' => $contract->project_id,
                         'type' => 'rental',
-                        'amount' => $cost
+                        'amount' => $cost,
                     ]);
                 }
             }

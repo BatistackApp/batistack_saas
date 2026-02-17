@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum BankSyncStatus: string implements HasLabel, HasColor, HasIcon
+enum BankSyncStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Active = 'active';         // Synchro OK
     case Error = 'error';           // Problème d'auth (Consentement expiré)

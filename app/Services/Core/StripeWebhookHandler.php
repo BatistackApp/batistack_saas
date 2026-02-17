@@ -68,7 +68,7 @@ class StripeWebhookHandler
         })->firstOrFail();
 
         // Synchroniser le statut
-        $status = match($subscription->status) {
+        $status = match ($subscription->status) {
             'past_due' => SubscriptionStatus::PastDue,
             'canceled' => SubscriptionStatus::Cancelled,
             'paused' => SubscriptionStatus::Paused,

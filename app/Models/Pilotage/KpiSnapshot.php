@@ -2,7 +2,6 @@
 
 namespace App\Models\Pilotage;
 
-use App\Models\Core\Tenants;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,11 +12,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class KpiSnapshot extends Model
 {
-    use HasFactory, SoftDeletes, HasUlids, HasTenant;
+    use HasFactory, HasTenant, HasUlids, SoftDeletes;
 
     protected $fillable = [
         'tenants_id', 'kpi_indicator_id', 'value',
-        'measured_at', 'context_type', 'context_id'
+        'measured_at', 'context_type', 'context_id',
     ];
 
     public function indicator(): BelongsTo

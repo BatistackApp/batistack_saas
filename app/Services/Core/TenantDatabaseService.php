@@ -13,6 +13,7 @@ class TenantDatabaseService
             // SQLite n'a pas besoin de créer un schéma - ignorer en test
             if (DB::getDriverName() === 'sqlite') {
                 Log::info("Database schema skipped (SQLite): {$databaseName}");
+
                 return true;
             }
 

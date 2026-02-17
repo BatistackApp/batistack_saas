@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum DesignationStatus: string implements HasLabel, HasColor, HasIcon
+enum DesignationStatus: string implements HasColor, HasIcon, HasLabel
 {
     case None = 'none';               // Pas de désignation nécessaire
     case Pending = 'pending';         // En attente d'envoi à l'ANTAI

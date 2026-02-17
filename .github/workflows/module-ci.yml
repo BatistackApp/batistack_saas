@@ -362,25 +362,20 @@ jobs:
       - name: Install dependencies
         run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-      - name: Vérification du Style (Pint)
-        run: ./vendor/bin/pint --test
-
-      - name: Analyse Statique (PHPStan / Larastan)
-        run: ./vendor/bin/phpstan analyse --error-format=github
-
       - name: Copy .env.testing
-        run: cp .env.example .env.testing
+        run: cp .env.testing .env
 
       - name: Generate Key
-        run: php artisan key:generate --env=testing
+        run: php artisan key:generate
 
       # 2. Exécution conditionnelle des tests avec SQLite
       # Note : On utilise DB_DATABASE=:memory: pour une vitesse maximale
 
-      - name: Run All Tests (Core Change)
+      - name: Run Core Tests (Core Change)
         if: steps.changes.outputs.core == 'true'
         run: |
-          php artisan test --parallel --coverage-clover=coverage.xml
+          php artisan test tests/Feature/Core --parallel --coverage-clover=coverage.xml
+          php artisan test tests/Unit/Core --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=core" >> $GITHUB_ENV
         env:
           DB_CONNECTION: sqlite

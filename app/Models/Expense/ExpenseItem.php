@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ExpenseItem extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
     public function report(): BelongsTo

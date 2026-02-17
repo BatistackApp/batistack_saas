@@ -71,20 +71,3 @@ jobs:
         # L'option --taint-analysis active le scan de sécurité
         # L'option --report=checkstyle permet d'exporter les résultats si besoin
         run: ./vendor/bin/psalm --taint-analysis --output-format=github
-
-  # 4. Scan des vulnérabilités Laravel (Specific)
-  laravel-security:
-    name: 🐘 Laravel Security Check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.4'
-
-      - name: Install Enlightn (Security Checker)
-        run: |
-          composer require --dev enlightn/enlightn
-          # Ce scan vérifie les mauvaises configurations CSRF, Cookies, Headers, etc.
-          # php artisan enlighten:security (nécessite config spécifique)

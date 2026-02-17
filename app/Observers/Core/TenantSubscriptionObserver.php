@@ -66,7 +66,6 @@ class TenantSubscriptionObserver
             $tenant->update(['status' => TenantStatus::Active]);
         }
 
-
         if ($subscription->isDirty('stripe_status')) {
             Log::info('Subscription status changed', [
                 'tenant_id' => $tenant->id,

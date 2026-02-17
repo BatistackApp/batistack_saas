@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum FinesStatus: string implements HasLabel, HasColor, HasIcon
+enum FinesStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Received = 'received';             // Reçu (saisie initiale)
     case DriverAssigned = 'driver_assigned'; // Conducteur identifié/désigné en interne

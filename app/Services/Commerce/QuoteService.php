@@ -6,8 +6,6 @@ use App\Enums\Commerce\QuoteStatus;
 use App\Models\Commerce\Quote;
 use DB;
 use Exception;
-use Illuminate\Support\Facades\Storage;
-use Spatie\Browsershot\Browsershot;
 
 class QuoteService
 {
@@ -37,7 +35,7 @@ class QuoteService
             $newQuote = $quote->replicate();
 
             // On réinitialise les données pour un nouveau brouillon
-            $newQuote->reference = $quote->reference . '-COPY'; // L'observer pourra écraser si nécessaire
+            $newQuote->reference = $quote->reference.'-COPY'; // L'observer pourra écraser si nécessaire
             $newQuote->status = QuoteStatus::Draft;
             $newQuote->total_ht = $quote->total_ht;
             $newQuote->total_tva = $quote->total_tva;

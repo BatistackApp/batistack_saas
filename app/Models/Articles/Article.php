@@ -4,7 +4,6 @@ namespace App\Models\Articles;
 
 use App\Enums\Articles\ArticleUnit;
 use App\Enums\Articles\TrackingType;
-use App\Models\Core\Tenants;
 use App\Models\Tiers\Tiers;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -16,7 +15,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Article extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
+
     protected $guarded = [];
 
     protected function casts(): array

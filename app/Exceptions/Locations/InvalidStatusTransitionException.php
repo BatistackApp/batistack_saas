@@ -2,8 +2,4 @@
 
 namespace App\Exceptions\Locations;
 
-use Exception;
-
-class InvalidStatusTransitionException extends RentalModuleException
-{
-}
+class InvalidStatusTransitionException extends RentalModuleException {}

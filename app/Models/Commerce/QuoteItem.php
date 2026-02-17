@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class QuoteItem extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
     public function quote(): BelongsTo

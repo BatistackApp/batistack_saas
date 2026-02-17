@@ -2,8 +2,4 @@
 
 namespace App\Exceptions\Locations;
 
-use Exception;
-
-class InvalidRentalPeriodException extends RentalModuleException
-{
-}
+class InvalidRentalPeriodException extends RentalModuleException {}

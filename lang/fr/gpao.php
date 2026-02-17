@@ -7,7 +7,7 @@ return [
             'planned' => 'Planifié',
             'in_progress' => 'En cours',
             'completed' => 'Terminé',
-            'cancelled' => 'Annulé'
+            'cancelled' => 'Annulé',
         ],
     ],
     'operation' => [
@@ -15,7 +15,7 @@ return [
             'pending' => 'En attente',
             'running' => 'En cours',
             'paused' => 'En pause',
-            'finished' => 'Terminé'
+            'finished' => 'Terminé',
         ],
     ],
 ];

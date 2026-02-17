@@ -2,7 +2,6 @@
 
 namespace App\Models\Fleet;
 
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\User;
 use App\Observers\Fleet\VehicleAssignmentObserver;
@@ -16,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class VehicleAssignment extends Model
 {
     use HasFactory, HasTenant;
+
     protected $guarded = [];
 
     public function vehicle(): BelongsTo

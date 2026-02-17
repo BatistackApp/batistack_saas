@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum RentalStatus: string implements HasLabel, HasColor, HasIcon
+enum RentalStatus: string implements HasColor, HasIcon, HasLabel
 {
     case DRAFT = 'draft';         // En préparation
     case ACTIVE = 'active';       // Matériel sur chantier
@@ -18,7 +18,7 @@ enum RentalStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getColor(): string|array|null
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => 'gray',
             self::ACTIVE => 'green',
             self::ENDED => 'orange',
@@ -29,7 +29,7 @@ enum RentalStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getIcon(): string|BackedEnum|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => 'heroicon-o-document-text',
             self::ACTIVE, self::INVOICED => 'heroicon-o-check',
             self::ENDED, self::CANCELLED => 'heroicon-o-x',
@@ -38,7 +38,7 @@ enum RentalStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getLabel(): string|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::DRAFT => __('locations.statuses.draft'),
             self::ACTIVE => __('locations.statuses.active'),
             self::ENDED => __('locations.statuses.ended'),

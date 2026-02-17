@@ -3,7 +3,6 @@
 namespace App\Models\Payroll;
 
 use App\Enums\Payroll\PayrollStatus;
-use App\Models\Core\Tenants;
 use App\Models\HR\Employee;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

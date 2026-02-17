@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Articles;
 
 use App\Enums\Articles\InventorySessionStatus;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Articles\InventoryLineRequest;
 use App\Http\Requests\Articles\InventorySessionRequest;
 use App\Models\Articles\Article;
 use App\Models\Articles\InventorySession;
@@ -39,7 +38,7 @@ class InventorySessionController extends Controller
 
             return response()->json([
                 'message' => "Session d'inventaire {$session->reference} ouverte pour le dépôt {$warehouse->name}.",
-                'session' => $session
+                'session' => $session,
             ], 201);
 
         } catch (\Exception $e) {
@@ -74,7 +73,7 @@ class InventorySessionController extends Controller
             return response()->json([
                 'message' => "Comptage enregistré pour {$article->name}.",
                 'article_id' => $article->id,
-                'status' => $inventorySession->refresh()->status->getLabel()
+                'status' => $inventorySession->refresh()->status->getLabel(),
             ]);
 
         } catch (\Exception $e) {
@@ -91,7 +90,7 @@ class InventorySessionController extends Controller
         try {
             // On vérifie si la session peut être validée (non validée et non annulée)
             if ($inventorySession->status === InventorySessionStatus::Validated) {
-                throw new \Exception("Cette session a déjà été validée.");
+                throw new \Exception('Cette session a déjà été validée.');
             }
 
             // Exécution de la validation (Génération des ajustements)
@@ -99,7 +98,7 @@ class InventorySessionController extends Controller
 
             return response()->json([
                 'message' => "L'inventaire {$inventorySession->reference} a été validé. Les stocks ont été régularisés.",
-                'status' => $inventorySession->status->value
+                'status' => $inventorySession->status->value,
             ]);
 
         } catch (\Exception $e) {
@@ -116,7 +115,7 @@ class InventorySessionController extends Controller
         $inventorySession->update(['status' => InventorySessionStatus::Cancelled]);
 
         return response()->json([
-            'message' => "Session d'inventaire annulée. Le dépôt est de nouveau disponible."
+            'message' => "Session d'inventaire annulée. Le dépôt est de nouveau disponible.",
         ]);
     }
 }

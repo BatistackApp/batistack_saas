@@ -6,7 +6,6 @@ use App\Models\Articles\Article;
 use App\Models\Commerce\Quote;
 use App\Models\Commerce\QuoteItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class QuoteItemFactory extends Factory
 {

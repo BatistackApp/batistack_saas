@@ -19,12 +19,12 @@ class TenantRoleMiddleware
         $user = $request->user();
 
         // 1. Vérifie si l'utilisateur est authentifié
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
         // 2. Vérifie le rôle via Spatie
-        if (!$user->hasRole($role)) {
+        if (! $user->hasRole($role)) {
             return response()->json(['message' => 'Forbidden: Missing Role.'], 403);
         }
 
@@ -35,7 +35,7 @@ class TenantRoleMiddleware
 
         if ($activeTenantId && $user->tenants_id !== (int) $activeTenantId) {
             // Tentative d'accès inter-tenant détectée : Logging de sécurité impératif
-            Log::critical("ALERTE SÉCURITÉ : Tentative d'accès inter-tenant par l'utilisateur ID {$user->id}. " .
+            Log::critical("ALERTE SÉCURITÉ : Tentative d'accès inter-tenant par l'utilisateur ID {$user->id}. ".
                 "Tenant Utilisateur : {$user->tenants_id} | Tenant Contextuel : {$activeTenantId}");
 
             return response()->json(['message' => 'Unauthorized: Tenant context mismatch.'], 403);

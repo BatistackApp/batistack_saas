@@ -7,7 +7,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('articles', function (Blueprint $table) {
@@ -22,8 +23,8 @@ return new class extends Migration {
             $table->string('unit')->default(\App\Enums\Articles\ArticleUnit::Unit->value);
             $table->string('tracking_type')->default(\App\Enums\Articles\TrackingType::Quantity->value);
 
-            $table->string('barcode')->nullable()->index()->comment("EAN/UPC");
-            $table->string('qr_code_base')->nullable()->unique()->comment("Etiquette QR Code interne");
+            $table->string('barcode')->nullable()->index()->comment('EAN/UPC');
+            $table->string('qr_code_base')->nullable()->unique()->comment('Etiquette QR Code interne');
 
             $table->decimal('poids', 12, 3)->nullable(); // Poids en kg
             $table->decimal('volume', 12, 3)->nullable(); // Volume en m3

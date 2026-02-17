@@ -17,6 +17,7 @@ it('identifies tenant by custom domain', function () {
     Route::get('/test-tenant-identify', function () {
         $service = app(TenantIdentificationService::class);
         $identified = $service->identifyFromRequest();
+
         return response()->json(['tenant_id' => $identified?->id]);
     });
 
@@ -36,6 +37,7 @@ it('identifies tenant by slug subdomain', function () {
     Route::get('/test-tenant-identify', function () {
         $service = app(TenantIdentificationService::class);
         $identified = $service->identifyFromRequest();
+
         return response()->json(['tenant_id' => $identified?->id]);
     });
 
@@ -49,6 +51,7 @@ it('returns null for unknown host', function () {
     Route::get('/test-tenant-identify', function () {
         $service = app(TenantIdentificationService::class);
         $identified = $service->identifyFromRequest();
+
         return response()->json(['tenant_id' => $identified?->id]);
     });
 
@@ -66,12 +69,13 @@ it('caches tenant identification', function () {
 
     Route::get('/test-tenant-identify', function () {
         $service = app(TenantIdentificationService::class);
+
         return response()->json(['tenant_id' => $service->identifyFromRequest()?->id]);
     });
 
     $this->get('http://cached-tenant.test/test-tenant-identify')->assertJson(['tenant_id' => $tenant->id]);
 
     $this->assertTrue(\Illuminate\Support\Facades\Cache::has(
-        "tenant:host:cached-tenant.test"
+        'tenant:host:cached-tenant.test'
     ));
 });

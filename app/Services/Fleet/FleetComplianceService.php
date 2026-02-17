@@ -24,11 +24,11 @@ class FleetComplianceService
         // On suppose que l'utilisateur est lié à un Tiers de type 'personne_physique' (Employé)
         $tier = $user->tiers; // Relation à définir ou via un repo
 
-        if (!$tier) {
+        if (! $tier) {
             return [
                 'status' => false,
                 'message' => 'Profil de conformité (Tiers) manquant pour cet utilisateur.',
-                'errors' => ['user_id' => ['Profil de conformité introuvable.']]
+                'errors' => ['user_id' => ['Profil de conformité introuvable.']],
             ];
         }
 
@@ -39,11 +39,11 @@ class FleetComplianceService
             ->where('expires_at', '>', now())
             ->first();
 
-        if (!$license) {
+        if (! $license) {
             return [
                 'status' => false,
                 'message' => 'Le permis de conduire est manquant, expiré ou non validé.',
-                'errors' => ['user_id' => ['Le permis de conduire est manquant, expiré ou non validé.']]
+                'errors' => ['user_id' => ['Le permis de conduire est manquant, expiré ou non validé.']],
             ];
         }
 
@@ -54,18 +54,18 @@ class FleetComplianceService
                 ->where('valid_until', '>', now())
                 ->exists();
 
-            if (!$hasQualification) {
+            if (! $hasQualification) {
                 return [
                     'status' => false,
                     'message' => "La qualification spécifique '{$vehicle->required_certification_type}' est requise pour ce véhicule.",
-                    'errors' => ['user_id' => ["La qualification spécifique '{$vehicle->required_certification_type}' est requise pour ce véhicule."]]
+                    'errors' => ['user_id' => ["La qualification spécifique '{$vehicle->required_certification_type}' est requise pour ce véhicule."]],
                 ];
             }
         }
 
         return [
             'status' => true,
-            'message' => 'Habilitation valide.'
+            'message' => 'Habilitation valide.',
         ];
     }
 
@@ -83,7 +83,7 @@ class FleetComplianceService
 
         // On cherche les tiers qui ont la qualification valide
         $eligibleTierIds = TierQualification::where('label', $requiredCert)
-            ->where(function($query) {
+            ->where(function ($query) {
                 $query->whereNull('valid_until')
                     ->orWhere('valid_until', '>=', now());
             })
@@ -91,7 +91,7 @@ class FleetComplianceService
 
         // On retourne les utilisateurs liés à ces tiers
         return User::whereIn('tiers_id', $eligibleTierIds) // Assumer la colonne tiers_id sur User ou via relation
-        ->where('tenants_id', $vehicle->tenants_id)
+            ->where('tenants_id', $vehicle->tenants_id)
             ->get();
     }
 }

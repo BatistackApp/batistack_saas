@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum TierComplianceStatus: string implements HasLabel, HasIcon, HasColor
+enum TierComplianceStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Compliant = 'conforme';
     case ToRenew = 'to_renew';

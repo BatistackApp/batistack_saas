@@ -38,7 +38,7 @@ test('la génération de paie agrège correctement les heures de pointage approu
         'date' => '2025-11-05',
         'hours' => 8,
         'status' => TimeEntryStatus::Approved,
-        'has_meal_allowance' => true
+        'has_meal_allowance' => true,
     ]);
 
     // Lancement de la génération via l'API
@@ -53,18 +53,18 @@ test('la génération de paie agrège correctement les heures de pointage approu
 
     // Vérifier la ligne de salaire de base (16h)
     $baseLine = $payslip->lines()->where('label', 'Salaire de base')->first();
-    expect((float)$baseLine->base)->toEqual(16.0);
+    expect((float) $baseLine->base)->toEqual(16.0);
 
     // Vérifier les paniers repas (2)
     $mealLine = $payslip->lines()->where('label', 'Indemnité de repas')->first();
-    expect((int)$mealLine->base)->toEqual(2);
+    expect((int) $mealLine->base)->toEqual(2);
 });
 
 test('la validation d\'une période clôture la paie et lance l\'imputation chantier', function () {
     $response = $this->actingAs($this->admin)
         ->patchJson(route('payroll-periods.validate', $this->period), [
             'status' => PayrollStatus::Validated->value,
-            'confirm_lock' => true
+            'confirm_lock' => true,
         ]);
 
     $response->assertStatus(200);
@@ -83,7 +83,7 @@ test('on ne peut pas modifier un bulletin si la période est validée', function
             'label' => 'Prime fraude',
             'amount' => 100,
             'type' => 'earning',
-            'is_taxable' => true
+            'is_taxable' => true,
         ]);
 
     // Doit être bloqué par l'authorize() de la FormRequest

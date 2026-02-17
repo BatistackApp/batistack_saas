@@ -22,7 +22,7 @@ class WorkOrderObserver
                 ->first();
 
             $number = $latest ? ((int) Str::afterLast($latest->reference, '-') + 1) : 1;
-            $wo->reference = "OF-{$year}-" . str_pad($number, 4, '0', STR_PAD_LEFT);
+            $wo->reference = "OF-{$year}-".str_pad($number, 4, '0', STR_PAD_LEFT);
         }
     }
 

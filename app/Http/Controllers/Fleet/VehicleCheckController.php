@@ -19,8 +19,8 @@ class VehicleCheckController extends Controller
     public function index(Request $request): JsonResponse
     {
         $checks = VehicleCheck::with(['vehicle', 'user'])
-            ->when($request->vehicle_id, fn($q) => $q->where('vehicle_id', $request->vehicle_id))
-            ->when($request->has_anomalie, fn($q) => $q->where('has_anomalie', true))
+            ->when($request->vehicle_id, fn ($q) => $q->where('vehicle_id', $request->vehicle_id))
+            ->when($request->has_anomalie, fn ($q) => $q->where('has_anomalie', true))
             ->latest()
             ->paginate(20);
 
@@ -38,9 +38,9 @@ class VehicleCheckController extends Controller
             ->with('questions')
             ->first();
 
-        if (!$template) {
+        if (! $template) {
             return response()->json([
-                'error' => 'Aucun formulaire de sécurité configuré pour ce type de véhicule.'
+                'error' => 'Aucun formulaire de sécurité configuré pour ce type de véhicule.',
             ], 404);
         }
 
@@ -55,22 +55,22 @@ class VehicleCheckController extends Controller
         return DB::transaction(function () use ($request) {
             // 1. Création du rapport de contrôle
             $check = VehicleCheck::create([
-                'vehicle_id'            => $request->vehicle_id,
-                'user_id'               => auth()->id(),
+                'vehicle_id' => $request->vehicle_id,
+                'user_id' => auth()->id(),
                 'vehicle_assignment_id' => $request->vehicle_assignment_id,
-                'type'                  => $request->type,
-                'odometer_reading'      => $request->odometer_reading,
-                'general_note'          => $request->general_note,
+                'type' => $request->type,
+                'odometer_reading' => $request->odometer_reading,
+                'general_note' => $request->general_note,
             ]);
 
             // 2. Enregistrement des réponses aux questions
             $results = collect($request->input('results'))->map(function ($res) {
                 return [
-                    'question_id'         => $res['question_id'],
-                    'value'               => $res['value'],
+                    'question_id' => $res['question_id'],
+                    'value' => $res['value'],
                     'anomaly_description' => $res['anomaly_description'] ?? null,
-                    'is_anomaly'          => $res['value'] === 'ko',
-                    'photo_path'          => $res['photo_path'] ?? null,
+                    'is_anomaly' => $res['value'] === 'ko',
+                    'photo_path' => $res['photo_path'] ?? null,
                 ];
             });
 
@@ -85,7 +85,7 @@ class VehicleCheckController extends Controller
 
             return response()->json([
                 'message' => 'Contrôle enregistré avec succès.',
-                'check'   => $check->load('results')
+                'check' => $check->load('results'),
             ], 201);
         });
     }

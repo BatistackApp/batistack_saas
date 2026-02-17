@@ -3,10 +3,12 @@
 namespace App\Enums\GPAO;
 
 use BackedEnum;
-use Filament\Support\Contracts\{HasLabel, HasColor, HasIcon};
+use Filament\Support\Contracts\HasColor;
+use Filament\Support\Contracts\HasIcon;
+use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum OperationStatus: string implements HasLabel, HasColor, HasIcon
+enum OperationStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Pending = 'pending';
     case Running = 'running';
@@ -15,7 +17,7 @@ enum OperationStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getColor(): string|array|null
     {
-        return match($this) {
+        return match ($this) {
             self::Pending => 'gray',
             self::Running => 'blue',
             self::Paused => 'yellow',
@@ -25,7 +27,7 @@ enum OperationStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getIcon(): string|BackedEnum|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Pending => 'heroicon-o-clock',
             self::Running => 'heroicon-o-play',
             self::Paused => 'heroicon-o-pause',
@@ -35,7 +37,7 @@ enum OperationStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getLabel(): string|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Pending => __('operation.statuses.pending'),
             self::Running => __('operation.statuses.running'),
             self::Paused => __('operation.statuses.paused'),

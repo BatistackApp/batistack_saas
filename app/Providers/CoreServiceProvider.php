@@ -13,8 +13,8 @@ use App\Services\Core\TenantIdentificationService;
 use App\Services\Core\TenantModuleManager;
 use App\Services\Core\TenantProvisioningService;
 use Cache;
-use Illuminate\Support\ServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Support\ServiceProvider;
 use Laravel\Cashier\Subscription;
 use Log;
 
@@ -40,7 +40,7 @@ class CoreServiceProvider extends ServiceProvider
                 ->dailyAt('01:00')
                 ->name('core:check-module-expiration')
                 ->onFailure(function () {
-                    \Log::error("CheckModuleExpirationJob failed");
+                    \Log::error('CheckModuleExpirationJob failed');
                 });
 
             // Nettoyage des caches tenant (2h du matin)
@@ -54,7 +54,7 @@ class CoreServiceProvider extends ServiceProvider
 
             // Génération de rapports (chaque dimanche à 3h du matin)
             $schedule
-                ->job(new GenerateTenantReportsJob())
+                ->job(new GenerateTenantReportsJob)
                 ->weekly()
                 ->sundays()
                 ->at('03:00')
@@ -64,7 +64,7 @@ class CoreServiceProvider extends ServiceProvider
                 ->dailyAt('02:00')
                 ->name('core:check-overdue-invoices')
                 ->onFailure(function () {
-                    \Log::error("CheckOverdueInvoicesJob failed");
+                    \Log::error('CheckOverdueInvoicesJob failed');
                 });
         });
     }

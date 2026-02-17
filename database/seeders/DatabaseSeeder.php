@@ -4,10 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Database\Seeders\Core\ModuleSeeder;
-use Database\Seeders\Core\PlanModuleSeeder;
-use Database\Seeders\Core\PlanSeeder;
-use Database\Seeders\Core\TenantSeeder;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder

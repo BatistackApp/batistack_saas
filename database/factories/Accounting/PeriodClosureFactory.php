@@ -16,6 +16,7 @@ class PeriodClosureFactory extends Factory
     public function definition(): array
     {
         $year = Carbon::now();
+
         return [
             'ulid' => Str::ulid(),
             'month' => $this->faker->month(),

@@ -29,12 +29,12 @@ class DriverComplianceAlertNotification extends Notification implements ShouldQu
         return (new MailMessage)
             ->error()
             ->subject('⚠️ Alerte Conformité Flotte : Conducteur non habilité')
-            ->greeting('Bonjour ' . $notifiable->name . ',')
-            ->line("Une anomalie de conformité a été détectée sur une affectation active.")
+            ->greeting('Bonjour '.$notifiable->name.',')
+            ->line('Une anomalie de conformité a été détectée sur une affectation active.')
             ->line("Le conducteur **{$this->driver->name}** est actuellement affecté au véhicule **{$this->vehicle->name}** ({$this->vehicle->license_plate}).")
             ->line("💡 **Motif de l'alerte :** {$this->reason}")
             ->action('Gérer les affectations', url('/fleet/assignments'))
-            ->line("Merci de régulariser la situation au plus vite pour garantir la sécurité et la conformité légale.");
+            ->line('Merci de régulariser la situation au plus vite pour garantir la sécurité et la conformité légale.');
     }
 
     public function toArray($notifiable): array

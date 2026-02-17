@@ -22,6 +22,7 @@ class FinancialOperationController extends Controller
         try {
             // Utiliser $request->validated('month') et $request->validated('year')
             $closure = $this->closureService->closePeriod($request->validated('month'), $request->validated('year'));
+
             return response()->json(['message' => "Période {$request->validated('month')}/{$request->validated('year')} clôturée.", 'closure' => $closure]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);

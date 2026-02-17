@@ -6,7 +6,7 @@ use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum StockMovementType: string implements HasLabel, HasColor
+enum StockMovementType: string implements HasColor, HasLabel
 {
     case Entry = 'entry';       // Réception fournisseur
     case Exit = 'exit';         // Consommation chantier

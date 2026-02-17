@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Log;
 class OvhDomainService
 {
     private Client $client;
+
     public function __construct()
     {
         $this->client = new Client([
@@ -16,8 +17,8 @@ class OvhDomainService
             'headers' => [
                 'X-Ovh-Application' => config('services.ovh.app_key'),
                 'X-Ovh-Consumer' => config('services.ovh.consumer_key'),
-                'Authorization' => 'Bearer ' . config('services.ovh.token'),
-            ]
+                'Authorization' => 'Bearer '.config('services.ovh.token'),
+            ],
         ]);
     }
 
@@ -25,6 +26,7 @@ class OvhDomainService
     {
         if (! app()->isProduction()) {
             Log::debug("OVH: Simulated subdomain creation for {$slug}.batistack.app");
+
             return true;
         }
 
@@ -64,6 +66,7 @@ class OvhDomainService
     {
         if (! app()->isProduction()) {
             Log::debug("OVH: Simulated subdomain deletion for {$slug}.batistack.app");
+
             return true;
         }
 

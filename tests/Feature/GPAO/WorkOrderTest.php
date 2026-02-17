@@ -25,12 +25,12 @@ beforeEach(function () {
     $this->article = Article::factory()->create([
         'tenants_id' => $this->tenantsId,
         'cump_ht' => 10.00,
-        'total_stock' => 100
+        'total_stock' => 100,
     ]);
 
     $this->article->warehouses()->attach($this->warehouse->id, [
         'quantity' => 100,
-        'bin_location' => 'A1'
+        'bin_location' => 'A1',
     ]);
 
     $this->ouvrage = Ouvrage::factory()->create(['tenants_id' => $this->tenantsId]);
@@ -55,7 +55,7 @@ test('la création d\'un OF explose automatiquement la nomenclature', function (
 
     $wo = WorkOrder::first();
     $this->assertCount(1, $wo->components);
-    expect((float)$wo->components->first()->quantity_planned)->toBe(10.0);
+    expect((float) $wo->components->first()->quantity_planned)->toBe(10.0);
 });
 
 test('le démarrage de la première opération déstocke les matières premières', function () {
@@ -72,19 +72,19 @@ test('le démarrage de la première opération déstocke les matières première
         'article_id' => $this->article->id,
         'label' => 'Matière',
         'quantity_planned' => 10,
-        'unit_cost_ht' => 10
+        'unit_cost_ht' => 10,
     ]);
 
     $op = $wo->operations()->create([
         'work_center_id' => $this->workCenter->id,
         'sequence' => 10,
         'label' => 'Débit',
-        'status' => OperationStatus::Pending
+        'status' => OperationStatus::Pending,
     ]);
 
     $response = $this->actingAs($this->user)
         ->patchJson(route('gpao.operations.update-status', $op), [
-            'status' => OperationStatus::Running->value
+            'status' => OperationStatus::Running->value,
         ]);
 
     $response->assertStatus(200);
@@ -93,7 +93,7 @@ test('le démarrage de la première opération déstocke les matières première
     $this->assertDatabaseHas('stock_movements', [
         'article_id' => $this->article->id,
         'type' => StockMovementType::Exit->value,
-        'quantity' => 10
+        'quantity' => 10,
     ]);
 });
 
@@ -103,7 +103,7 @@ test('la finalisation d\'un OF avec quantité partielle recalcule le coût unita
         'status' => WorkOrderStatus::InProgress,
         'quantity_planned' => 10,
         'ouvrage_id' => $this->ouvrage->id,
-        'warehouse_id' => $this->warehouse->id
+        'warehouse_id' => $this->warehouse->id,
     ]);
 
     // Coût matières : 100€ (pour les 10 prévus)
@@ -112,26 +112,26 @@ test('la finalisation d\'un OF avec quantité partielle recalcule le coût unita
         'label' => 'Composant',
         'quantity_planned' => 20,
         'quantity_consumed' => 20,
-        'unit_cost_ht' => 5.00
+        'unit_cost_ht' => 5.00,
     ]);
 
     // Fabrication de seulement 8 unités (2 rebus)
     $response = $this->actingAs($this->user)
         ->postJson(route('work-orders.finalize', $wo), [
-            'quantity_produced' => 8
+            'quantity_produced' => 8,
         ]);
 
     $response->assertStatus(200);
 
     $wo->refresh();
-    expect((float)$wo->quantity_produced)->toBe(8.0);
+    expect((float) $wo->quantity_produced)->toBe(8.0);
 
     // Le coût unitaire doit être 100 / 8 = 12.50€ (au lieu de 10€ théoriques)
     $this->assertDatabaseHas('stock_movements', [
         'ouvrage_id' => $this->ouvrage->id,
         'type' => StockMovementType::Entry->value,
         'quantity' => 8,
-        'unit_cost_ht' => 12.50
+        'unit_cost_ht' => 12.50,
     ]);
 });
 
@@ -151,7 +151,7 @@ test('le passage au statut PLANNED déstocke les matières premières', function
     // 2. Changement de statut vers PLANNED
     $response = $this->actingAs($this->user)
         ->patchJson(route('work-orders.update', $wo), [
-            'status' => WorkOrderStatus::Planned->value
+            'status' => WorkOrderStatus::Planned->value,
         ]);
 
     $response->assertStatus(200);
@@ -160,7 +160,7 @@ test('le passage au statut PLANNED déstocke les matières premières', function
     $this->assertDatabaseHas('stock_movements', [
         'article_id' => $this->article->id,
         'type' => StockMovementType::Exit->value,
-        'quantity' => 10 // 5 unités * 2 composants par nomenclature
+        'quantity' => 10, // 5 unités * 2 composants par nomenclature
     ]);
 });
 
@@ -177,7 +177,7 @@ test('on ne peut pas planifier si le stock est insuffisant', function () {
 
     $response = $this->actingAs($this->user)
         ->patchJson(route('work-orders.update', $wo), [
-            'status' => WorkOrderStatus::Planned->value
+            'status' => WorkOrderStatus::Planned->value,
         ]);
 
     // L'Observer lève une InsufficientMaterialException via le service
@@ -192,14 +192,14 @@ test('une notification est envoyée en cas de stock insuffisant lors du check', 
         'tenants_id' => $this->tenantsId,
         'ouvrage_id' => $this->ouvrage->id,
         'warehouse_id' => $this->warehouse->id,
-        'quantity_planned' => 1000
+        'quantity_planned' => 1000,
     ]);
 
     $wo->components()->create([
         'article_id' => $this->article->id,
         'label' => 'Matière critique',
         'quantity_planned' => 5000,
-        'unit_cost_ht' => 10
+        'unit_cost_ht' => 10,
     ]);
 
     $service = app(\App\Services\GPAO\ProductionOrchestrator::class);

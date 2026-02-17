@@ -11,6 +11,7 @@ class TierTypeManager
     {
         return $tier->types()->where('type', $type->value)->exists();
     }
+
     public function addType(Tiers $tier, TierType $type, bool $isPrimary = false): void
     {
         if ($this->hasType($tier, $type)) {

@@ -4,7 +4,6 @@ namespace App\Console\Commands\Articles;
 
 use App\Enums\Articles\StockMovementType;
 use App\Models\Articles\Article;
-use App\Models\Articles\Warehouse;
 use DB;
 use Illuminate\Console\Command;
 
@@ -29,15 +28,15 @@ class SyncInventoryTotalsCommand extends Command
      */
     public function handle()
     {
-        $this->info("🔄 Démarrage de la synchronisation des stocks...");
+        $this->info('🔄 Démarrage de la synchronisation des stocks...');
 
         // 1. Calcul de l'impact net de tous les mouvements.
         // Utilisation d'un UNION ALL pour traiter un transfert comme deux lignes d'impact (Source et Cible).
         $movementsQuery = DB::table('stock_movements')
             ->select('article_id', 'warehouse_id', DB::raw("
                 CASE
-                    WHEN type IN ('" . StockMovementType::Entry->value . "', '" . StockMovementType::Return->value . "', '" . StockMovementType::Adjustment->value . "') THEN quantity
-                    WHEN type IN ('" . StockMovementType::Exit->value . "', '" . StockMovementType::Transfer->value . "') THEN -quantity
+                    WHEN type IN ('".StockMovementType::Entry->value."', '".StockMovementType::Return->value."', '".StockMovementType::Adjustment->value."') THEN quantity
+                    WHEN type IN ('".StockMovementType::Exit->value."', '".StockMovementType::Transfer->value."') THEN -quantity
                     ELSE 0
                 END as impact
             "))
@@ -55,7 +54,7 @@ class SyncInventoryTotalsCommand extends Command
             ->groupBy('article_id', 'warehouse_id')
             ->get();
 
-        $this->info("📊 Totaux calculés. Mise à jour de la base de données...");
+        $this->info('📊 Totaux calculés. Mise à jour de la base de données...');
 
         $bar = $this->output->createProgressBar($totals->count());
 
@@ -66,7 +65,9 @@ class SyncInventoryTotalsCommand extends Command
             $articleGlobalTotals = [];
 
             foreach ($totals as $row) {
-                if (!$row->warehouse_id) continue;
+                if (! $row->warehouse_id) {
+                    continue;
+                }
 
                 // Mise à jour de la table pivot par dépôt
                 DB::table('article_warehouse')

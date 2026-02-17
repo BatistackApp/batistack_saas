@@ -3,7 +3,6 @@
 namespace App\Models\Pilotage;
 
 use App\Enums\Pilotage\ThresholdSeverity;
-use App\Models\Core\Tenants;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Concerns\HasUlids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,11 +12,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class KpiThresholds extends Model
 {
-    use HasFactory, SoftDeletes, HasUlids, HasTenant;
+    use HasFactory, HasTenant, HasUlids, SoftDeletes;
 
     protected $fillable = [
         'tenants_id', 'kpi_indicator_id', 'min_value',
-        'max_value', 'severity', 'is_notifiable'
+        'max_value', 'severity', 'is_notifiable',
     ];
 
     public function indicator(): BelongsTo

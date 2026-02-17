@@ -41,6 +41,7 @@ class InterventionItemController extends Controller
         }
 
         $item->delete();
+
         return response()->json(null, 204);
     }
 }

@@ -23,7 +23,7 @@ class ProjectRequest extends FormRequest
             'planned_end_at' => [
                 'nullable',
                 'date',
-                'after_or_equal:planned_start_at' // Cohérence temporelle
+                'after_or_equal:planned_start_at', // Cohérence temporelle
             ],
             'budget_labor' => 'required|numeric|min:0',
             'budget_materials' => 'required|numeric|min:0',

@@ -16,12 +16,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([KpiIndicatorObserver::class])]
 class KpiIndicator extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant, HasUlids;
+    use HasFactory, HasTenant, HasUlids, SoftDeletes;
 
     protected $fillable = [
         'tenants_id', 'code', 'name', 'description',
         'category', 'unit', 'formula_class', 'is_active',
-        'id'
+        'id',
     ];
 
     protected function casts(): array

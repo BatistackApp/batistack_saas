@@ -15,6 +15,7 @@ class VehicleChecklistTemplateController extends Controller
     public function index(): JsonResponse
     {
         $templates = VehicleChecklistTemplate::withCount('questions')->get();
+
         return response()->json($templates);
     }
 
@@ -46,6 +47,7 @@ class VehicleChecklistTemplateController extends Controller
     public function update(VehicleChecklistTemplateRequest $request, VehicleChecklistTemplate $template): JsonResponse
     {
         $template->update($request->safe()->except('questions'));
+
         return response()->json($template);
     }
 
@@ -55,6 +57,7 @@ class VehicleChecklistTemplateController extends Controller
     public function destroy(VehicleChecklistTemplate $template): JsonResponse
     {
         $template->delete();
+
         return response()->json(['message' => 'Template supprimé.']);
     }
 }

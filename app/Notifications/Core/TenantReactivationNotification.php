@@ -14,9 +14,7 @@ class TenantReactivationNotification extends Notification implements ShouldQueue
 
     public function __construct(
         public Tenants $tenant,
-    )
-    {
-    }
+    ) {}
 
     public function via($notifiable): array
     {
@@ -26,12 +24,12 @@ class TenantReactivationNotification extends Notification implements ShouldQueue
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("✅ Votre compte Batistack a été réactivé")
+            ->subject('✅ Votre compte Batistack a été réactivé')
             ->greeting("Bienvenue {$this->tenant->name}")
-            ->line("Votre compte Batistack a été réactivé.")
-            ->line("Vous pouvez à nouveau accéder à tous vos services.")
+            ->line('Votre compte Batistack a été réactivé.')
+            ->line('Vous pouvez à nouveau accéder à tous vos services.')
             ->action('Accéder à Batistack', url("https://{$this->tenant->slug}.batistack.app"))
-            ->line("Merci de nous faire confiance !");
+            ->line('Merci de nous faire confiance !');
     }
 
     public function toDatabase($notifiable): array

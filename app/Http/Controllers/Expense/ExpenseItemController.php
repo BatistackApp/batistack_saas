@@ -34,9 +34,9 @@ class ExpenseItemController extends Controller
 
             $amounts = [
                 'amount_ttc' => $ttc,
-                'amount_ht'  => $ttc, // Pas de TVA sur les IK
+                'amount_ht' => $ttc, // Pas de TVA sur les IK
                 'amount_tva' => 0,
-                'tax_rate'   => 0
+                'tax_rate' => 0,
             ];
         } else {
             $amounts = $this->calcService->calculateFromTtc($data['amount_ttc'], $data['tax_rate']);
@@ -58,7 +58,7 @@ class ExpenseItemController extends Controller
     public function destroy(ExpenseItem $expenseItem): JsonResponse
     {
         // On vérifie que le rapport parent est modifiable
-        if (!in_array($expenseItem->report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
+        if (! in_array($expenseItem->report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
             return response()->json(['error' => 'Ligne verrouillée.'], 422);
         }
 

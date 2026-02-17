@@ -30,8 +30,8 @@ class LowStockAlertNotification extends Notification implements ShouldQueue
             ->line("L'article **{$this->article->name}** ({$this->article->sku}) a atteint son seuil d'alerte.")
             ->line("Stock actuel : **{$this->currentStock} {$this->article->unit->value}**.")
             ->line("Seuil d'alerte configuré : {$this->article->alert_stock}.")
-            //->action('Gérer le réapprovisionnement', url("/admin/articles/{$this->article->id}"))
-            ->line("Il est recommandé de passer commande auprès du fournisseur : " . ($this->article->supplier->name ?? 'Non défini'));
+            // ->action('Gérer le réapprovisionnement', url("/admin/articles/{$this->article->id}"))
+            ->line('Il est recommandé de passer commande auprès du fournisseur : '.($this->article->supplier->name ?? 'Non défini'));
     }
 
     public function toArray($notifiable): array

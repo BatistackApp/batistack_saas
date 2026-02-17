@@ -8,7 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->calcService = new PayrollCalculationService();
+    $this->calcService = new PayrollCalculationService;
 });
 
 test('il découpe correctement les heures supplémentaires (151.67h / 25% / 50%)', function () {
@@ -49,13 +49,13 @@ test('il calcule le net à payer correctement après retenues', function () {
     $payslip->lines()->create([
         'label' => 'Gain',
         'amount_gain' => 2000,
-        'type' => PayslipLineType::Earning
+        'type' => PayslipLineType::Earning,
     ]);
 
     $payslip->lines()->create([
         'label' => 'Retenue',
         'amount_deduction' => 400,
-        'type' => PayslipLineType::Deduction
+        'type' => PayslipLineType::Deduction,
     ]);
 
     $method = new \ReflectionMethod(PayrollCalculationService::class, 'calculateNetToPay');

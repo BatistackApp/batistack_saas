@@ -37,6 +37,7 @@ class ExpenseApprovalController extends Controller
         try {
             if ($request->status === ExpenseStatus::Approved->value) {
                 $this->workflowService->approve($expenseReport, auth()->id());
+
                 return response()->json(['message' => 'Note approuvée et imputation lancée.']);
             }
 
@@ -44,6 +45,7 @@ class ExpenseApprovalController extends Controller
                 // On met à jour le motif avant de rejeter
                 $expenseReport->update(['rejection_reason' => $request->reason]);
                 $this->workflowService->reject($expenseReport, $request->reason);
+
                 return response()->json(['message' => 'Note rejetée. L\'employé a été notifié.']);
             }
 

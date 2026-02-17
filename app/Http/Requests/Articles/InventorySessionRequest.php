@@ -8,7 +8,7 @@ class InventorySessionRequest extends FormRequest
 {
     public function rules(): array
     {
-        if ($this->isMethod('post') && !$this->route('inventory_session')) {
+        if ($this->isMethod('post') && ! $this->route('inventory_session')) {
             return [
                 'warehouse_id' => [
                     'required',

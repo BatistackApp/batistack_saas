@@ -6,7 +6,6 @@ use App\Enums\Fleet\InspectionType;
 use App\Models\Fleet\Vehicle;
 use App\Models\Fleet\VehicleInspection;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class VehicleInspectionFactory extends Factory
 {

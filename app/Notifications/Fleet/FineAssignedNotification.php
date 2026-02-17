@@ -23,11 +23,11 @@ class FineAssignedNotification extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->error()
-            ->subject("Avis de contravention : Action requise")
+            ->subject('Avis de contravention : Action requise')
             ->line("Une contravention a été identifiée pour le véhicule qu'on vous avait confié.")
             ->line("Immatriculation : {$this->fine->vehicle->license_plate}")
             ->line("Date de l'infraction : {$this->fine->offense_at->format('d/m/Y H:i')}")
-            ->line("Nous allons procéder à votre désignation auprès des autorités (ANTAI).")
+            ->line('Nous allons procéder à votre désignation auprès des autorités (ANTAI).')
             // ->action('Voir le détail', url("/my-fleet/fines/{$this->fine->id}"))
             ->line('Merci de vérifier vos informations personnelles sur votre profil Batistack.');
     }

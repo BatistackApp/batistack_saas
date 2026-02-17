@@ -25,7 +25,7 @@ beforeEach(function () {
     $this->article = Article::factory()->create([
         'tenants_id' => $this->tenantId,
         'cump_ht' => 50.00,
-        'sale_price_ht' => 100.00
+        'sale_price_ht' => 100.00,
     ]);
 
     Queue::fake();
@@ -69,8 +69,8 @@ test('on peut ajouter du matériel et la marge se calcule automatiquement', func
     // Vente : 2 * 120 = 240
     // Coût : 2 * 50 = 100
     // Marge : 240 - 100 = 140
-    expect((float)$intervention->amount_ht)->toBe(240.0)
-        ->and((float)$intervention->margin_ht)->toBe(140.0);
+    expect((float) $intervention->amount_ht)->toBe(240.0)
+        ->and((float) $intervention->margin_ht)->toBe(140.0);
 });
 
 test('la clôture d\'une intervention génère les pointages RH', function () {
@@ -81,7 +81,7 @@ test('la clôture d\'une intervention génère les pointages RH', function () {
 
     $employee = Employee::factory()->create([
         'tenants_id' => $this->tenantId,
-        'hourly_cost_charged' => 45.00
+        'hourly_cost_charged' => 45.00,
     ]);
 
     // Ajout d'un technicien via pivot
@@ -102,13 +102,13 @@ test('la clôture d\'une intervention génère les pointages RH', function () {
     // Vérifier que la marge a pris en compte la main d'œuvre
     // Ici on n'a pas d'items, donc Marge = 0 - (4 * 45) = -180
     $intervention->refresh();
-    expect((float)$intervention->margin_ht)->toBe(-180.0);
+    expect((float) $intervention->margin_ht)->toBe(-180.0);
 });
 
 test('on ne peut pas démarrer une intervention pour un client suspendu', function () {
     $suspendedCustomer = Tiers::factory()->create([
         'tenants_id' => $this->tenantId,
-        'status' => \App\Enums\Tiers\TierStatus::Suspended
+        'status' => \App\Enums\Tiers\TierStatus::Suspended,
     ]);
 
     $intervention = Intervention::factory()->create([

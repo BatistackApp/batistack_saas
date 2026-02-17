@@ -11,6 +11,7 @@ class PurchaseOrderRequest extends FormRequest
     public function rules(): array
     {
         $orderId = $this->route('purchase_order')?->id;
+
         return [
             'tenants_id' => ['required', 'exists:tenants,id'],
             'supplier_id' => ['required', 'exists:tiers,id'],

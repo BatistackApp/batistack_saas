@@ -6,9 +6,7 @@ use App\Enums\HR\AbsenceRequestStatus;
 use App\Enums\HR\TimeEntryStatus;
 use App\Models\HR\AbsenceRequest;
 use App\Models\HR\TimeEntry;
-use App\Notifications\HR\TimeEntryApprovedNotification;
 use App\Notifications\HR\TimeEntryStatusChangedNotification;
-use App\Notifications\HR\TimeEntrySubmittedNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
@@ -71,7 +69,7 @@ class TimeEntryObserver
      */
     protected function notifyManager(TimeEntry $timeEntry): void
     {
-        if (!$timeEntry->relationLoaded('employee')) {
+        if (! $timeEntry->relationLoaded('employee')) {
             $timeEntry->load('employee.manager');
         }
 

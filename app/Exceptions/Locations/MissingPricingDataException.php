@@ -2,8 +2,4 @@
 
 namespace App\Exceptions\Locations;
 
-use Exception;
-
-class MissingPricingDataException extends RentalModuleException
-{
-}
+class MissingPricingDataException extends RentalModuleException {}

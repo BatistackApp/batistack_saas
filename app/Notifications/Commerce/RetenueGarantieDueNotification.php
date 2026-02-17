@@ -38,7 +38,7 @@ class RetenueGarantieDueNotification extends Notification implements ShouldQueue
             'invoice_id' => $this->invoice->id,
             'amount' => $this->invoice->retenue_garantie_amount,
             'project' => $this->invoice->project->name,
-            'message' => "La RG de {$this->invoice->retenue_garantie_amount} € est due pour le projet {$this->invoice->project->name}."
+            'message' => "La RG de {$this->invoice->retenue_garantie_amount} € est due pour le projet {$this->invoice->project->name}.",
         ];
     }
 }

@@ -18,7 +18,7 @@ class PayrollPeriodFactory extends Factory
         $endDate = $startDate->copy()->endOfMonth();
 
         return [
-            'name' => 'Période ' . $startDate->format('m/Y'),
+            'name' => 'Période '.$startDate->format('m/Y'),
             'start_date' => $startDate,
             'end_date' => $endDate,
             'status' => $this->faker->randomElement(PayrollStatus::cases()),

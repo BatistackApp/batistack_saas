@@ -4,9 +4,7 @@ namespace Database\Factories\Accounting;
 
 use App\Enums\Accounting\AccountType;
 use App\Models\Accounting\ChartOfAccount;
-use App\Models\Core\Tenants;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class ChartOfAccountFactory extends Factory
 {

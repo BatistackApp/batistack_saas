@@ -22,6 +22,7 @@ class StoreInterventionItemRequest extends FormRequest
     public function authorize(): bool
     {
         $intervention = $this->route('intervention');
+
         // Verrouillage si l'intervention est clôturée
         return $intervention && $intervention->status === \App\Enums\Intervention\InterventionStatus::InProgress;
     }

@@ -19,7 +19,7 @@ beforeEach(function () {
     app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
     // Configuration du Tenant et de l'utilisateur
-    if (!\Spatie\Permission\Models\Permission::where('name', 'accounting.manage')->exists()) {
+    if (! \Spatie\Permission\Models\Permission::where('name', 'accounting.manage')->exists()) {
         \Spatie\Permission\Models\Permission::create(['name' => 'accounting.manage', 'guard_name' => 'web']);
     }
 
@@ -66,7 +66,7 @@ test('une écriture doit être équilibrée pour être validée', function () {
     $date = Carbon::instance(now());
 
     // Création d'une écriture déséquilibrée
-    expect(fn() => $service->create(
+    expect(fn () => $service->create(
         $this->journal,
         $date,
         'Achat Ciment',
@@ -94,8 +94,8 @@ test('une écriture validée devient immuable', function () {
     $service->validate($entry);
 
     // Tentative de modification du libellé (via l'Observer)
-    expect(fn() => $entry->update(['label' => 'Fraude']))
-        ->toThrow(\RuntimeException::class, "Une écriture validée ne peut plus être modifiée.");
+    expect(fn () => $entry->update(['label' => 'Fraude']))
+        ->toThrow(\RuntimeException::class, 'Une écriture validée ne peut plus être modifiée.');
 });
 
 test('on ne peut pas créer d\'écriture dans une période clôturée', function () {
@@ -117,7 +117,7 @@ test('on ne peut pas créer d\'écriture dans une période clôturée', function
     $service = app(AccountingEntryService::class);
 
     // Tentative de création dans la période verrouillée
-    expect(fn() => $service->create(
+    expect(fn () => $service->create(
         $this->journal,
         $lastMonth,
         'Ecriture tardive',
@@ -145,12 +145,12 @@ test('l\'imputation analytique BTP est correctement enregistrée sur les lignes'
                 'debit' => 500.00,
                 'credit' => 0,
                 'project_id' => $project->id,
-                'project_phase_id' => $phase->id
+                'project_phase_id' => $phase->id,
             ],
             [
                 'chart_of_account_id' => $this->account401->id,
                 'debit' => 0,
-                'credit' => 500.00
+                'credit' => 500.00,
             ],
         ]
     );

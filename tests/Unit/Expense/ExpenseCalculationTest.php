@@ -3,7 +3,7 @@
 use App\Services\Expense\ExpenseCalculationService;
 
 beforeEach(function () {
-    $this->calcService = new ExpenseCalculationService();
+    $this->calcService = new ExpenseCalculationService;
 });
 
 test('il calcule correctement le HT et la TVA à partir du TTC', function () {

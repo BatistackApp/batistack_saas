@@ -133,7 +133,7 @@ class AccountingEntryService
     {
         if ($entry->status !== EntryStatus::Draft) {
             throw new \RuntimeException(
-                "Seules les écritures en brouillon peuvent être annulées."
+                'Seules les écritures en brouillon peuvent être annulées.'
             );
         }
 

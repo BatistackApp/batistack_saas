@@ -38,7 +38,7 @@ class FecExportService
             'PieceDate',
             'EcritureLib',
             'Debit',
-            'Credit',]);
+            'Credit', ]);
 
         // Ajouter les lignes d'écritures
         foreach ($entries as $entry) {
@@ -104,7 +104,7 @@ class FecExportService
                 $generator = app(SequenceNumberGenerator::class);
                 $gaps = $generator->validateSequenceIntegrity($journal, $startDate, $endDate);
 
-                if (!empty($gaps)) {
+                if (! empty($gaps)) {
                     foreach ($gaps as $gap) {
                         $errors[] = "Trou de séquence détecté dans {$journal->code}: Attendu {$gap['expected']}, reçu {$gap['received']}";
                     }

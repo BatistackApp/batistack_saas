@@ -26,7 +26,7 @@ class ExportFecJob implements ShouldQueue
         // Valider avant export
         $errors = $service->validate($this->startDate, $this->endDate);
 
-        if (!empty($errors)) {
+        if (! empty($errors)) {
             \Illuminate\Support\Facades\Log::warning('FEC Export Errors', $errors);
             throw new \RuntimeException('FEC export validation failed');
         }

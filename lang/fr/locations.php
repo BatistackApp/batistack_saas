@@ -6,6 +6,6 @@ return [
         'active' => 'Actif',
         'ended' => 'Rendu',
         'invoiced' => 'Facturé',
-        'cancelled' => 'Annulé'
+        'cancelled' => 'Annulé',
     ],
 ];

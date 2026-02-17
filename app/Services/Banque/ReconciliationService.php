@@ -9,7 +9,6 @@ use App\Models\Banque\BankTransaction;
 use App\Models\Banque\Payment;
 use App\Models\Commerce\Invoices;
 use DB;
-use Illuminate\Support\Facades\Auth;
 
 class ReconciliationService
 {
@@ -100,7 +99,7 @@ class ReconciliationService
         // Utilisation de whereHas pour filtrer sur la relation polymorphe/multiple des types de tiers
         $invoices = Invoices::where('tenants_id', $tenantId)
             ->whereIn('status', [InvoiceStatus::Validated, InvoiceStatus::PartiallyPaid])
-            ->whereHas('tiers.types', function($query) use ($tierTypeCode) {
+            ->whereHas('tiers.types', function ($query) use ($tierTypeCode) {
                 $query->where('type', $tierTypeCode);
             })
             ->with(['tiers'])
@@ -113,10 +112,11 @@ class ReconciliationService
                     'type' => ($tierTypeCode === 'client') ? 'sale' : 'purchase',
                     'invoice' => $invoice,
                     'score' => $score,
-                    'reason' => $this->getMatchingReason($score)
+                    'reason' => $this->getMatchingReason($score),
                 ];
             }
         }
+
         return $suggestions;
     }
 
@@ -144,7 +144,7 @@ class ReconciliationService
             }
 
             $tiersName = $invoice->tiers->name ?? ($invoice->supplier->name ?? ''); // Améliorer cette logique si supplier existe séparément
-            if ($score < 100 && !empty($tiersName) && str_contains($label, mb_strtolower($tiersName))) {
+            if ($score < 100 && ! empty($tiersName) && str_contains($label, mb_strtolower($tiersName))) {
                 $score += 20;
             }
         }

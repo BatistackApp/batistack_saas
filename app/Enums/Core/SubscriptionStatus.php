@@ -2,14 +2,14 @@
 
 namespace App\Enums\Core;
 
+use BackedEnum;
 use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
-use BackedEnum;
 
-enum SubscriptionStatus: string implements HasLabel, HasColor, HasIcon
+enum SubscriptionStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Active = 'active';
     case Paused = 'paused';
@@ -19,7 +19,7 @@ enum SubscriptionStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getColor(): string|array|null
     {
-        return match($this) {
+        return match ($this) {
             self::Active => 'success',
             self::Paused => 'warning',
             self::PastDue => 'danger',
@@ -30,7 +30,7 @@ enum SubscriptionStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getIcon(): string|BackedEnum|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Active => Heroicon::CheckCircle,
             self::Paused => Heroicon::PauseCircle,
             self::PastDue => Heroicon::ExclamationTriangle,
@@ -41,7 +41,7 @@ enum SubscriptionStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getLabel(): string|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Active => __('core.subscription_status.active'),
             self::Paused => __('core.subscription_status.paused'),
             self::PastDue => __('core.subscription_status.past_due'),

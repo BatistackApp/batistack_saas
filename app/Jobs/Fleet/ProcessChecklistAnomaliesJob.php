@@ -38,20 +38,20 @@ class ProcessChecklistAnomaliesJob implements ShouldQueue
         // 2. Construction du rapport de panne
         $report = "🚨 Anomalies signalées lors du contrôle ({$this->check->type}) :\n";
         foreach ($anomalies as $res) {
-            $report .= "- {$res->question->label} : " . ($res->anomaly_description ?: 'Pas de commentaire') . "\n";
+            $report .= "- {$res->question->label} : ".($res->anomaly_description ?: 'Pas de commentaire')."\n";
         }
 
         // 3. Création automatique d'une maintenance curative
         $maintenance = VehicleMaintenance::create([
-            'tenants_id'         => $this->check->tenants_id,
-            'vehicle_id'         => $this->check->vehicle_id,
-            'reported_by'        => $this->check->user_id,
-            'internal_reference' => 'AUTO-' . strtoupper(Str::random(6)),
-            'maintenance_type'   => MaintenanceType::Curative,
+            'tenants_id' => $this->check->tenants_id,
+            'vehicle_id' => $this->check->vehicle_id,
+            'reported_by' => $this->check->user_id,
+            'internal_reference' => 'AUTO-'.strtoupper(Str::random(6)),
+            'maintenance_type' => MaintenanceType::Curative,
             'maintenance_status' => MaintenanceStatus::Reported,
-            'description'        => $report,
-            'reported_at'        => now(),
-            'odometer_reading'   => $this->check->odometer_reading,
+            'description' => $report,
+            'reported_at' => now(),
+            'odometer_reading' => $this->check->odometer_reading,
         ]);
 
         // 4. Notification des gestionnaires de flotte du tenant

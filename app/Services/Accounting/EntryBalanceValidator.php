@@ -20,6 +20,7 @@ class EntryBalanceValidator
                 'balance' => "L'écriture n'est pas équilibrée. Débits: {$totalDebit} ≠ Crédits: {$totalCredit}",
             ]);
         }
+
         return true;
     }
 
@@ -34,12 +35,13 @@ class EntryBalanceValidator
 
         foreach ($entry->lines as $line) {
             if (bccomp($line->debit, '0', 4) < 0 || bccomp($line->credit, '0', 4) < 0) {
-                throw ValidationException::withMessages(['lines' => "Les montants doivent être positifs."]);
+                throw ValidationException::withMessages(['lines' => 'Les montants doivent être positifs.']);
             }
             if (bccomp($line->debit, '0', 4) > 0 && bccomp($line->credit, '0', 4) > 0) {
-                throw ValidationException::withMessages(['lines' => "Une ligne ne peut avoir simultanément un débit et un crédit."]);
+                throw ValidationException::withMessages(['lines' => 'Une ligne ne peut avoir simultanément un débit et un crédit.']);
             }
         }
+
         return true;
     }
 }

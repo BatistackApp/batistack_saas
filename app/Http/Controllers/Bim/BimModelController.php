@@ -16,6 +16,7 @@ class BimModelController extends Controller
     public function index(): JsonResponse
     {
         $models = BimModel::with('project')->latest()->paginate();
+
         return response()->json($models);
     }
 
@@ -50,6 +51,7 @@ class BimModelController extends Controller
     public function update(UpdateBimModelRequest $request, BimModel $bimModel): JsonResponse
     {
         $bimModel->update($request->validated());
+
         return response()->json($bimModel);
     }
 

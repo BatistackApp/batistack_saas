@@ -26,7 +26,7 @@ class StockShortageNotification extends Notification implements ShouldQueue
             ->subject("Alerte Stock GPAO : {$this->workOrder->reference}")
             ->line("Impossible de lancer la production pour l'OF {$this->workOrder->reference}.")
             ->line("Le composant suivant est en rupture : {$this->articleName}");
-            // ->action('Gérer les approvisionnements', url('/admin/gpao/work-orders/' . $this->workOrder->id));
+        // ->action('Gérer les approvisionnements', url('/admin/gpao/work-orders/' . $this->workOrder->id));
     }
 
     public function toArray($notifiable): array
@@ -35,7 +35,7 @@ class StockShortageNotification extends Notification implements ShouldQueue
             'work_order_id' => $this->workOrder->id,
             'reference' => $this->workOrder->reference,
             'article' => $this->articleName,
-            'message' => "Rupture de stock sur le composant {$this->articleName} pour l'OF {$this->workOrder->reference}."
+            'message' => "Rupture de stock sur le composant {$this->articleName} pour l'OF {$this->workOrder->reference}.",
         ];
     }
 }

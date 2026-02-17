@@ -4,7 +4,6 @@ namespace App\Observers\Commerce;
 
 use App\Models\Commerce\QuoteItem;
 use App\Services\Commerce\FinancialCalculatorService;
-use DB;
 
 class QuoteItemObserver
 {

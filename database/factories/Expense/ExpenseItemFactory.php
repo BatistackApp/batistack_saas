@@ -5,9 +5,7 @@ namespace Database\Factories\Expense;
 use App\Models\Expense\ExpenseCategory;
 use App\Models\Expense\ExpenseItem;
 use App\Models\Expense\ExpenseReport;
-use App\Models\Projects\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class ExpenseItemFactory extends Factory
 {

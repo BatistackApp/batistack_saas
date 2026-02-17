@@ -15,6 +15,7 @@ class EmployeeFactory extends Factory
     public function definition(): array
     {
         $type = $this->faker->randomElement(ContractType::cases());
+
         return [
             'tenants_id' => Tenants::factory(),
             'user_id' => User::factory(),

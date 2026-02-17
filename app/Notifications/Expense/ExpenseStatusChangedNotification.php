@@ -41,8 +41,8 @@ class ExpenseStatusChangedNotification extends Notification implements ShouldQue
         return [
             'report_id' => $this->report->id,
             'status' => $this->report->status->value,
-            'message' => "Votre note de frais est désormais : " . $this->report->status->getLabel(),
-            'reason' => $this->report->rejection_reason ?? null
+            'message' => 'Votre note de frais est désormais : '.$this->report->status->getLabel(),
+            'reason' => $this->report->rejection_reason ?? null,
         ];
     }
 }

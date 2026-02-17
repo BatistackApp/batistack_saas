@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum QuoteStatus: string implements HasLabel, HasColor, HasIcon
+enum QuoteStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Draft = 'draft';
     case Sent = 'sent';

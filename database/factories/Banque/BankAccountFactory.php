@@ -7,7 +7,6 @@ use App\Enums\Banque\BankSyncStatus;
 use App\Models\Banque\BankAccount;
 use App\Models\Core\Tenants;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class BankAccountFactory extends Factory
 {

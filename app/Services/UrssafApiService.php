@@ -14,18 +14,19 @@ class UrssafApiService
 
     /**
      * Vérifie l'authenticité d'une attestation de vigilance.
+     *
      * * @param string $siret Le SIRET de l'entreprise à vérifier
-     * @param string $verificationKey Le code de sécurité présent sur l'attestation
-     * @return bool
+     * @param  string  $verificationKey  Le code de sécurité présent sur l'attestation
      */
-    public function verifyAttestation(string $siret, string $verificationKey): bool {
+    public function verifyAttestation(string $siret, string $verificationKey): bool
+    {
         try {
             // L'API requiert une authentification via un Token OAuth2
             // Les credentials doivent être configurés dans config/services.php
             $response = Http::acceptJson()
                 ->get($this->baseUrl, [
                     'siret' => preg_replace('/\D/', '', $siret),
-                    'codeSecurite' => $verificationKey
+                    'codeSecurite' => $verificationKey,
                 ]);
 
             if ($response->successful()) {
@@ -33,10 +34,12 @@ class UrssafApiService
                 return $response->json('etat') === 'VALIDE';
             }
 
-            Log::warning("Échec de vérification URSSAF pour le SIRET {$siret} : " . $response->body());
+            Log::warning("Échec de vérification URSSAF pour le SIRET {$siret} : ".$response->body());
+
             return false;
         } catch (\Exception $e) {
-            Log::error("Erreur de connexion à l'API URSSAF : " . $e->getMessage());
+            Log::error("Erreur de connexion à l'API URSSAF : ".$e->getMessage());
+
             return false;
         }
     }

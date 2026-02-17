@@ -2,7 +2,6 @@
 
 namespace App\Models\Fleet;
 
-use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Observers\Fleet\VehicleCheckObserver;
 use App\Traits\HasTenant;

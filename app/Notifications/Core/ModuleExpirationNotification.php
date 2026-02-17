@@ -17,9 +17,7 @@ class ModuleExpirationNotification extends Notification implements ShouldQueue
         private Tenants $tenant,
         private ModuleCatalog $module,
         private string $type = 'expired', // 'warning' (7j avant), 'expired'
-    )
-    {
-    }
+    ) {}
 
     public function via($notifiable): array
     {
@@ -56,7 +54,7 @@ class ModuleExpirationNotification extends Notification implements ShouldQueue
 
     private function typeLabel(): string
     {
-        return match($this->type) {
+        return match ($this->type) {
             'warning' => 'expire bientôt',
             'expired' => 'a expiré',
         };

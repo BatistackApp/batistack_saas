@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum InterventionStatus: string implements HasLabel, HasColor, HasIcon
+enum InterventionStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Planned = 'planned';
     case InProgress = 'in_progress';
@@ -18,7 +18,7 @@ enum InterventionStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getColor(): string|array|null
     {
-        return match($this) {
+        return match ($this) {
             self::Planned => 'gray',
             self::InProgress => 'blue',
             self::Completed => 'green',
@@ -29,7 +29,7 @@ enum InterventionStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getIcon(): string|BackedEnum|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Planned => 'heroicon-o-clock',
             self::InProgress => 'heroicon-o-play',
             self::Completed => 'heroicon-o-check',
@@ -40,7 +40,7 @@ enum InterventionStatus: string implements HasLabel, HasColor, HasIcon
 
     public function getLabel(): string|Htmlable|null
     {
-        return match($this) {
+        return match ($this) {
             self::Planned => __('intervention.statuses.planned'),
             self::InProgress => __('intervention.statuses.in_progress'),
             self::Completed => __('intervention.statuses.completed'),

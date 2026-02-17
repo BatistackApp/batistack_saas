@@ -12,6 +12,7 @@ class VehicleRequest extends FormRequest
     public function rules(): array
     {
         $vehicleId = $this->route('vehicle')?->id;
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'internal_code' => [

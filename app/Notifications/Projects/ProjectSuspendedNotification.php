@@ -12,9 +12,7 @@ class ProjectSuspendedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private Project $project)
-    {
-    }
+    public function __construct(private Project $project) {}
 
     public function via($notifiable): array
     {
@@ -28,10 +26,10 @@ class ProjectSuspendedNotification extends Notification implements ShouldQueue
             ->subject("🚨 URGENT : Chantier Suspendu - {$this->project->code_project}")
             ->greeting("Bonjour {$notifiable->name},")
             ->line("Le chantier **{$this->project->name}** a été mis à l'arrêt (Statut Suspendu).")
-            ->line("---")
-            ->line("**Motif invoqué :**")
+            ->line('---')
+            ->line('**Motif invoqué :**')
             ->line($this->project->suspension_reason->getLabel()) // Utilise le label de l'Enum
-            ->line("---")
+            ->line('---')
             ->action('Consulter le Dossier Chantier', url("/admin/projects/{$this->project->id}"))
             ->line('Veuillez prendre les mesures nécessaires auprès des équipes et du client.');
     }

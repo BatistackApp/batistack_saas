@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\Projects\ProjectAmendmentStatus;
-use App\Enums\Projects\ProjectPhaseStatus;
 use App\Enums\Projects\ProjectStatus;
 use App\Enums\Projects\ProjectSuspensionReason;
 use App\Enums\Projects\ProjectUserRole;
@@ -19,15 +18,15 @@ use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
-describe("Service du module: Chantiers", function () {
+describe('Service du module: Chantiers', function () {
     it('bloque la transition vers InProgress si le client est suspendu', function () {
         $tier = Tiers::factory()->create(['status' => TierStatus::Suspended]);
         $project = Project::factory()->create(['customer_id' => $tier->id, 'status' => ProjectStatus::Study]);
 
-        $service = new ProjectManagementService();
+        $service = new ProjectManagementService;
 
-        expect(fn() => $service->transitionToStatus($project, ProjectStatus::InProgress))
-            ->toThrow(Exception::class, "Le client est suspendu ou non conforme");
+        expect(fn () => $service->transitionToStatus($project, ProjectStatus::InProgress))
+            ->toThrow(Exception::class, 'Le client est suspendu ou non conforme');
     });
 
     it('calcule un avancement physique pondéré par le budget des phases', function () {
@@ -37,17 +36,17 @@ describe("Service du module: Chantiers", function () {
         ProjectPhase::factory()->create([
             'project_id' => $project->id,
             'allocated_budget' => 100000,
-            'progress_percentage' => 50
+            'progress_percentage' => 50,
         ]);
 
         // Phase B: 10k€, 100% finie
         ProjectPhase::factory()->create([
             'project_id' => $project->id,
             'allocated_budget' => 10000,
-            'progress_percentage' => 100
+            'progress_percentage' => 100,
         ]);
 
-        $service = new ProjectBudgetService();
+        $service = new ProjectBudgetService;
         $summary = $service->getFinancialSummary($project);
 
         // (50k + 10k) / 110k = 54.54%
@@ -66,7 +65,7 @@ describe("Service du module: Chantiers", function () {
         ProjectAmendment::factory()->create([
             'project_id' => $project->id,
             'amount_ht' => 10000,
-            'status' => ProjectAmendmentStatus::Accepted
+            'status' => ProjectAmendmentStatus::Accepted,
         ]);
 
         // 3. Ajout d'une phase avec un RAD de 20k
@@ -74,12 +73,12 @@ describe("Service du module: Chantiers", function () {
             'project_id' => $project->id,
             'rad_labor' => 10000,
             'rad_materials' => 10000,
-            'allocated_budget' => 50000
+            'allocated_budget' => 50000,
         ]);
 
         // Simuler un coût réel de 30k (via mock ou injection future)
         // Pour ce test, calculateDetailedCosts renvoie 0, donc Coût Final = 0 + 20k = 20k
-        $service = new ProjectBudgetService();
+        $service = new ProjectBudgetService;
         $summary = $service->getFinancialSummary($project);
 
         // CA (110k) - CFP (20k) = 90k de marge prévisionnelle
@@ -149,14 +148,14 @@ describe("Service du module: Chantiers", function () {
         ]);
 
         $notification = new ProjectSuspendedNotification($project);
-        $data = $notification->toArray(new User());
+        $data = $notification->toArray(new User);
 
         expect($data)->toMatchArray([
             'project_id' => $project->id,
             'project_code' => 'CH-2026-TEST',
             'reason' => ProjectSuspensionReason::SupplyIssue->value,
             'reason_label' => ProjectSuspensionReason::SupplyIssue->getLabel(),
-            'message' => "Le chantier CH-2026-TEST est suspendu.",
+            'message' => 'Le chantier CH-2026-TEST est suspendu.',
         ]);
     });
 

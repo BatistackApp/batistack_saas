@@ -133,7 +133,7 @@ class FleetMaintenanceService
     {
         return $maintenance->update([
             'maintenance_status' => MaintenanceStatus::InProgress,
-            'started_at'         => now(),
+            'started_at' => now(),
         ]);
     }
 

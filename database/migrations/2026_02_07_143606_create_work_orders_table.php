@@ -9,7 +9,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('work_orders', function (Blueprint $table) {
@@ -25,7 +26,7 @@ return new class extends Migration {
             $table->decimal('quantity_produced', 12, 3)->default(0);
 
             $table->string('status')->default(\App\Enums\GPAO\WorkOrderStatus::Draft->value);
-            $table->integer('priority')->default(1)->comment("1: Normal, 2: Urgent");
+            $table->integer('priority')->default(1)->comment('1: Normal, 2: Urgent');
 
             $table->timestamp('planned_start_at')->nullable();
             $table->timestamp('planned_end_at')->nullable();

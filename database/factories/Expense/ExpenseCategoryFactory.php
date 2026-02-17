@@ -2,10 +2,8 @@
 
 namespace Database\Factories\Expense;
 
-use App\Models\Core\Tenants;
 use App\Models\Expense\ExpenseCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class ExpenseCategoryFactory extends Factory
 {

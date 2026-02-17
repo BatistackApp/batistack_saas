@@ -5,7 +5,6 @@ namespace App\Mail\Articles;
 use App\Models\Core\Tenants;
 use App\Models\User;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -31,6 +30,7 @@ class DormantStockReportMailable extends Mailable
     public function envelope(): Envelope
     {
         $month = now()->translatedFormat('F Y');
+
         return new Envelope(
             subject: "Accusé de réception de votre rapport de stock dormant - {$month}",
         );
@@ -47,7 +47,7 @@ class DormantStockReportMailable extends Mailable
                 'articles' => $this->articles,
                 'recipient_name' => mb_strtoupper($this->recipient->name),
                 'tenant_name' => $this->tenant->name,
-                'report_number' => 'BT-' . $this->tenant->id . '-' . now()->format('YmdHi'),
+                'report_number' => 'BT-'.$this->tenant->id.'-'.now()->format('YmdHi'),
                 'month_year' => now()->translatedFormat('F Y'),
                 'date_full' => now()->translatedFormat('d F Y à H\hi'),
                 'date' => now()->format('d/m/Y'),

@@ -25,7 +25,7 @@ class ReadyForControlNotification extends Notification implements ShouldQueue
             ->subject("OF Prêt pour Contrôle : {$this->workOrder->reference}")
             ->line("Toutes les étapes de fabrication pour l'OF {$this->workOrder->reference} sont terminées.")
             ->line("L'ordre de fabrication est désormais en attente de contrôle final et de clôture.");
-            // ->action('Vérifier l\'OF', url('/admin/gpao/work-orders/' . $this->workOrder->id));
+        // ->action('Vérifier l\'OF', url('/admin/gpao/work-orders/' . $this->workOrder->id));
     }
 
     public function toDatabase($notifiable): array
@@ -38,7 +38,7 @@ class ReadyForControlNotification extends Notification implements ShouldQueue
         return [
             'work_order_id' => $this->workOrder->id,
             'reference' => $this->workOrder->reference,
-            'message' => "L'OF {$this->workOrder->reference} est prêt pour le contrôle final."
+            'message' => "L'OF {$this->workOrder->reference} est prêt pour le contrôle final.",
         ];
     }
 }

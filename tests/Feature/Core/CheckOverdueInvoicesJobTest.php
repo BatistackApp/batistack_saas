@@ -19,10 +19,10 @@ describe('CheckOverdueInvoicesJob', function () {
             'quantity' => 1,
             'created_at' => now()->subDays(35),
             'type' => Tenants::class,
-            'user_id' => 1
+            'user_id' => 1,
         ]);
 
-        $job = new CheckOverdueInvoicesJob();
+        $job = new CheckOverdueInvoicesJob;
         $job->handle();
 
         $tenant->refresh();
@@ -42,7 +42,7 @@ describe('CheckOverdueInvoicesJob', function () {
             'created_at' => now()->subDays(35),
         ]);
 
-        $job = new CheckOverdueInvoicesJob();
+        $job = new CheckOverdueInvoicesJob;
         $job->handle();
 
         $tenant->refresh();
@@ -62,7 +62,7 @@ describe('CheckOverdueInvoicesJob', function () {
             'created_at' => now()->subDays(15),
         ]);
 
-        $job = new CheckOverdueInvoicesJob();
+        $job = new CheckOverdueInvoicesJob;
         $job->handle();
 
         $tenant->refresh();

@@ -11,7 +11,6 @@ enum InspectionType: string implements HasLabel
     case VGP = 'vgp';
     case Tachograph = 'chronotachygraphe';
 
-
     public function getLabel(): string|Htmlable|null
     {
         return match ($this) {

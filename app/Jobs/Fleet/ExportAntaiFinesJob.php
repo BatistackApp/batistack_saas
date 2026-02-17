@@ -30,14 +30,14 @@ class ExportAntaiFinesJob implements ShouldQueue
 
                     Log::info("Export ANTAI automatique réussi pour le Tenant #{$tenant->id}", [
                         'count' => $fines->count(),
-                        'file' => $filePath
+                        'file' => $filePath,
                     ]);
 
                     // Note : On pourrait ajouter ici l'envoi d'une notification
                     // au gestionnaire pour l'informer que le fichier est prêt.
 
                 } catch (\Exception $e) {
-                    Log::error("Échec de l'export ANTAI automatique pour le Tenant #{$tenant->id}: " . $e->getMessage());
+                    Log::error("Échec de l'export ANTAI automatique pour le Tenant #{$tenant->id}: ".$e->getMessage());
                 }
             }
         });

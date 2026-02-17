@@ -11,12 +11,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProjectImputation extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
     protected function casts(): array
     {
         return [
-            'amount' => 'decimal:2'
+            'amount' => 'decimal:2',
         ];
     }
 

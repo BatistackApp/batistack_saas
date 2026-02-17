@@ -12,7 +12,6 @@ enum ProjectUserRole: string implements HasLabel
     case Contractor = 'contractor';
     case Other = 'other';
 
-
     public function getLabel(): string|Htmlable|null
     {
         return match ($this) {

@@ -6,6 +6,6 @@ return [
         'in_progress' => 'En cours',
         'completed' => 'Terminé',
         'cancelled' => 'Annulé',
-        'invoiced' => 'Facturé'
-    ]
+        'invoiced' => 'Facturé',
+    ],
 ];

@@ -24,7 +24,7 @@ class KpiDashboardController extends Controller
             'net_cash' => [
                 'value' => $this->aggregationService->getNetCash($tenantId),
                 'label' => 'Trésorerie Nette',
-                'trend' => '+5.2%' // À calculer dynamiquement via snapshots
+                'trend' => '+5.2%', // À calculer dynamiquement via snapshots
             ],
             // On pourrait ajouter d'autres calculs ici
         ]);

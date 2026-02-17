@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum InvoiceStatus: string implements HasLabel, HasColor, HasIcon
+enum InvoiceStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Draft = 'draft';
     case Validated = 'validated';

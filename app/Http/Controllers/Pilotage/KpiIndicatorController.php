@@ -50,7 +50,7 @@ class KpiIndicatorController extends Controller
         return response()->json([
             'indicator' => $indicator->name,
             'unit' => $indicator->unit,
-            'data' => $snapshots
+            'data' => $snapshots,
         ]);
     }
 }

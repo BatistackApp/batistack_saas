@@ -4,7 +4,6 @@ namespace App\Models\HR;
 
 use App\Enums\HR\AbsenceRequestStatus;
 use App\Enums\HR\AbsenceType;
-use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Observers\HR\AbsenceRequestObserver;
 use App\Traits\HasTenant;
@@ -17,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([AbsenceRequestObserver::class])]
 class AbsenceRequest extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
 
     protected $fillable = [
         'tenants_id',

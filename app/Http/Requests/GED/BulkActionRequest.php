@@ -12,14 +12,14 @@ class BulkActionRequest extends FormRequest
         return [
             'document_ids' => 'required|array',
             'document_ids.*' => [
-                Rule::exists('documents', 'id')->where('tenants_id', $this->user()->tenants_id)
+                Rule::exists('documents', 'id')->where('tenants_id', $this->user()->tenants_id),
             ],
             'action' => 'required|in:move,delete,archive',
             'target_folder_id' => [
                 'required_if:action,move',
                 'nullable',
-                Rule::exists('folders', 'id')->where('tenants_id', $this->user()->tenants_id)
-            ]
+                Rule::exists('folders', 'id')->where('tenants_id', $this->user()->tenants_id),
+            ],
         ];
     }
 

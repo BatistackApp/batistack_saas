@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class TierDocumentRequirement extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
     protected function casts(): array

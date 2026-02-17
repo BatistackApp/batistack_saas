@@ -11,6 +11,7 @@ class ArticleRequest extends FormRequest
     public function rules(): array
     {
         $articleId = $this->route('article')?->id;
+
         return [
             'tenants_id' => ['required', 'exists:tenants,id'],
             'category_id' => ['nullable', 'exists:article_categories,id'],
@@ -31,7 +32,7 @@ class ArticleRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:100',
-                Rule::unique('articles', 'qr_code_base')->ignore($articleId)
+                Rule::unique('articles', 'qr_code_base')->ignore($articleId),
             ],
 
             // Propriétés physiques (Recommandation ProBTP)
@@ -62,6 +63,7 @@ class ArticleRequest extends FormRequest
         if ($this->isMethod('POST')) {
             return $this->user()->can('inventory.manage');
         }
+
         // Pour la mise à jour
         return $this->user()->can('inventory.manage') && $this->route('article')->tenants_id === $this->user()->tenants_id;
     }

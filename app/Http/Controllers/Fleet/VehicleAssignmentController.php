@@ -35,6 +35,7 @@ class VehicleAssignmentController extends Controller
     public function release(VehicleAssignment $assignment): JsonResponse
     {
         $assignment->update(['ended_at' => now()]);
+
         return response()->json(['message' => 'Véhicule libéré.']);
     }
 }

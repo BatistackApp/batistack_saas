@@ -16,6 +16,7 @@ class InterventionController extends Controller
     public function __construct(
         protected InterventionWorkflowService $workflowService
     ) {}
+
     public function index(): JsonResponse
     {
         $interventions = Intervention::with(['customer', 'project'])
@@ -54,7 +55,7 @@ class InterventionController extends Controller
     {
         if ($intervention->status !== InterventionStatus::Planned) {
             throw new InterventionModuleException(
-                message: "Impossible de supprimer une intervention en cours.",
+                message: 'Impossible de supprimer une intervention en cours.',
                 code: 422
             );
         }
@@ -71,6 +72,7 @@ class InterventionController extends Controller
     {
         try {
             $this->workflowService->start($intervention);
+
             return response()->json(['message' => 'Intervention démarrée.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
@@ -84,6 +86,7 @@ class InterventionController extends Controller
     {
         try {
             $this->workflowService->complete($intervention);
+
             return response()->json(['message' => 'Intervention clôturée avec succès.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);

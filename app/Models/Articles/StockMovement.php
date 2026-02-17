@@ -4,7 +4,6 @@ namespace App\Models\Articles;
 
 use App\Enums\Articles\AdjustementType;
 use App\Enums\Articles\StockMovementType;
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use App\Models\User;
@@ -19,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StockMovement extends Model
 {
     use HasFactory, HasTenant;
+
     protected $guarded = [];
 
     protected function casts(): array

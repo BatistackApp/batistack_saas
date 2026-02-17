@@ -20,10 +20,11 @@ class UpdateInterventionRequest extends FormRequest
     public function authorize(): bool
     {
         $intervention = $this->route('intervention');
+
         // On ne peut modifier l'en-tête que si l'intervention n'est pas encore terminée
         return $intervention && in_array($intervention->status, [
-                InterventionStatus::Planned,
-                InterventionStatus::InProgress
-            ]);
+            InterventionStatus::Planned,
+            InterventionStatus::InProgress,
+        ]);
     }
 }

@@ -6,7 +6,6 @@ use App\Enums\Projects\ProjectAmendmentStatus;
 use App\Enums\Projects\ProjectStatus;
 use App\Enums\Projects\ProjectSuspensionReason;
 use App\Models\Commerce\Invoices;
-use App\Models\Core\Tenants;
 use App\Models\Tiers\Tiers;
 use App\Models\User;
 use App\Observers\Projects\ProjectObserver;
@@ -22,7 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([ProjectObserver::class])]
 class Project extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
 
     protected $guarded = [];
 
@@ -82,13 +81,14 @@ class Project extends Model
         $amendmentsAmount = $this->amendments()
             ->where('status', ProjectAmendmentStatus::Accepted)
             ->sum('amount_ht');
-        return (float)$this->initial_budget_ht + $amendmentsAmount;
+
+        return (float) $this->initial_budget_ht + $amendmentsAmount;
     }
 
     // Accesseur pour le Budget Interne Total (Somme des déboursés)
     public function totalInternalBudget(): float
     {
-        return (float)($this->budget_labor + $this->budget_materials + $this->budget_subcontracting + $this->budget_site_overheads);
+        return (float) ($this->budget_labor + $this->budget_materials + $this->budget_subcontracting + $this->budget_site_overheads);
     }
 
     /**
@@ -97,10 +97,11 @@ class Project extends Model
     public function getPhasesBudgetIntegrity(): array
     {
         $allocated = $this->phases()->sum('allocated_budget');
+
         return [
-            'allocated' => (float)$allocated,
-            'ceiling' => (float)$this->allocated_phases_ceiling_ht,
-            'remaining' => (float)($this->allocated_phases_ceiling_ht - $allocated)
+            'allocated' => (float) $allocated,
+            'ceiling' => (float) $this->allocated_phases_ceiling_ht,
+            'remaining' => (float) ($this->allocated_phases_ceiling_ht - $allocated),
         ];
     }
 }

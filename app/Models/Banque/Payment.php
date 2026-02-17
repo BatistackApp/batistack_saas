@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Payment extends Model
 {
     use HasFactory, HasTenant;
+
     protected $guarded = [];
 
     public function bankTransaction(): BelongsTo

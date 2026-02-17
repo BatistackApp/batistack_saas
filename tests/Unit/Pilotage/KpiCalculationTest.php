@@ -46,13 +46,13 @@ test('il calcule correctement la marge brute d\'un projet avec bcmath', function
 });
 
 test('le gestionnaire d\'alertes détecte correctement les dépassements de seuils', function () {
-    $alertService = new AlertManagerService();
+    $alertService = new AlertManagerService;
 
     // Création d'un snapshot à 50.00
     $indicator = new KpiIndicator(['id' => 1, 'name' => 'Test KPI']);
     $snapshot = new KpiSnapshot([
         'kpi_indicator_id' => 1,
-        'value' => '50.00'
+        'value' => '50.00',
     ]);
     $snapshot->setRelation('indicator', $indicator);
 
@@ -60,7 +60,7 @@ test('le gestionnaire d\'alertes détecte correctement les dépassements de seui
     $thresholdOk = new \App\Models\Pilotage\KpiThresholds([
         'min_value' => 40,
         'max_value' => 60,
-        'severity' => ThresholdSeverity::CRITICAL
+        'severity' => ThresholdSeverity::CRITICAL,
     ]);
 
     // Nous mockons la méthode sendAlert pour vérifier si elle est appelée
@@ -73,7 +73,7 @@ test('le gestionnaire d\'alertes détecte correctement les dépassements de seui
     $thresholdLow = new KpiThresholds([
         'min_value' => 55,
         'severity' => ThresholdSeverity::WARNING,
-        'is_notifiable' => true
+        'is_notifiable' => true,
     ]);
 
     // On s'attend à ce que l'alerte soit déclenchée pour le seuil bas

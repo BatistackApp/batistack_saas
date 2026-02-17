@@ -28,7 +28,7 @@ beforeEach(function () {
     $this->vehicle = Vehicle::factory()->create([
         'tenants_id' => $this->tenant->id,
         'type' => VehicleType::Truck,
-        'current_odometer' => 50000
+        'current_odometer' => 50000,
     ]);
 
     Notification::fake();
@@ -37,14 +37,13 @@ beforeEach(function () {
 /**
  * --- TESTS DES PLANS DE MAINTENANCE ---
  */
-
 it('peut créer un plan de maintenance pour un type de véhicule', function () {
     $payload = [
         'name' => 'Révision 50 000 km',
         'vehicle_type' => VehicleType::Truck->value,
         'interval_km' => 50000,
         'operations' => ['Vidange moteur', 'Remplacement filtre air'],
-        'tenants_id' => $this->tenant->id
+        'tenants_id' => $this->tenant->id,
     ];
 
     $response = $this->postJson('/api/fleet/maintenance-plans', $payload);
@@ -52,21 +51,20 @@ it('peut créer un plan de maintenance pour un type de véhicule', function () {
     $response->assertStatus(201);
     $this->assertDatabaseHas('vehicle_maintenance_plans', [
         'name' => 'Révision 50 000 km',
-        'interval_km' => 50000
+        'interval_km' => 50000,
     ]);
 });
 
 /**
  * --- TESTS DU CYCLE DE VIE DES INTERVENTIONS ---
  */
-
 it('peut signaler une nouvelle panne sur un véhicule', function () {
     $payload = [
         'vehicle_id' => $this->vehicle->id,
         'maintenance_type' => MaintenanceType::Curative->value,
         'description' => 'Fuite hydraulique sur le bras arrière',
         'odometer_reading' => 50100,
-        'tenants_id' => $this->tenant->id
+        'tenants_id' => $this->tenant->id,
     ];
 
     $response = $this->postJson('/api/fleet/maintenances', $payload);
@@ -77,7 +75,7 @@ it('peut signaler une nouvelle panne sur un véhicule', function () {
     $this->assertDatabaseHas('vehicle_maintenances', [
         'vehicle_id' => $this->vehicle->id,
         'description' => 'Fuite hydraulique sur le bras arrière',
-        'maintenance_status' => MaintenanceStatus::Reported->value
+        'maintenance_status' => MaintenanceStatus::Reported->value,
     ]);
 });
 
@@ -125,7 +123,7 @@ it('clôture une maintenance et calcule le temps d\'immobilisation', function ()
 
     $updated = $maintenance->fresh();
     expect($updated->maintenance_status)->toBe(MaintenanceStatus::Completed)
-        ->and((float)$updated->total_cost)->toBe(350.50)
+        ->and((float) $updated->total_cost)->toBe(350.50)
         ->and($updated->downtime_hours)->toBeGreaterThanOrEqual(5);
 });
 
@@ -153,7 +151,7 @@ it('clôture une maintenance et met à jour les coûts', function () {
     $this->assertDatabaseHas('vehicle_maintenances', [
         'id' => $maintenance->id,
         'maintenance_status' => MaintenanceStatus::Completed->value,
-        'cost_parts' => 150
+        'cost_parts' => 150,
     ]);
 });
 
@@ -165,7 +163,7 @@ it('isole les maintenances par tenant (Sécurité)', function () {
         return VehicleMaintenance::factory()->create([
             'tenants_id' => $otherTenant->id,
             'vehicle_id' => Vehicle::factory()->create(['tenants_id' => $otherTenant->id])->id,
-            'internal_reference' => 'SECRET-MTN'
+            'internal_reference' => 'SECRET-MTN',
         ]);
     });
 

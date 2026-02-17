@@ -13,10 +13,10 @@ class UpdateExpenseStatusRequest extends FormRequest
         return [
             'status' => ['required', Rule::enum(ExpenseStatus::class)],
             'reason' => [
-                'required_if:status,' . ExpenseStatus::Rejected->value,
+                'required_if:status,'.ExpenseStatus::Rejected->value,
                 'nullable',
                 'string',
-                'max:1000'
+                'max:1000',
             ],
         ];
     }

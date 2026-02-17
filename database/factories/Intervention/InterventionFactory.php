@@ -20,8 +20,8 @@ class InterventionFactory extends Factory
     public function definition(): array
     {
         return [
-            'reference' => 'INT-' . $this->faker->unique()->numberBetween(1000, 9999),
-            'label' => 'Intervention ' . $this->faker->word(),
+            'reference' => 'INT-'.$this->faker->unique()->numberBetween(1000, 9999),
+            'label' => 'Intervention '.$this->faker->word(),
             'description' => $this->faker->text(),
             'planned_at' => Carbon::now(),
             'status' => $this->faker->randomElement(InterventionStatus::cases()),

@@ -13,7 +13,6 @@ enum InvoiceType: string implements HasLabel
     case CreditNote = 'avoir';     // Avoir
     case Normal = 'normale';     // Facture normale
 
-
     public function getLabel(): string|Htmlable|null
     {
         return match ($this) {

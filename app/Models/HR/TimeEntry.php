@@ -3,7 +3,6 @@
 namespace App\Models\HR;
 
 use App\Enums\HR\TimeEntryStatus;
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Projects\ProjectPhase;
 use App\Models\User;
@@ -19,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class TimeEntry extends Model
 {
     use HasFactory, HasTenant;
+
     protected $guarded = [];
 
     public function employee(): BelongsTo

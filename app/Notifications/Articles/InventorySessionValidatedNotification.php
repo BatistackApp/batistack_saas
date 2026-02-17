@@ -12,9 +12,7 @@ class InventorySessionValidatedNotification extends Notification implements Shou
 {
     use Queueable;
 
-    public function __construct(protected InventorySession $session)
-    {
-    }
+    public function __construct(protected InventorySession $session) {}
 
     public function via($notifiable): array
     {
@@ -24,12 +22,13 @@ class InventorySessionValidatedNotification extends Notification implements Shou
     public function toMail($notifiable): MailMessage
     {
         $warehouseName = $this->session->warehouse->name;
+
         return (new MailMessage)
             ->subject("✅ Inventaire Validé : Dépôt {$warehouseName}")
             ->greeting("Bonjour {$notifiable->name},")
             ->line("La session d'inventaire **{$this->session->reference}** a été validée.")
             ->line("Les stocks du dépôt **{$warehouseName}** ont été régularisés en fonction des comptages physiques.")
-            //->action('Consulter le rapport d\'écarts', url("/admin/inventory/sessions/{$this->session->id}"))
+            // ->action('Consulter le rapport d\'écarts', url("/admin/inventory/sessions/{$this->session->id}"))
             ->line('Le dépôt est désormais dégelé et prêt pour les opérations quotidiennes.');
     }
 

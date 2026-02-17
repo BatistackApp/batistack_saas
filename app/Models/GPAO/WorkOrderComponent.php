@@ -10,9 +10,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class WorkOrderComponent extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'work_order_id', 'article_id', 'label',
-        'quantity_planned', 'quantity_consumed', 'unit_cost_ht'
+        'quantity_planned', 'quantity_consumed', 'unit_cost_ht',
     ];
 
     protected function casts(): array

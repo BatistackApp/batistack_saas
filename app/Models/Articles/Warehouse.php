@@ -2,7 +2,6 @@
 
 namespace App\Models\Articles;
 
-use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,13 +12,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Warehouse extends Model
 {
     use HasFactory, HasTenant;
+
     protected $guarded = [];
 
-    public function responsibleUser(): BelongsTo {
+    public function responsibleUser(): BelongsTo
+    {
         return $this->belongsTo(User::class, 'responsible_user_id');
     }
 
-    public function articles(): BelongsToMany {
+    public function articles(): BelongsToMany
+    {
         return $this->belongsToMany(Article::class, 'article_warehouse')
             ->withPivot('quantity', 'bin_location');
     }

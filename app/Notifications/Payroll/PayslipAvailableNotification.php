@@ -25,11 +25,12 @@ class PayslipAvailableNotification extends Notification implements ShouldQueue
 
         return (new MailMessage)
             ->subject("Votre bulletin de paie de {$month} est disponible")
-            ->greeting("Bonjour " . $notifiable->name)
+            ->greeting('Bonjour '.$notifiable->name)
             ->line("Le bulletin de salaire pour la période de {$month} a été validé et est désormais consultable dans votre espace salarié.")
             // ->action('Consulter mon bulletin', url('/my-payslips'))
-            ->line("Ceci est un document important, nous vous conseillons de le télécharger et de le conserver.");
+            ->line('Ceci est un document important, nous vous conseillons de le télécharger et de le conserver.');
     }
+
     public function toArray($notifiable): array
     {
         return [

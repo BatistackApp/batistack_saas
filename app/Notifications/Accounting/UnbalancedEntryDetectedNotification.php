@@ -28,7 +28,7 @@ class UnbalancedEntryDetectedNotification extends Notification implements Should
         return (new MailMessage)
             ->subject("⚠️ Écriture déséquilibrée détectée : {$this->entry->reference_number}")
             ->greeting('Attention,')
-            ->line("Une écriture déséquilibrée a été créée automatiquement.")
+            ->line('Une écriture déséquilibrée a été créée automatiquement.')
             ->line("Référence : {$this->entry->reference_number}")
             ->line("Débits : {$this->totalDebit} €")
             ->line("Crédits : {$this->totalCredit} €")

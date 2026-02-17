@@ -16,7 +16,7 @@ describe('StripeWebhook', function () {
                     'id' => 'sub_test_webhook',
                     'status' => 'active',
                     'customer' => $tenant->stripe_id,
-                ],],
+                ], ],
         ], [
             'Stripe-Signature' => 'valid_signature',
         ]);

@@ -53,6 +53,7 @@ class DocumentManagementService
     protected function getModelName(Model $model): string
     {
         $className = class_basename($model);
+
         return strtolower($className) === 'invoices' ? 'invoice' : strtolower($className);
     }
 

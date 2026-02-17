@@ -5,7 +5,6 @@ namespace Database\Factories\Fleet;
 use App\Models\Fleet\Vehicle;
 use App\Models\Fleet\VehicleConsumption;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class VehicleConsumptionFactory extends Factory
 {

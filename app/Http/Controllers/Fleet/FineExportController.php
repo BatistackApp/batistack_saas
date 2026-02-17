@@ -28,7 +28,7 @@ class FineExportController extends Controller
 
         return response()->json([
             'count' => $fines->count(),
-            'fines' => $fines
+            'fines' => $fines,
         ]);
     }
 
@@ -55,6 +55,6 @@ class FineExportController extends Controller
         $filePath = $this->antaiService->generateCsv($fines, $tenantId);
 
         // On retourne le fichier en téléchargement direct
-        return Storage::disk('public')->download($filePath, 'export_antai_' . now()->format('Y-m-d') . '.csv');
+        return Storage::disk('public')->download($filePath, 'export_antai_'.now()->format('Y-m-d').'.csv');
     }
 }

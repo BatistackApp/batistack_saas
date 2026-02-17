@@ -38,7 +38,7 @@ class ProcessPayrollImputationJob implements ShouldQueue
 
             $employee = Employee::find($cost->employee_id);
 
-            if (!$employee) {
+            if (! $employee) {
                 continue;
             }
 
@@ -81,7 +81,7 @@ class ProcessPayrollImputationJob implements ShouldQueue
 
                 $project = Project::find($chantierHour->project_id);
                 if ($project) {
-                    $budgetService = new ProjectBudgetService();
+                    $budgetService = new ProjectBudgetService;
                     $budgetService->getFinancialSummary($project);
                 }
             }

@@ -2,8 +2,4 @@
 
 namespace App\Exceptions\Payroll;
 
-use Exception;
-
-class IntegrationException extends PayrollModuleException
-{
-}
+class IntegrationException extends PayrollModuleException {}

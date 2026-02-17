@@ -28,7 +28,7 @@ beforeEach(function () {
     $this->vehicle = Vehicle::factory()->create([
         'tenants_id' => $this->tenant->id,
         'type' => VehicleType::Truck,
-        'current_odometer' => 10000
+        'current_odometer' => 10000,
     ]);
 
     $this->actingAs($this->user);
@@ -46,15 +46,15 @@ it('peut créer un template de checklist avec ses questions en une seule fois', 
                 'label' => 'Vérification des niveaux',
                 'response_type' => 'boolean',
                 'is_mandatory' => true,
-                'sort_order' => 1
+                'sort_order' => 1,
             ],
             [
                 'label' => 'État de la carrosserie',
                 'response_type' => 'boolean',
                 'is_mandatory' => true,
-                'sort_order' => 2
-            ]
-        ]
+                'sort_order' => 2,
+            ],
+        ],
     ];
 
     $response = $this->postJson(route('fleet.checklist-templates.store'), $payload);
@@ -63,7 +63,7 @@ it('peut créer un template de checklist avec ses questions en une seule fois', 
 
     $this->assertDatabaseHas('vehicle_checklist_templates', [
         'name' => 'Checklist Quotidienne PL',
-        'tenants_id' => $this->tenant->id
+        'tenants_id' => $this->tenant->id,
     ]);
 
     $this->assertDatabaseCount('vehicle_checklist_questions', 2);
@@ -72,13 +72,12 @@ it('peut créer un template de checklist avec ses questions en une seule fois', 
 /**
  * --- TESTS DES CONTRÔLES (OPÉRATIONNEL / MOBILE) ---
  */
-
 it('récupère le bon template en fonction du type de véhicule', function () {
     // On crée un template spécifique pour les Camions
     $template = VehicleChecklistTemplate::factory()->create([
         'tenants_id' => $this->tenant->id,
         'vehicle_type' => VehicleType::Truck,
-        'is_active' => true
+        'is_active' => true,
     ]);
 
     // On ajoute une question
@@ -94,7 +93,7 @@ it('récupère le bon template en fonction du type de véhicule', function () {
 it('enregistre un contrôle de prise de poste et met à jour les kilomètres du véhicule', function () {
     $template = VehicleChecklistTemplate::factory()->create([
         'tenants_id' => $this->tenant->id,
-        'vehicle_type' => VehicleType::Truck
+        'vehicle_type' => VehicleType::Truck,
     ]);
 
     $question = VehicleChecklistQuestion::factory()->create(['template_id' => $template->id]);
@@ -102,7 +101,7 @@ it('enregistre un contrôle de prise de poste et met à jour les kilomètres du 
     $assignment = VehicleAssignment::factory()->create([
         'tenants_id' => $this->tenant->id,
         'vehicle_id' => $this->vehicle->id,
-        'user_id' => $this->user->id
+        'user_id' => $this->user->id,
     ]);
 
     $payload = [
@@ -114,9 +113,9 @@ it('enregistre un contrôle de prise de poste et met à jour les kilomètres du 
             [
                 'question_id' => $question->id,
                 'value' => 'ok',
-                'anomaly_description' => null
-            ]
-        ]
+                'anomaly_description' => null,
+            ],
+        ],
     ];
 
     $response = $this->postJson(route('fleet.checks.store'), $payload);
@@ -127,7 +126,7 @@ it('enregistre un contrôle de prise de poste et met à jour les kilomètres du 
     $this->assertDatabaseHas('vehicle_checks', [
         'vehicle_id' => $this->vehicle->id,
         'odometer_reading' => 10250,
-        'has_anomalie' => false
+        'has_anomalie' => false,
     ]);
 
     // 2. Vérifie la mise à jour automatique des km du véhicule
@@ -146,9 +145,9 @@ it('détecte automatiquement une anomalie si une réponse est "ko"', function ()
             [
                 'question_id' => $question->id,
                 'value' => 'ko',
-                'anomaly_description' => 'Feu avant droit cassé'
-            ]
-        ]
+                'anomaly_description' => 'Feu avant droit cassé',
+            ],
+        ],
     ];
 
     $response = $this->postJson(route('fleet.checks.store'), $payload);
@@ -158,14 +157,13 @@ it('détecte automatiquement une anomalie si une réponse est "ko"', function ()
     // Le flag has_anomalie doit être à true
     $this->assertDatabaseHas('vehicle_checks', [
         'id' => $response->json('check.id'),
-        'has_anomalie' => true
+        'has_anomalie' => true,
     ]);
 });
 
 /**
  * --- TESTS DE SÉCURITÉ SAAS ---
  */
-
 it('interdit de voir les rapports de contrôle d\'un autre tenant', function () {
     $otherTenant = Tenants::factory()->create();
 

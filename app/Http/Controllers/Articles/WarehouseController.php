@@ -17,18 +17,21 @@ class WarehouseController extends Controller
     public function store(WarehouseRequest $request): JsonResponse
     {
         $warehouse = Warehouse::create($request->validated());
+
         return response()->json($warehouse, 201);
     }
 
     public function update(WarehouseRequest $request, Warehouse $warehouse): JsonResponse
     {
         $warehouse->update($request->validated());
+
         return response()->json($warehouse);
     }
 
     public function destroy(Warehouse $warehouse): JsonResponse
     {
         $warehouse->delete();
+
         return response()->json(null, 204);
     }
 }

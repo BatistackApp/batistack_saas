@@ -6,7 +6,7 @@ use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum MaintenanceStatus: string implements HasLabel, HasColor
+enum MaintenanceStatus: string implements HasColor, HasLabel
 {
     case Reported = 'reported';
     case Scheduled = 'scheduled';

@@ -13,6 +13,7 @@ class RentalItemController extends Controller
     public function store(StoreRentalItemRequest $request, RentalContract $rentalContract): JsonResponse
     {
         $item = $rentalContract->items()->create($request->validated());
+
         return response()->json($item, 201);
     }
 
@@ -23,6 +24,7 @@ class RentalItemController extends Controller
         }
 
         $rentalItem->delete();
+
         return response()->json(null, 204);
     }
 }

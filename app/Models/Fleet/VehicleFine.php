@@ -4,7 +4,6 @@ namespace App\Models\Fleet;
 
 use App\Enums\Fleet\DesignationStatus;
 use App\Enums\Fleet\FinesStatus;
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\User;
 use App\Observers\Fleet\VehicleFineObserver;
@@ -18,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([VehicleFineObserver::class])]
 class VehicleFine extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
 
     protected $fillable = [
         'tenants_id',

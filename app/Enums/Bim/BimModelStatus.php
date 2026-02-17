@@ -6,7 +6,7 @@ use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum BimModelStatus: string implements HasLabel, HasColor
+enum BimModelStatus: string implements HasColor, HasLabel
 {
     case UPLOADING = 'uploading';   // Transfert vers S3
     case PROCESSING = 'processing'; // Extraction des métadonnées

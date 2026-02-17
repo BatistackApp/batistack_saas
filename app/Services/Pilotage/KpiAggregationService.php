@@ -33,11 +33,13 @@ class KpiAggregationService
             ->whereRaw('chart_of_account_id IN (SELECT id FROM chart_of_accounts WHERE account_number LIKE "6%")')
             ->sum('debit');
 
-        if (bccomp((string)$revenue, '0', 4) === 0) return '0';
+        if (bccomp((string) $revenue, '0', 4) === 0) {
+            return '0';
+        }
 
         // Formule : ((Ventes - Coûts) / Ventes) * 100
-        $margin = bcsub((string)$revenue, (string)$costs, 4);
-        $ratio = bcdiv($margin, (string)$revenue, 4);
+        $margin = bcsub((string) $revenue, (string) $costs, 4);
+        $ratio = bcdiv($margin, (string) $revenue, 4);
 
         return bcmul($ratio, '100', 2);
     }

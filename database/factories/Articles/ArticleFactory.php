@@ -9,7 +9,6 @@ use App\Models\Articles\ArticleCategory;
 use App\Models\Core\Tenants;
 use App\Models\Tiers\Tiers;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class ArticleFactory extends Factory
 {
@@ -21,7 +20,7 @@ class ArticleFactory extends Factory
             'tenants_id' => Tenants::factory(),
             'category_id' => ArticleCategory::factory(),
             'default_supplier_id' => Tiers::factory(),
-            'sku' => 'ART-' . $this->faker->unique()->bothify('??-####'),
+            'sku' => 'ART-'.$this->faker->unique()->bothify('??-####'),
             'name' => $this->faker->words(3, true),
             'description' => $this->faker->sentence(),
             'unit' => $this->faker->randomElement(ArticleUnit::cases()),

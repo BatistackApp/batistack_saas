@@ -52,7 +52,7 @@ class PayrollCalculationService
             $payslip->update([
                 'gross_amount' => $gross,
                 'net_to_pay' => $this->calculateNetToPay($payslip),
-                'status' => PayrollStatus::Draft
+                'status' => PayrollStatus::Draft,
             ]);
         });
     }
@@ -122,6 +122,7 @@ class PayrollCalculationService
     {
         $gains = $payslip->lines()->sum('amount_gain');
         $deductions = $payslip->lines()->sum('amount_deduction');
+
         return round($gains - $deductions, 2);
     }
 }

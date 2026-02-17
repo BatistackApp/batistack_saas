@@ -25,18 +25,18 @@ class FleetServiceProvider extends ServiceProvider
                 ->dailyAt('03:00')
                 ->onOneServer();
 
-            $schedule->job(new MonthlyFleetImputationJob())
+            $schedule->job(new MonthlyFleetImputationJob)
                 ->monthlyOn(1, '04:00');
 
-            $schedule->job(new ExportAntaiFinesJob())
+            $schedule->job(new ExportAntaiFinesJob)
                 ->weeklyOn(1, '05:00')
                 ->onOneServer();
 
-            $schedule->job(new ScanVehiclesForMaintenanceJob())
+            $schedule->job(new ScanVehiclesForMaintenanceJob)
                 ->dailyAt('04:30')
                 ->onOneServer();
 
-            $schedule->job(new AuditDriverComplianceJob())
+            $schedule->job(new AuditDriverComplianceJob)
                 ->dailyAt('03:00')
                 ->onOneServer();
 

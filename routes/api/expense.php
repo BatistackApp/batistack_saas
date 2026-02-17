@@ -23,4 +23,3 @@ Route::prefix('expense')->group(function () {
             ->name('expense-reports.update-status');
     });
 });
-

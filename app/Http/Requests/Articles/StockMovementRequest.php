@@ -32,17 +32,17 @@ class StockMovementRequest extends FormRequest
                 Rule::requiredIf(fn () => $isSerialized && $this->type === StockMovementType::Entry->value),
                 'nullable',
                 'string',
-                'max:255'
+                'max:255',
             ],
             'serial_number_id' => [
                 Rule::requiredIf(fn () => $isSerialized && $this->type !== StockMovementType::Entry->value),
                 'nullable',
-                'exists:article_serial_numbers,id'
+                'exists:article_serial_numbers,id',
             ],
             'adjustment_type' => [
                 Rule::requiredIf(fn () => $this->type === StockMovementType::Adjustment->value),
                 'nullable',
-                'in:gain,loss'
+                'in:gain,loss',
             ],
 
             'reference' => ['nullable', 'string', 'max:100'],
@@ -51,7 +51,7 @@ class StockMovementRequest extends FormRequest
             'project_id' => [
                 Rule::requiredIf(fn () => in_array($this->type, [StockMovementType::Exit->value, StockMovementType::Return->value])),
                 'nullable',
-                'exists:projects,id'
+                'exists:projects,id',
             ],
             'project_phase_id' => ['nullable', 'exists:project_phases,id'],
 
@@ -59,14 +59,14 @@ class StockMovementRequest extends FormRequest
                 Rule::requiredIf(fn () => $this->type === StockMovementType::Transfer->value),
                 'nullable',
                 'exists:warehouses,id',
-                'different:warehouse_id' // Empêcher le transfert vers le même dépôt
+                'different:warehouse_id', // Empêcher le transfert vers le même dépôt
             ],
 
             'unit_cost_ht' => [
                 Rule::requiredIf(fn () => $this->type === StockMovementType::Entry->value),
                 'nullable',
                 'numeric',
-                'min:0'
+                'min:0',
             ],
         ];
     }

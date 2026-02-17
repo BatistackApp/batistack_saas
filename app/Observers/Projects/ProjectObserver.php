@@ -30,6 +30,7 @@ class ProjectObserver
 
     /**
      * Gère la validation avant la mise à jour en base de données.
+     *
      * * @throws ValidationException
      */
     public function updating(Project $project): void

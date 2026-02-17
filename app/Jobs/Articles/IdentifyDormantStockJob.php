@@ -13,7 +13,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
-use Log;
 
 class IdentifyDormantStockJob implements ShouldQueue
 {
@@ -27,7 +26,7 @@ class IdentifyDormantStockJob implements ShouldQueue
         Tenants::all()->each(function (Tenants $tenant) use ($sixMonthsAgo) {
 
             // 1. Récupération des articles dormants pour ce tenant
-            $dormantArticles = Article::whereHas('warehouses', function($query) {
+            $dormantArticles = Article::whereHas('warehouses', function ($query) {
                 $query->where('quantity', '>', 0); // Seulement les articles qui ont du stock
             })
                 ->whereDoesntHave('movements', function ($query) use ($sixMonthsAgo) {

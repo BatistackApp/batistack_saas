@@ -8,17 +8,14 @@ use Illuminate\Support\ServiceProvider;
 
 class PilotageServiceProvider extends ServiceProvider
 {
-    public function register(): void
-    {
-
-    }
+    public function register(): void {}
 
     public function boot(): void
     {
         $this->app->booted(function () {
             $schedule = $this->app->make(Schedule::class);
 
-            $schedule->job(new GlobalKpiOrchestratorJob())
+            $schedule->job(new GlobalKpiOrchestratorJob)
                 ->dailyAt('23:45');
         });
     }

@@ -46,7 +46,7 @@ class OuvrageController extends Controller
         if ($request->has('components')) {
             foreach ($request->components as $component) {
                 $ouvrage->components()->attach($component['article_id'], [
-                    'quantity_needed' => $component['quantity_needed']
+                    'quantity_needed' => $component['quantity_needed'],
                 ]);
             }
         }
@@ -78,20 +78,20 @@ class OuvrageController extends Controller
                 $request->project_id,
                 [
                     'reference' => $request->reference,
-                    'notes' => $request->notes
+                    'notes' => $request->notes,
                 ]
             );
 
             return response()->json([
                 'message' => "L'ouvrage {$ouvrage->name} a été consommé avec succès.",
                 'movements_count' => count($movements),
-                'movements' => $movements
+                'movements' => $movements,
             ], 201);
 
         } catch (\Exception $e) {
             return response()->json([
                 'message' => "Erreur lors de la consommation de l'ouvrage.",
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 422);
         }
     }
@@ -115,6 +115,7 @@ class OuvrageController extends Controller
     public function destroy(Ouvrage $ouvrage): JsonResponse
     {
         $ouvrage->delete();
+
         return response()->json(null, 204);
     }
 }

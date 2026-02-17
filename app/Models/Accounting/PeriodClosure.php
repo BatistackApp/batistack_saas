@@ -2,7 +2,6 @@
 
 namespace App\Models\Accounting;
 
-use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Observers\Accounting\PeriodClosureObserver;
 use App\Traits\HasTenant;
@@ -16,7 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([PeriodClosureObserver::class])]
 class PeriodClosure extends Model
 {
-    use HasFactory, SoftDeletes, HasUlids, HasTenant;
+    use HasFactory, HasTenant, HasUlids, SoftDeletes;
 
     protected $fillable = [
         'ulid',
@@ -39,6 +38,7 @@ class PeriodClosure extends Model
             'closed_at' => 'datetime',
         ];
     }
+
     public function closedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'closed_by');

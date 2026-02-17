@@ -19,9 +19,7 @@ class TriggerProjectPlanningJob implements ShouldQueue
 
     public $tries = 3;
 
-    public function __construct(private Project $project)
-    {
-    }
+    public function __construct(private Project $project) {}
 
     public function handle(): void
     {
@@ -74,7 +72,7 @@ class TriggerProjectPlanningJob implements ShouldQueue
             ->wherePivot('role', ProjectUserRole::ProjectManager->value)
             ->exists();
 
-        if (!$hasManager) {
+        if (! $hasManager) {
             Log::warning("Alerte Planification : Aucun Conducteur de Travaux affecté au projet {$this->project->code_project}");
             // Ici, on pourrait déclencher une notification spécifique ou créer une tâche d'assignation
         }

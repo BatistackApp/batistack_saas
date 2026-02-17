@@ -27,16 +27,16 @@ class KpiThresholdAlertNotification extends Notification implements ShouldQueue
     {
         $indicator = $this->snapshot->indicator;
         $severity = strtoupper($this->threshold->severity->value);
-        $valueFormatted = number_format((float)$this->snapshot->value, 2);
+        $valueFormatted = number_format((float) $this->snapshot->value, 2);
 
         return (new MailMessage)
             ->error()
             ->subject("[$severity] Alerte Performance Batistack : {$indicator->name}")
-            ->greeting("Bonjour " . $notifiable->name)
+            ->greeting('Bonjour '.$notifiable->name)
             ->line("Un indicateur de performance a franchi un seuil d'alerte sur votre espace.")
             ->line("Indicateur : **{$indicator->name}**")
             ->line("Valeur mesurée : **{$valueFormatted} {$indicator->unit->value}**")
-            ->line("Seuil critique : " . ($this->threshold->min_value ?? 'N/A') . " - " . ($this->threshold->max_value ?? 'N/A'))
+            ->line('Seuil critique : '.($this->threshold->min_value ?? 'N/A').' - '.($this->threshold->max_value ?? 'N/A'))
             // ->action('Analyser sur le Dashboard', url('/admin/pilotage/dashboards'))
             ->line('Une action corrective est peut-être nécessaire sur le chantier ou la trésorerie.');
     }
@@ -48,7 +48,7 @@ class KpiThresholdAlertNotification extends Notification implements ShouldQueue
             'indicator_name' => $this->snapshot->indicator->name,
             'value' => $this->snapshot->value,
             'severity' => $this->threshold->severity->value,
-            'message' => "Alerte de seuil {$this->threshold->severity->value} sur {$this->snapshot->indicator->name}."
+            'message' => "Alerte de seuil {$this->threshold->severity->value} sur {$this->snapshot->indicator->name}.",
         ];
     }
 }

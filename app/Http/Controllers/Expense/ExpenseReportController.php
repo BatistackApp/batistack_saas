@@ -25,7 +25,7 @@ class ExpenseReportController extends Controller
         $query = ExpenseReport::query()->withCount('items');
 
         // Filtrage par utilisateur si non-admin
-        if (!auth()->user()->hasRole('tenant_admin')) {
+        if (! auth()->user()->hasRole('tenant_admin')) {
             $query->where('user_id', auth()->id());
         }
 
@@ -43,15 +43,15 @@ class ExpenseReportController extends Controller
     public function store(ExpenseReportRequest $request): JsonResponse
     {
         $report = ExpenseReport::create([
-            'label'      => $request->label,
-            'user_id'    => $request->user_id ?? auth()->id(),
+            'label' => $request->label,
+            'user_id' => $request->user_id ?? auth()->id(),
             'tenants_id' => auth()->user()->tenants_id,
-            'status'     => ExpenseStatus::Draft,
+            'status' => ExpenseStatus::Draft,
         ]);
 
         return response()->json([
             'message' => 'Brouillon de note de frais créé.',
-            'data'    => $report
+            'data' => $report,
         ], 201);
     }
 
@@ -70,6 +70,7 @@ class ExpenseReportController extends Controller
     {
         try {
             $this->workflowService->submit($expenseReport);
+
             return response()->json(['message' => 'Note de frais soumise avec succès.']);
         } catch (ExpenseModuleException $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode());
@@ -85,11 +86,12 @@ class ExpenseReportController extends Controller
 
     public function destroy(ExpenseReport $expenseReport): JsonResponse
     {
-        if (!in_array($expenseReport->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
+        if (! in_array($expenseReport->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
             return response()->json(['error' => 'Impossible de supprimer une note déjà soumise ou payée.'], 422);
         }
 
         $expenseReport->delete();
+
         return response()->json(['message' => 'Note de frais supprimée.']);
     }
 }

@@ -6,7 +6,6 @@ use App\Models\Commerce\InvoiceItem;
 use App\Models\Commerce\Invoices;
 use App\Models\Commerce\QuoteItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class InvoiceItemFactory extends Factory
 {

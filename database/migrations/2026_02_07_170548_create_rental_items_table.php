@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('rental_items', function (Blueprint $table) {
@@ -21,7 +22,7 @@ return new class extends Migration {
             $table->decimal('monthly_rate_ht', 12, 2)->default(0);
 
             $table->boolean('is_weekend_included')->default(false);
-            $table->float('insurance_pct')->default(0)->comment("% assurance bris de machine");
+            $table->float('insurance_pct')->default(0)->comment('% assurance bris de machine');
 
             $table->timestamps();
         });

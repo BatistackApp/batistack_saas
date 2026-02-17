@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Traits;
+
 use App\Models\Core\Tenants;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -51,7 +52,7 @@ class TenantScope implements Scope
         // On n'applique le filtre que si un utilisateur est connecté
         // Cela évite de bloquer les commandes CLI ou les jobs sans contexte
         if (Auth::check() && Auth::user()->tenants_id) {
-            $builder->where($model->getTable() . '.tenants_id', Auth::user()->tenants_id);
+            $builder->where($model->getTable().'.tenants_id', Auth::user()->tenants_id);
         }
     }
 }

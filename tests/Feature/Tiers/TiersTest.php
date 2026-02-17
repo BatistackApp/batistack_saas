@@ -11,7 +11,6 @@ use App\Models\Tiers\TierDocument;
 use App\Models\Tiers\TierDocumentRequirement;
 use App\Models\Tiers\TierQualification;
 use App\Models\Tiers\Tiers;
-use App\Models\Tiers\TierType;
 use App\Services\SirenService;
 use App\Services\Tiers\TierCodeGenerator;
 use App\Services\Tiers\TierSearchService;
@@ -140,7 +139,7 @@ describe('Tier Model', function () {
             'type' => TierDocumentType::URSSAF->value,
             'status' => TierComplianceStatus::PendingVerification->value,
             'expires_at' => now()->addMonths(6),
-            'file_path' => 'doc.pdf'
+            'file_path' => 'doc.pdf',
         ]);
 
         expect($tier->getComplianceStatus())->toBe('pending_verification');
@@ -176,14 +175,14 @@ describe('Tier Model', function () {
             'activites_couvertes' => 'Maçonnerie, Charpente, Couverture',
             'expires_at' => now()->addYear(),
             'status' => TierDocumentStatus::Valid,
-            'file_path' => 'assurances/decennale.pdf'
+            'file_path' => 'assurances/decennale.pdf',
         ]);
 
         expect($doc->activites_couvertes)->toContain('Maçonnerie');
     });
 
     test('le validateur rejette un IBAN erroné via modulo 97', function () {
-        $validator = new TierValidator();
+        $validator = new TierValidator;
         // IBAN avec une erreur volontaire
         $result = $validator->validate(['iban' => 'FR7630006000011234567890123']);
         expect($result->fails())->toBeTrue();

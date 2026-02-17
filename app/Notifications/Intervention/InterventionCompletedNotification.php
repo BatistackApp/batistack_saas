@@ -23,7 +23,7 @@ class InterventionCompletedNotification extends Notification implements ShouldQu
         return [
             'intervention_id' => $this->intervention->id,
             'message' => "L'intervention {$this->intervention->reference} a été clôturée avec succès.",
-            'total_ht' => $this->intervention->amount_ht
+            'total_ht' => $this->intervention->amount_ht,
         ];
     }
 }

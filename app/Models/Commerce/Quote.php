@@ -3,7 +3,6 @@
 namespace App\Models\Commerce;
 
 use App\Enums\Commerce\QuoteStatus;
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Models\Tiers\Tiers;
 use App\Observers\Commerce\QuoteObserver;
@@ -18,7 +17,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([QuoteObserver::class])]
 class Quote extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
+
     protected $guarded = [];
 
     public function customer(): BelongsTo

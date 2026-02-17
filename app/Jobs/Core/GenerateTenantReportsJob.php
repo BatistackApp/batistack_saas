@@ -15,16 +15,15 @@ class GenerateTenantReportsJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 600; // 10 minutes
+
     public int $tries = 1;
 
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     public function handle(): void
     {
         try {
-            Log::info("Generating tenant reports...");
+            Log::info('Generating tenant reports...');
 
             // Récupérer tous les tenants actifs
             $activeTenants = Tenants::where('status', \App\Enums\Core\TenantStatus::Active->value)
@@ -40,7 +39,7 @@ class GenerateTenantReportsJob implements ShouldQueue
 
             Log::info("Tenant reports generation completed. Total tenants processed: {$activeTenants->count()}");
         } catch (\Exception $e) {
-            Log::error("Tenant reports generation failed", [
+            Log::error('Tenant reports generation failed', [
                 'error' => $e->getMessage(),
             ]);
 

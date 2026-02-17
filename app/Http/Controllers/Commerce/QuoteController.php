@@ -62,7 +62,7 @@ class QuoteController extends Controller
 
             return response()->json([
                 'message' => 'Devis dupliqué avec succès.',
-                'quote' => $newQuote->load('items')
+                'quote' => $newQuote->load('items'),
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 422);

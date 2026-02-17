@@ -6,7 +6,6 @@ use App\Models\Articles\Warehouse;
 use App\Models\Core\Tenants;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class WarehouseFactory extends Factory
 {
@@ -17,7 +16,7 @@ class WarehouseFactory extends Factory
         return [
             'tenants_id' => Tenants::factory(),
             'responsible_user_id' => User::factory(),
-            'name' => 'Dépôt ' . $this->faker->city(),
+            'name' => 'Dépôt '.$this->faker->city(),
             'location' => $this->faker->address(),
             'latitude' => $this->faker->latitude(),
             'longitude' => $this->faker->longitude(),

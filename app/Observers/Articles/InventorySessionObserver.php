@@ -11,7 +11,7 @@ class InventorySessionObserver
     public function creating(InventorySession $session): void
     {
         if (empty($session->reference)) {
-            $session->reference = 'INV-' . now()->format('Ymd') . '-' . strtoupper(substr(uniqid(), -4));
+            $session->reference = 'INV-'.now()->format('Ymd').'-'.strtoupper(substr(uniqid(), -4));
         }
     }
 
@@ -19,8 +19,8 @@ class InventorySessionObserver
     {
         // Si le statut a changé, on trace l'événement
         if ($session->wasChanged('status')) {
-            Log::info("Changement de statut Inventaire [{$session->reference}] : " .
-                $session->getOriginal('status')->value . " -> " . $session->status->value);
+            Log::info("Changement de statut Inventaire [{$session->reference}] : ".
+                $session->getOriginal('status')->value.' -> '.$session->status->value);
         }
 
         // Si la session est validée ou annulée, on s'assure que le gel est bien levé (sécurité secondaire)

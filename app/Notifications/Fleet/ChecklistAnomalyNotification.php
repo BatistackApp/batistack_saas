@@ -31,7 +31,7 @@ class ChecklistAnomalyNotification extends Notification implements ShouldQueue
             ->error()
             ->subject("⚠️ Anomalie critique : {$vehicle->internal_code}")
             ->greeting("Bonjour {$notifiable->name},")
-            ->line("Une anomalie a été détectée sur le véhicule **{$vehicle->name}** ({$vehicle->license_plate}) lors du contrôle de " . ($this->check->type === 'start' ? 'prise de poste' : 'fin de journée') . ".")
+            ->line("Une anomalie a été détectée sur le véhicule **{$vehicle->name}** ({$vehicle->license_plate}) lors du contrôle de ".($this->check->type === 'start' ? 'prise de poste' : 'fin de journée').'.')
             ->line("Un bon de travaux curatifs a été généré automatiquement (Réf: {$this->maintenance->internal_reference}).")
             ->action('Consulter la maintenance', url("/fleet/maintenances/{$this->maintenance->id}"))
             ->line('Merci de vérifier si l\'immobilisation du matériel est nécessaire.');

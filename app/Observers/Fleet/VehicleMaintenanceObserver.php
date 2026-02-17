@@ -12,9 +12,9 @@ class VehicleMaintenanceObserver
 {
     public function creating(VehicleMaintenance $maintenance): void
     {
-        $prefix = 'MAINT-' . now()->format('Y');
+        $prefix = 'MAINT-'.now()->format('Y');
         $count = VehicleMaintenance::where('internal_reference', 'like', "{$prefix}%")->count();
-        $maintenance->internal_reference = sprintf("%s-%04d", $prefix, $count + 1);
+        $maintenance->internal_reference = sprintf('%s-%04d', $prefix, $count + 1);
     }
 
     public function created(VehicleMaintenance $maintenance): void
@@ -26,7 +26,7 @@ class VehicleMaintenanceObserver
 
             Notification::send($recipients, new MaintenanceAlertNotification(
                 $maintenance->vehicle,
-                "Incident signalé : " . $maintenance->description
+                'Incident signalé : '.$maintenance->description
             ));
         }
     }
@@ -46,7 +46,7 @@ class VehicleMaintenanceObserver
                 $updates['current_hours'] = $maintenance->hours_reading;
             }
 
-            if (!empty($updates)) {
+            if (! empty($updates)) {
                 $vehicle->update($updates);
             }
         }

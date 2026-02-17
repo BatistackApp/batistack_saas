@@ -11,9 +11,10 @@ class VehicleAssignmentObserver
     public function __construct(
         protected FleetImputationService $imputationService
     ) {}
+
     public function updated(VehicleAssignment $assignment): void
     {
-        if ($assignment->wasChanged('ended_at') && !empty($assignment->ended_at)) {
+        if ($assignment->wasChanged('ended_at') && ! empty($assignment->ended_at)) {
             $this->imputationService->imputeCostsToProject($assignment);
         }
     }

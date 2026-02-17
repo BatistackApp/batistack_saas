@@ -8,7 +8,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum ProjectStatus: string implements HasLabel, HasColor, HasIcon
+enum ProjectStatus: string implements HasColor, HasIcon, HasLabel
 {
     case Study = 'study';       // En phase d'étude / Devis
     case Accepted = 'accepted';   // Accepté

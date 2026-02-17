@@ -14,7 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TenantModule extends Model
 {
     use HasFactory, HasTenant;
+
     protected $guarded = [];
+
     protected $foreignKey = 'tenants_id';
 
     public function module(): BelongsTo
@@ -32,7 +34,8 @@ class TenantModule extends Model
         ];
     }
 
-    public function isActive(): bool {
+    public function isActive(): bool
+    {
         return $this->status === TenantModuleStatus::Active->value &&
             $this->starts_at <= now() &&
             ($this->ends_at === null || $this->ends_at > now());

@@ -14,7 +14,7 @@ class StoreDocumentRequest extends FormRequest
                 'required',
                 'file',
                 'max:20480', // Limite à 20 Mo par fichier pour préserver le quota global
-                'mimes:pdf,jpg,jpeg,png,webp,docx,xlsx,zip'
+                'mimes:pdf,jpg,jpeg,png,webp,docx,xlsx,zip',
             ],
             'folder_id' => [
                 'nullable',
@@ -24,7 +24,7 @@ class StoreDocumentRequest extends FormRequest
             ],
             'description' => 'nullable|string|max:500',
             'tags' => 'nullable|array',
-            'tags.*' => 'string|max:30'
+            'tags.*' => 'string|max:30',
         ];
     }
 
@@ -33,7 +33,7 @@ class StoreDocumentRequest extends FormRequest
         return [
             'file.max' => 'Le fichier ne doit pas dépasser 20 Mo.',
             'file.mimes' => 'Format de fichier non supporté (PDF, Images, Office et Zip uniquement).',
-            'folder_id.exists' => 'Le dossier de destination est invalide ou inaccessible.'
+            'folder_id.exists' => 'Le dossier de destination est invalide ou inaccessible.',
         ];
     }
 

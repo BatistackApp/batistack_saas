@@ -21,7 +21,7 @@ class TakeTenantSnapshotsJob implements ShouldQueue
         try {
             $orchestrator->takeGlobalSnapshots($this->tenantId);
         } catch (\Exception $e) {
-            Log::error("Erreur Snapshot Tenant #{$this->tenantId} : " . $e->getMessage());
+            Log::error("Erreur Snapshot Tenant #{$this->tenantId} : ".$e->getMessage());
         }
     }
 }

@@ -6,7 +6,6 @@ use App\Models\Articles\Article;
 use App\Models\Commerce\PurchaseOrder;
 use App\Models\Commerce\PurchaseOrderItem;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class PurchaseOrderItemFactory extends Factory
 {

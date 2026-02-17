@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class VehicleInspection extends Model
 {
     use HasFactory;
+
     protected $guarded = [];
 
     public function vehicle(): BelongsTo

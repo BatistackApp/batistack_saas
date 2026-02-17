@@ -8,11 +8,10 @@ use App\Models\Fleet\VehicleAssignment;
 use App\Models\Fleet\VehicleFine;
 use App\Services\Accounting\AccountingEntryService;
 use DB;
-use Illuminate\Support\Collection;
 
 class FineService
 {
-    public function __construct(protected AccountingEntryService $entryService){}
+    public function __construct(protected AccountingEntryService $entryService) {}
 
     /**
      * Tente de réconcilier une contravention avec un conducteur et un chantier.
@@ -33,7 +32,7 @@ class FineService
         $results = [
             'match_found' => false,
             'driver' => null,
-            'project' => null
+            'project' => null,
         ];
 
         if ($assignment) {
@@ -46,7 +45,7 @@ class FineService
                 'user_id' => $assignment->user_id,
                 'project_id' => $assignment->project_id,
                 'status' => FinesStatus::DriverAssigned,
-                'notes' => ($fine->notes ? $fine->notes . "\n" : "") . "Match automatique via affectation #" . $assignment->id
+                'notes' => ($fine->notes ? $fine->notes."\n" : '').'Match automatique via affectation #'.$assignment->id,
             ]);
         }
 
@@ -58,13 +57,13 @@ class FineService
      */
     public function markForDesignation(VehicleFine $fine): bool
     {
-        if (!$fine->user_id) {
+        if (! $fine->user_id) {
             return false;
         }
 
         return $fine->update([
             'designation_status' => DesignationStatus::Pending,
-            'status' => FinesStatus::DriverAssigned
+            'status' => FinesStatus::DriverAssigned,
         ]);
     }
 
@@ -92,10 +91,10 @@ class FineService
      */
     public function recordPayment(VehicleFine $fine, float $amount, string $reference): bool
     {
-        return DB::transaction(function () use ($fine, $amount, $reference) {
+        return DB::transaction(function () use ($fine, $reference) {
             $fine->update([
                 'status' => FinesStatus::Paid,
-                'notes' => $fine->notes . "\nPayé le " . now()->format('d/m/Y') . " - Réf: " . $reference
+                'notes' => $fine->notes."\nPayé le ".now()->format('d/m/Y').' - Réf: '.$reference,
             ]);
 
             // Ici, on pourrait déclencher une écriture comptable si nécessaire

@@ -16,6 +16,7 @@ class SeedTenantDataJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 600; // 10 minutes
+
     public int $tries = 2;
 
     public function __construct(
@@ -31,6 +32,7 @@ class SeedTenantDataJob implements ShouldQueue
             // En test avec SQLite, ignorer les migrations de schéma tenant
             if (DB::getDriverName() === 'sqlite') {
                 Log::info("Migration skipped for SQLite: {$this->databaseName}");
+
                 return;
             }
 

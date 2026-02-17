@@ -3,7 +3,6 @@
 namespace App\Models\Articles;
 
 use App\Enums\Articles\InventorySessionStatus;
-use App\Models\Core\Tenants;
 use App\Models\User;
 use App\Observers\Articles\InventorySessionObserver;
 use App\Traits\HasTenant;
@@ -17,7 +16,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 #[ObservedBy([InventorySessionObserver::class])]
 class InventorySession extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
+
     protected $guarded = [];
 
     public function warehouse(): BelongsTo

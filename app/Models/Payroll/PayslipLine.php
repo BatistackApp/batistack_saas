@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class PayslipLine extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'payslip_id', 'label', 'base', 'rate',
         'amount_gain', 'amount_deduction', 'employer_amount',
-        'type', 'sort_order', 'is_manual_adjustment'
+        'type', 'sort_order', 'is_manual_adjustment',
     ];
 
     protected function casts(): array
@@ -25,7 +26,7 @@ class PayslipLine extends Model
             'amount_gain' => 'decimal:2',
             'amount_deduction' => 'decimal:2',
             'employer_amount' => 'decimal:2',
-            'is_manual_adjustment' => 'boolean'
+            'is_manual_adjustment' => 'boolean',
         ];
     }
 

@@ -20,7 +20,7 @@ class PayrollWorkflowService
     public function validatePeriod(PayrollPeriod $period): void
     {
         if ($period->status !== PayrollStatus::Draft) {
-            throw new PeriodLockedException();
+            throw new PeriodLockedException;
         }
 
         DB::transaction(function () use ($period) {
