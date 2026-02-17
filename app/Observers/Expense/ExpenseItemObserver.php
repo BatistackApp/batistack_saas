@@ -3,6 +3,7 @@
 namespace App\Observers\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
+use App\Exceptions\Expense\ReportLockedException;
 use App\Models\Expense\ExpenseItem;
 use App\Services\Expense\ExpenseCalculationService;
 use Illuminate\Validation\ValidationException;
@@ -18,6 +19,7 @@ class ExpenseItemObserver
 
     /**
      * Empêche la modification d'un item si la note est déjà soumise ou validée.
+     * @throws ReportLockedException
      */
     public function saving(ExpenseItem $item): void
     {
@@ -28,9 +30,7 @@ class ExpenseItemObserver
         }
 
         if ($report && ! in_array($report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
-            throw ValidationException::withMessages([
-                'report' => "Impossible de modifier une ligne d'une note de frais verrouillée (Statut: {$report->status->value}).",
-            ]);
+            throw new ReportLockedException("Impossible de modifier une ligne d'une note de frais verrouillée (Statut: {$report->status->value}");
         }
     }
 
