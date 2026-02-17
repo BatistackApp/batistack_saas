@@ -9,7 +9,6 @@ class StoreEmployeeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tenants_id' => ['required', 'exists:tenants,id'],
             'user_id' => ['nullable', 'exists:users,id'],
             'external_id' => ['nullable', 'string', 'max:255'],
             'first_name' => ['required', 'string', 'max:255'],
@@ -21,11 +20,12 @@ class StoreEmployeeRequest extends FormRequest
             'contract_end_date' => ['nullable', 'date', 'after_or_equal:hired_at'],
             'hired_at' => ['nullable', 'date'],
             'is_active' => ['boolean'],
+            'email' => ['required', 'email', 'string', 'unique:users,email'],
         ];
     }
 
     public function authorize(): bool
     {
-        return true;
+        return $this->user()->hasRole('tenant_admin');
     }
 }

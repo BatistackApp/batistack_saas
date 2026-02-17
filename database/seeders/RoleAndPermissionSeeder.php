@@ -35,6 +35,8 @@ class RoleAndPermissionSeeder extends Seeder
             'absences.validate',   // Valider/Refuser (Manager)
             'absences.manage_all', // Paramétrage et ajustement des soldes (RH)
             'absences.export',     // Export vers la paie (RH)
+            // HR
+            'time_entries.verify',
             // GPAO
             'gpao.manage',
             // Locations
@@ -61,7 +63,7 @@ class RoleAndPermissionSeeder extends Seeder
             'absences.view_own', 'absences.create', 'absences.view_team',
             'absences.manage_all', 'absences.export',
             'employee.manage', 'payroll.manage', 'payroll.validate',
-            'tenant.users.manage'
+            'tenant.users.manage', 'time_entries.verify',
         ]);
 
         // CONDUCTEUR DE TRAVAUX (Focus opérationnel et budget)
@@ -70,7 +72,8 @@ class RoleAndPermissionSeeder extends Seeder
         $manager->syncPermissions([
             'projects.view', 'projects.create', 'projects.edit', 'projects.manage_budget',
             'inventory.view', 'tiers.view', 'pilotage.view',
-            'absences.view_own', 'absences.create', 'absences.view_team', 'absences.validate'
+            'absences.view_own', 'absences.create', 'absences.view_team', 'absences.validate',
+            'time_entries.verify',
         ]);
 
         // RESPONSABLE LOGISTIQUE (Focus Stock)
@@ -84,14 +87,16 @@ class RoleAndPermissionSeeder extends Seeder
         $foreman = Role::findOrCreate('foreman', 'web');
         $foreman->givePermissionTo([
             'projects.view', 'inventory.view', 'locations.view',
-            'absences.view_own', 'absences.create', 'absences.view_team', 'absences.validate'
+            'absences.view_own', 'absences.create', 'absences.view_team', 'absences.validate',
+            'time_entries.verify',
         ]);
 
         // CHEF D'ATELIER
         $atl = Role::findOrCreate('chef_atelier', 'web');
         $atl->givePermissionTo([
             'projects.view', 'inventory.view', 'gpao.manage', 'locations.view',
-            'absences.view_own', 'absences.create', 'absences.view_team', 'absences.validate'
+            'absences.view_own', 'absences.create', 'absences.view_team', 'absences.validate',
+            'time_entries.verify',
         ]);
 
         // --- COLLABORATEUR / OUVRIER (Persona 1) ---
@@ -99,7 +104,7 @@ class RoleAndPermissionSeeder extends Seeder
         $employee->syncPermissions([
             'absences.view_own',
             'absences.create',
-            'projects.view'
+            'projects.view',
         ]);
     }
 }

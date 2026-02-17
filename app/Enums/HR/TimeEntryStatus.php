@@ -10,10 +10,11 @@ use Illuminate\Contracts\Support\Htmlable;
 
 enum TimeEntryStatus: string implements HasLabel, HasColor, HasIcon
 {
-    case Draft = 'draft';
-    case Submitted = 'submitted';
-    case Approved = 'approved';
-    case Rejected = 'rejected';
+    case Draft = 'draft';         // En cours de saisie
+    case Submitted = 'submitted'; // Envoyé pour validation
+    case Verified = 'verified';   // Vérifié par le Chef de Chantier (Niveau 1)
+    case Approved = 'approved';   // Approuvé par le Conducteur de Travaux (Niveau 2 - Final)
+    case Rejected = 'rejected';   // Rejeté pour correction
 
 
     public function getColor(): string|array|null
@@ -21,6 +22,7 @@ enum TimeEntryStatus: string implements HasLabel, HasColor, HasIcon
         return match ($this) {
             self::Draft => 'gray',
             self::Submitted => 'blue',
+            self::Verified => 'amber',
             self::Approved => 'green',
             self::Rejected => 'red',
         };
@@ -31,7 +33,7 @@ enum TimeEntryStatus: string implements HasLabel, HasColor, HasIcon
         return match ($this) {
             self::Draft => 'heroicon-o-pencil',
             self::Submitted => 'heroicon-o-paper-airplane',
-            self::Approved => 'heroicon-o-check',
+            self::Approved, self::Verified => 'heroicon-o-check',
             self::Rejected => 'heroicon-o-x',
         };
     }
@@ -43,6 +45,7 @@ enum TimeEntryStatus: string implements HasLabel, HasColor, HasIcon
             self::Submitted => __('hr.time_entry_status.submitted'),
             self::Approved => __('hr.time_entry_status.approved'),
             self::Rejected => __('hr.time_entry_status.rejected'),
+            self::Verified => __('hr.time_entry_status.verified'),
         };
     }
 }

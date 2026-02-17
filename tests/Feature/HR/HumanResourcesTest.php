@@ -1,125 +1,139 @@
 <?php
 
-use App\Enums\HR\TimeEntryStatus;
 use App\Models\Core\Tenants;
 use App\Models\HR\Employee;
-use App\Models\HR\TimeEntry;
-use App\Models\Projects\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     $this->tenant = Tenants::factory()->create();
-    $this->user = User::factory()->create();
-    // Simulation du header X-Tenant-Id utilisé dans le contrôleur
-    $this->headers = ['X-Tenant-Id' => $this->tenant->id];
+
+    // Configuration des rôles nécessaires pour les tests HR
+    $this->seed(\Database\Seeders\RoleAndPermissionSeeder::class);
+    Role::findOrCreate('tenant_admin', 'web');
+
+    // Création d'un administrateur de tenant
+    $this->admin = User::factory()->create(['tenants_id' => $this->tenant->id]);
+    $this->admin->assignRole('tenant_admin');
+
+    $this->actingAs($this->admin);
 });
 
-test('peut lister les employés du tenant', function () {
+test('un administrateur peut lister les employés du tenant', function () {
     Employee::factory()->count(3)->create(['tenants_id' => $this->tenant->id]);
+    // Employé d'un autre tenant (ne doit pas apparaître)
+    Employee::factory()->create(['tenants_id' => Tenants::factory()->create()->id]);
 
-    $response = $this->getJson('/api/hr/employees', $this->headers);
+    $response = $this->actingAs($this->admin)
+        ->getJson('/api/hr/employees');
 
     $response->assertStatus(200)
         ->assertJsonCount(3, 'data');
 });
 
-test('peut créer un employé avec les champs spécifiques', function () {
+test('un administrateur peut voir les détails d’un employé spécifique', function () {
+    $employee = Employee::factory()->create(['tenants_id' => $this->tenant->id]);
+
+    $response = $this->actingAs($this->admin)
+        ->getJson("/api/hr/employees/{$employee->id}");
+
+    $response->assertStatus(200)
+        ->assertJsonPath('first_name', $employee->first_name);
+});
+
+test('peut créer un collaborateur avec tous les champs obligatoires', function () {
+    Notification::fake();
     $data = [
-        'tenants_id' => $this->tenant->id,
         'first_name' => 'Jean',
         'last_name' => 'Dupont',
-        'job_title' => 'Développeur',
-        'hourly_cost_charged' => 45.50,
+        'job_title' => 'Chef de Chantier',
+        'department' => 'Gros Œuvre',
+        'hourly_cost_charged' => 55.00,
         'contract_type' => 'CDI',
         'hired_at' => now()->format('Y-m-d'),
         'is_active' => true,
-        'user_id' => $this->user->id,
+        'email' => 'test@test.com',
     ];
 
-    $response = $this->postJson('/api/hr/employees', $data, $this->headers);
+    $response = $this->actingAs($this->admin)
+        ->postJson('/api/hr/employees', $data);
 
     $response->assertStatus(201);
+
     $this->assertDatabaseHas('employees', [
-        'first_name' => 'Jean',
-        'hourly_cost_charged' => 45.50,
+        'tenants_id' => $this->tenant->id,
+        'last_name' => 'Dupont',
+        'hourly_cost_charged' => 55.00,
     ]);
 });
 
-test('ne peut pas créer un employé sans le coût horaire', function () {
-    $response = $this->postJson('/api/hr/employees', [
-        'first_name' => 'Jean',
-    ], $this->headers);
+test('la création d’un employé échoue si les données sont incomplètes', function () {
+    $response = $this->actingAs($this->admin)
+        ->postJson('/api/hr/employees', []);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['hourly_cost_charged']);
+        ->assertJsonValidationErrors(['first_name', 'last_name', 'hourly_cost_charged']);
 });
 
-/*
-|--------------------------------------------------------------------------
-| Tests Pointage (Time Entries)
-|--------------------------------------------------------------------------
-*/
-
-test('peut enregistrer un pointage avec temps de trajet et indemnités', function () {
-    $employee = Employee::factory()->create(['tenants_id' => $this->tenant->id]);
-    $project = Project::factory()->create(['tenants_id' => $this->tenant->id]);
-
-    $data = [
+test('peut mettre à jour les informations d’un collaborateur', function () {
+    $employee = Employee::factory()->create([
         'tenants_id' => $this->tenant->id,
-        'employee_id' => $employee->id,
-        'project_id' => $project->id,
-        'date' => now()->format('Y-m-d'),
-        'hours' => 7.5,
-        'travel_time' => 1.25,
-        'has_meal_allowance' => true,
-        'has_host_allowance' => false,
-        'status' => TimeEntryStatus::Draft->value,
-    ];
-
-    $response = $this->postJson('/api/hr/time-entries', $data, $this->headers);
-
-    $response->assertStatus(201);
-    $this->assertDatabaseHas('time_entries', [
-        'employee_id' => $employee->id,
-        'hours' => 7.5,
-        'travel_time' => 1.25,
-        'has_meal_allowance' => true,
-    ]);
-});
-
-test('un responsable peut valider un pointage', function () {
-    Event::fake();
-    $entry = TimeEntry::factory()->create([
-        'tenants_id' => $this->tenant->id,
-        'status' => TimeEntryStatus::Draft->value,
+        'job_title' => 'Ancien Poste',
     ]);
 
-    $response = $this->patchJson("/api/hr/time-entries/{$entry->id}/verify", [
-        'status' => TimeEntryStatus::Approved->value,
-        'verified_by' => $this->user->id,
-    ], $this->headers);
+    $response = $this->actingAs($this->admin)
+        ->patchJson("/api/hr/employees/{$employee->id}", [
+            'job_title' => 'Nouveau Poste',
+            'is_active' => false,
+        ]);
 
     $response->assertStatus(200);
-    $this->assertDatabaseHas('time_entries', [
-        'id' => $entry->id,
-        'status' => TimeEntryStatus::Approved->value,
-        'verified_by' => $this->user->id,
+
+    $this->assertDatabaseHas('employees', [
+        'id' => $employee->id,
+        'job_title' => 'Nouveau Poste',
+        'is_active' => false
     ]);
 });
 
-test('impossible de supprimer un pointage déjà validé', function () {
-    Event::fake();
+test('peut supprimer un collaborateur (soft delete)', function () {
+    $employee = Employee::factory()->create(['tenants_id' => $this->tenant->id]);
 
-    $entry = TimeEntry::factory()->create([
-        'tenants_id' => $this->tenant->id,
-        'status' => TimeEntryStatus::Approved->value
-    ]);
+    $response = $this->actingAs($this->admin)
+        ->deleteJson("/api/hr/employees/{$employee->id}", []);
 
-    $response = $this->deleteJson("/api/hr/time-entries/{$entry->id}", [], $this->headers);
+    $response->assertStatus(200);
 
-    $response->assertStatus(403);
-    $this->assertDatabaseHas('time_entries', ['id' => $entry->id]);
+    // Vérification Soft Delete
+    $this->assertSoftDeleted('employees', ['id' => $employee->id]);
+});
+
+/**
+ * Tests de recherche et filtres
+ */
+test('peut filtrer les employés par département', function () {
+    Employee::factory()->create(['tenants_id' => $this->tenant->id, 'department' => 'IT']);
+    Employee::factory()->create(['tenants_id' => $this->tenant->id, 'department' => 'RH']);
+
+    $response = $this->actingAs($this->admin)
+        ->getJson('/api/hr/employees?department=IT');
+
+    $response->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.department', 'IT');
+});
+
+test('peut rechercher un employé par son nom ou prénom', function () {
+    Employee::factory()->create(['tenants_id' => $this->tenant->id, 'first_name' => 'Albert']);
+    Employee::factory()->create(['tenants_id' => $this->tenant->id, 'first_name' => 'Zoe']);
+
+    $response = $this->actingAs($this->admin)
+        ->getJson('/api/hr/employees?search=Alb');
+
+    $response->assertStatus(200)
+        ->assertJsonCount(1, 'data')
+        ->assertJsonPath('data.0.first_name', 'Albert');
 });

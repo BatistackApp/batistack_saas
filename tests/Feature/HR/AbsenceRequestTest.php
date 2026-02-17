@@ -17,11 +17,12 @@ beforeEach(function () {
     \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'payroll.manage', 'guard_name' => 'web']);
     \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'absences.create', 'guard_name' => 'web']);
     \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'absences.validate', 'guard_name' => 'web']);
+    \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'absences.manage_all', 'guard_name' => 'web']);
 
     // Création du contexte de base (Tenant et Admin)
     $this->tenant = Tenants::factory()->create();
     $this->admin = User::factory()->create(['tenants_id' => $this->tenant->id]);
-    $this->admin->givePermissionTo('payroll.manage', 'absences.create', 'absences.validate');
+    $this->admin->givePermissionTo('payroll.manage', 'absences.create', 'absences.validate', 'absences.manage_all');
 
     // Création des entités nécessaires
     $this->manager = User::factory()->create(['tenants_id' => $this->tenant->id]);
@@ -36,6 +37,55 @@ beforeEach(function () {
     Notification::fake();
     Queue::fake();
     Storage::fake('public');
+});
+
+it('permet à un employé de soumettre une demande d\'absence avec justificatif', function () {
+    $file = UploadedFile::fake()->create('justificatif.pdf', 500);
+
+    $payload = [
+        'employee_id' => $this->employee->id,
+        'type' => AbsenceType::SickLeave->value,
+        'starts_at' => now()->addDays(1)->format('Y-m-d'),
+        'ends_at' => now()->addDays(3)->format('Y-m-d'),
+        'reason' => 'Grippe saisonnière',
+        'justification_file' => $file,
+    ];
+
+    $response = $this->actingAs($this->employee->user)
+        ->postJson(route('absences.store'), $payload);
+
+    $response->assertStatus(201);
+
+    $this->assertDatabaseHas('absence_requests', [
+        'employee_id' => $this->employee->id,
+        'status' => AbsenceRequestStatus::Pending->value,
+    ]);
+
+    $absence = AbsenceRequest::first();
+    Storage::disk('public')->assertExists($absence->justification_path);
+});
+
+it('empêche la création d\'une absence si les dates se chevauchent (logique de service)', function () {
+    // Création d'une absence existante
+    AbsenceRequest::factory()->create([
+        'employee_id' => $this->employee->id,
+        'starts_at' => now()->addDays(5),
+        'ends_at' => now()->addDays(10),
+        'status' => AbsenceRequestStatus::Approved,
+    ]);
+
+    $payload = [
+        'employee_id' => $this->employee->id,
+        'type' => AbsenceType::PaidLeave->value,
+        'starts_at' => now()->addDays(6)->format('Y-m-d'), // Conflit ici
+        'ends_at' => now()->addDays(8)->format('Y-m-d'),
+    ];
+
+    $response = $this->actingAs($this->employee->user)
+        ->postJson(route('absences.store'), $payload);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['starts_at']);
 });
 
 it('peut créer une demande d\'absence', function () {
@@ -152,4 +202,20 @@ it('ne peut pas supprimer une demande déjà traitée', function () {
 
     $response->assertStatus(422);
     $this->assertDatabaseHas('absence_requests', ['id' => $absence->id]);
+});
+
+it('force un motif en cas de refus', function () {
+    $absence = AbsenceRequest::factory()->create([
+        'employee_id' => $this->employee->id,
+        'status' => AbsenceRequestStatus::Pending,
+    ]);
+
+    $response = $this->actingAs($this->admin)
+        ->patchJson(route('absences.review', $absence), [
+            'status' => AbsenceRequestStatus::Rejected->value,
+            'rejection_reason' => '', // Vide
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['rejection_reason']);
 });

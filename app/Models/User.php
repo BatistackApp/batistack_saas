@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Models\Core\Tenants;
+use App\Models\HR\Employee;
 use App\Models\Tiers\TierQualification;
 use App\Models\Tiers\Tiers;
 use App\Traits\HasTenant;
@@ -11,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Scope;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -72,6 +74,10 @@ class User extends Authenticatable
         return $this->belongsTo(Tiers::class, 'tiers_id');
     }
 
+    public function employee(): HasOne
+    {
+        return $this->hasOne(Employee::class, 'id');
+    }
     /**
      * Get the user's initials
      */

@@ -13,7 +13,7 @@ class EmployeeSkillObserver
             $oldPath = $employeeSkill->getOriginal('document_path');
 
             if ($oldPath && Storage::exists($oldPath)) {
-                Storage::delete($oldPath);
+                Storage::disk('public')->delete($oldPath);
             }
         }
     }
@@ -21,14 +21,14 @@ class EmployeeSkillObserver
     public function deleted(EmployeeSkill $employeeSkill): void
     {
         if ($employeeSkill->document_path && Storage::exists($employeeSkill->document_path)) {
-            Storage::delete($employeeSkill->document_path);
+            Storage::disk('public')->delete($employeeSkill->document_path);
         }
     }
 
     public function forceDeleted(EmployeeSkill $employeeSkill): void
     {
         if ($employeeSkill->document_path && Storage::exists($employeeSkill->document_path)) {
-            Storage::delete($employeeSkill->document_path);
+            Storage::disk('public')->delete($employeeSkill->document_path);
         }
     }
 }

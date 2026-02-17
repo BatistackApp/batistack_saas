@@ -7,6 +7,7 @@ use App\Enums\HR\TimeEntryStatus;
 use App\Models\HR\AbsenceRequest;
 use App\Models\HR\TimeEntry;
 use App\Notifications\HR\TimeEntryApprovedNotification;
+use App\Notifications\HR\TimeEntryStatusChangedNotification;
 use App\Notifications\HR\TimeEntrySubmittedNotification;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
@@ -21,18 +22,7 @@ class TimeEntryObserver
     public function created(TimeEntry $timeEntry): void
     {
         if ($timeEntry->status === TimeEntryStatus::Submitted) {
-            // On charge la relation employee si elle n'est pas déjà chargée
-            if (!$timeEntry->relationLoaded('employee')) {
-                $timeEntry->load('employee');
-            }
-
-            // On récupère le manager direct de l'employé
-            // Attention : $timeEntry->employee peut être null si l'intégrité référentielle n'est pas stricte ou lors de tests
-            $manager = $timeEntry->employee?->manager;
-
-            if ($manager) {
-                Notification::send($manager, new TimeEntrySubmittedNotification($timeEntry));
-            }
+            $this->notifyManager($timeEntry);
         }
     }
 
@@ -43,14 +33,23 @@ class TimeEntryObserver
 
     public function updated(TimeEntry $timeEntry): void
     {
-        // Détection du passage à l'état "Approuvé"
-        if ($timeEntry->wasChanged('status') && $timeEntry->status === TimeEntryStatus::Approved) {
-            // On s'assure que l'employé et son utilisateur sont chargés
-            if (!$timeEntry->relationLoaded('employee')) {
-                $timeEntry->load('employee.user');
+        if ($timeEntry->wasChanged('status')) {
+            $status = $timeEntry->status;
+
+            // Cas 1 : Pointage Rejeté -> On prévient l'employé immédiatement
+            if ($status === TimeEntryStatus::Rejected) {
+                $timeEntry->employee?->user?->notify(new TimeEntryStatusChangedNotification($timeEntry));
             }
 
-            $timeEntry->employee?->user?->notify(new TimeEntryApprovedNotification($timeEntry));
+            // Cas 2 : Pointage Soumis -> On prévient le manager (Niveau 1)
+            if ($status === TimeEntryStatus::Submitted) {
+                $this->notifyManager($timeEntry);
+            }
+
+            // Cas 3 : Pointage Approuvé (Final) -> On prévient l'employé
+            if ($status === TimeEntryStatus::Approved) {
+                $timeEntry->employee?->user?->notify(new TimeEntryStatusChangedNotification($timeEntry));
+            }
         }
     }
 
@@ -60,11 +59,26 @@ class TimeEntryObserver
      */
     public function deleting(TimeEntry $timeEntry): bool
     {
-        if ($timeEntry->status === TimeEntryStatus::Approved) {
+        if ($timeEntry->status === TimeEntryStatus::Approved || $timeEntry->status === TimeEntryStatus::Verified) {
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * Logique de notification du manager.
+     */
+    protected function notifyManager(TimeEntry $timeEntry): void
+    {
+        if (!$timeEntry->relationLoaded('employee')) {
+            $timeEntry->load('employee.manager');
+        }
+
+        $manager = $timeEntry->employee?->manager;
+        if ($manager) {
+            $manager->notify(new TimeEntryStatusChangedNotification($timeEntry));
+        }
     }
 
     protected function checkAbsenceConflict(TimeEntry $timeEntry): void
@@ -77,7 +91,7 @@ class TimeEntryObserver
 
         if ($exists) {
             throw ValidationException::withMessages([
-                'date' => "Un congé validé existe déjà pour cette date. Saisie d'heures impossible.",
+                'date' => "Un congé validé existe déjà pour cette date ($timeEntry->date). La saisie d'heures de production est impossible.",
             ]);
         }
     }
