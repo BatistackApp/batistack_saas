@@ -371,10 +371,11 @@ jobs:
       # 2. Exécution conditionnelle des tests avec SQLite
       # Note : On utilise DB_DATABASE=:memory: pour une vitesse maximale
 
-      - name: Run All Tests (Core Change)
+      - name: Run Core Tests (Core Change)
         if: steps.changes.outputs.core == 'true'
         run: |
-          php artisan test tests/Feature/Core tests/Unit/Core --parallel --coverage-clover=coverage.xml
+          php artisan test tests/Feature/Core --parallel --coverage-clover=coverage.xml
+          php artisan test tests/Unit/Core --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=core" >> $GITHUB_ENV
         env:
           DB_CONNECTION: sqlite
