@@ -5,12 +5,18 @@ namespace App\Http\Controllers\HR;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\HR\StoreEmployeeRequest;
 use App\Http\Requests\HR\UpdateEmployeeRequest;
+use App\Jobs\HR\ProcessEmployeeOnboardingJob;
 use App\Models\HR\Employee;
+use App\Services\HR\EmployeeService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class EmployeeController extends Controller
 {
+    public function __construct(protected EmployeeService $employeeService)
+    {
+    }
+
     public function index(Request $request): JsonResponse
     {
         $query = Employee::query()
@@ -28,7 +34,7 @@ class EmployeeController extends Controller
 
     public function store(StoreEmployeeRequest $request): JsonResponse
     {
-        $employee = Employee::create($request->validated());
+        $employee = $this->employeeService->create($request->safe()->except('email'), $request->get('email'));
 
         return response()->json([
             'message' => 'Collaborateur créé avec succès',

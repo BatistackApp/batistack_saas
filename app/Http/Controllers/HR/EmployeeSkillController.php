@@ -9,7 +9,6 @@ use App\Models\HR\EmployeeSkill;
 use App\Models\HR\Skill;
 use App\Services\HR\SkillManagerService;
 use Illuminate\Http\JsonResponse;
-use Storage;
 
 class EmployeeSkillController extends Controller
 {
@@ -22,6 +21,7 @@ class EmployeeSkillController extends Controller
         $skills = EmployeeSkill::with(['employee', 'skill'])
             ->latest()
             ->paginate();
+
         return response()->json($skills);
     }
 
@@ -32,7 +32,7 @@ class EmployeeSkillController extends Controller
         $skill = Skill::findOrFail($data['skill_id']);
 
         if ($request->hasFile('document_path')) {
-            $data['document_path'] = $request->file('document_path')->store('hr/compliance', 'public');
+            $data['document_path'] = $request->file('document_path')->store('tenant/'.auth()->user()->tenants_id.'/hr/compliance', 'public');
         }
 
         $employeeSkill = $this->skillManagerService->assignSkill($employee, $skill, $data);
@@ -48,7 +48,7 @@ class EmployeeSkillController extends Controller
         $data = $request->validated();
 
         if ($request->hasFile('document_path')) {
-            $path = $request->file('document_path')->store('hr/compliance', 'public');
+            $path = $request->file('document_path')->store('tenant/'.auth()->user()->tenants_id.'/hr/compliance', 'public');
             $data['document_path'] = $path;
         }
 
@@ -63,6 +63,7 @@ class EmployeeSkillController extends Controller
     public function destroy(EmployeeSkill $employeeSkill): JsonResponse
     {
         $employeeSkill->delete();
-        return response()->json(['message' => 'Affectation supprimée']);;
+
+        return response()->json(['message' => 'Affectation supprimée']);
     }
 }

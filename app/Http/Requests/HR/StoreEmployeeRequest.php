@@ -20,6 +20,7 @@ class StoreEmployeeRequest extends FormRequest
             'contract_end_date' => ['nullable', 'date', 'after_or_equal:hired_at'],
             'hired_at' => ['nullable', 'date'],
             'is_active' => ['boolean'],
+            'email' => ['required', 'email', 'string', 'unique:users,email'],
         ];
     }
 
