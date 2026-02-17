@@ -45,7 +45,7 @@ class AbsenceRequestController extends Controller
 
         // Gestion de l'upload si présent
         if ($request->hasFile('justification_file')) {
-            $path = $request->file('justification_file')->store('hr/absences', 'public');
+            $path = $request->file('justification_file')->store('tenant/'.auth()->user()->tenants_id.'/hr/absences', 'public');
             $data['justification_path'] = $path;
         }
 
