@@ -374,7 +374,7 @@ jobs:
       - name: Run All Tests (Core Change)
         if: steps.changes.outputs.core == 'true'
         run: |
-          php artisan test --parallel --coverage-clover=coverage.xml
+          php artisan test tests/Feature/Core tests/Unit/Core --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=core" >> $GITHUB_ENV
         env:
           DB_CONNECTION: sqlite
