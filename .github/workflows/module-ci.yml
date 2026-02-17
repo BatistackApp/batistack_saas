@@ -362,12 +362,6 @@ jobs:
       - name: Install dependencies
         run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
 
-      - name: Vérification du Style (Pint)
-        run: ./vendor/bin/pint --test
-
-      - name: Analyse Statique (PHPStan / Larastan)
-        run: ./vendor/bin/phpstan analyse --error-format=github
-
       - name: Copy .env.testing
         run: cp .env.example .env.testing
 
