@@ -14,7 +14,7 @@ Route::prefix('hr')->group(function () {
         ->name('employees.time-entries');
 
     // --- Pointages Chantier ---
-    Route::apiResource('time-entries', TimeEntryController::class);
+    Route::apiResource('time-entries', TimeEntryController::class)->except('update');
     Route::patch('time-entries/{timeEntry}/verify', [TimeEntryController::class, 'verify'])
         ->name('time-entries.verify');
 
@@ -25,7 +25,7 @@ Route::prefix('hr')->group(function () {
 
     // Conformité / Habilitations (Le cœur du module actuel)
     Route::apiResource('skills', SkillController::class);
-    Route::apiResource('employee-skills', EmployeeSkillController::class);
+    Route::apiResource('employee-skills', EmployeeSkillController::class)->except('show');
 
     // --- Configuration Jours Fériés (Tenant) ---
     Route::get('holidays', [HolidayController::class, 'index'])->name('holidays.index');

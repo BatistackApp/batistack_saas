@@ -57,6 +57,11 @@ class AbsenceRequestController extends Controller
         ], 201);
     }
 
+    public function show(AbsenceRequest $absenceRequest): JsonResponse
+    {
+        return response()->json($absenceRequest->load(['employee', 'manager']));
+    }
+
     /**
      * Approbation ou Refus par le manager
      */

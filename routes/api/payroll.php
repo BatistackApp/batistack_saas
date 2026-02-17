@@ -5,7 +5,7 @@ use App\Http\Controllers\Payroll\PayslipController;
 
 Route::prefix('payroll')->group(function () {
     // --- Gestion des Périodes de Paie ---
-    Route::apiResource('payroll-periods', PayrollPeriodController::class);
+    Route::apiResource('payroll-periods', PayrollPeriodController::class)->except('show', 'update', 'destroy');
 
     // Génération massive des bulletins pour une période
     Route::post('payroll-periods/{payrollPeriod}/generate', [PayrollPeriodController::class, 'generatePayslips'])
