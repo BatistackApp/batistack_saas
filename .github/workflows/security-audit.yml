@@ -1,0 +1,78 @@
+name: 🛡️ Security Audit
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 0 * * 1' # S'exécute tous les lundis à minuit
+
+permissions:
+  contents: read
+  security-events: write # Requis pour afficher les alertes dans l'onglet Security
+
+jobs:
+  # 1. Analyse des secrets (Clés API, Mots de passe)
+  gitleaks:
+    name: 🔑 Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Important pour scanner tout l'historique
+      - name: Gitleaks Scan
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 2. Analyse des dépendances PHP et JS
+  dependencies-audit:
+    name: 📦 Dependencies Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check PHP Security (Composer)
+        run: |
+          composer audit
+        # Note: 'composer audit' est natif depuis Composer 2.4
+
+      - name: Check JS Security (NPM)
+        run: npm audit --audit-level=high
+
+  # 3. Analyse Statique du Code (CodeQL)
+  codeql-analysis:
+    name: 🔍 CodeQL Analysis (SAST)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript, php
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  # 4. Scan des vulnérabilités Laravel (Specific)
+  laravel-security:
+    name: 🐘 Laravel Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Install Enlightn (Security Checker)
+        run: |
+          composer require --dev enlightn/enlightn
+          # Ce scan vérifie les mauvaises configurations CSRF, Cookies, Headers, etc.
+          # php artisan enlighten:security (nécessite config spécifique)

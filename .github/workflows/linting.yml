@@ -1,0 +1,40 @@
+name: Lint & Auto-fix (Laravel Pint)
+
+on:
+  push:
+    branches: [ "develop" ]
+
+jobs:
+  laravel-pint:
+    runs-on: ubuntu-latest
+    # Nécessaire pour permettre à l'action de pousser les corrections sur la branche
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+        with:
+          # On récupère le dernier commit pour éviter les conflits
+          ref: ${{ github.head_ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, xml, ctype, iconv, intl
+          coverage: none
+
+      - name: Installer les dépendances
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
+      - name: Exécuter Laravel Pint (Correction)
+        run: ./vendor/bin/pint
+
+      - name: Commit des corrections
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: formatage du code avec Laravel Pint"
+          commit_user_name: "GitHub Actions"
+          commit_user_email: "actions@github.com"
+          commit_author: "GitHub Actions <actions@github.com>"

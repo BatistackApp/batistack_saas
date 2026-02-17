@@ -1,0 +1,77 @@
+name: 🎯 Gestion des Issues
+
+on:
+  issues:
+    types: [opened, labeled]
+
+permissions:
+  issues: write
+  pull-requests: read
+
+jobs:
+  # JOB 1 : TRIAGE INITIAL (Complexité et Priorité)
+  triage:
+    name: 🏷️ Triage Automatique
+    runs-on: ubuntu-latest
+    if: github.event.action == 'opened'
+    steps:
+      - name: Analyse du contenu
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const body = (context.payload.issue.body || '').toLowerCase();
+            const title = context.payload.issue.title.toLowerCase();
+            const labelsToAdd = [];
+
+            // 1. COMPLEXITÉ : On détecte les sujets "lourds" de votre ERP
+            let complexity = 'complexity:medium';
+            const highKeywords = ['migration', 'api', 'calcul', 'imputation', 'tenant', 'sécurité', 'performance', 'database', 'comptabilité'];
+            const lowKeywords = ['typo', 'css', 'style', 'traduction', 'libellé', 'texte', 'couleur', 'icône'];
+
+            if (highKeywords.some(word => title.includes(word) || body.includes(word))) {
+              complexity = 'complexity:high';
+            } else if (lowKeywords.some(word => title.includes(word) || body.includes(word))) {
+              complexity = 'complexity:low';
+            }
+            labelsToAdd.push(complexity);
+
+            // 2. PRIORITÉ : Critique si ça touche aux flux financiers ou à la prod
+            let priority = 'priorite:moyenne';
+            if (/urgent|bloqué|erreur 500|crash|paiement|validation/i.test(title + body)) {
+              priority = 'priorite:haute';
+            }
+            labelsToAdd.push(priority);
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number,
+              labels: labelsToAdd
+            });
+
+  # JOB 2 : ROUTAGE (Assignation par module)
+  routing:
+    name: 📋 Routage par Module
+    runs-on: ubuntu-latest
+    if: github.event.action == 'labeled'
+    steps:
+      - name: Assignation
+        uses: actions/github-script@v8
+        with:
+          script: |
+            // Remplacer par vos pseudos GitHub réels
+            const moduleAssignments = {
+              'module:expense': ['votre_pseudo'],
+              'module:chantiers': ['votre_pseudo'],
+              'infra': ['votre_pseudo_devops']
+            };
+
+            const addedLabel = context.payload.label.name.toLowerCase();
+            if (moduleAssignments[addedLabel]) {
+              await github.rest.issues.addAssignees({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                assignees: moduleAssignments[addedLabel]
+              });
+            }

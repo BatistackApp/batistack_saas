@@ -1,0 +1,66 @@
+name: Auto-Close Issues
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  issues: write
+  pull-requests: read
+  contents: read
+
+jobs:
+  close-linked-issues:
+    runs-on: ubuntu-latest
+    # On ne s'exécute que si la PR est fusionnée (pas juste fermée/rejetée)
+    if: github.event.pull_request.merged == true
+
+    steps:
+      - name: Get Linked Issues
+        id: get-issues
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const body = (context.payload.pull_request.body || '');
+            // On cherche spécifiquement "fixes: #123" ou "closes: #123" (insensible à la casse)
+            const regex = /(?:fixes|closes|resolves):\s*#(\d+)/gi;
+            const issues = [];
+            let match;
+            while ((match = regex.exec(body)) !== null) {
+              issues.push(match[1]);
+            }
+            // On retire les doublons éventuels
+            return [...new Set(issues)];
+
+      - name: Close and Comment Issues
+        if: steps.get-issues.outputs.result != '[]'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const issues = JSON.parse('${{ steps.get-issues.outputs.result }}');
+            const prNumber = context.payload.pull_request.number;
+
+            for (const number of issues) {
+              try {
+                // 1. Commentaire pour la traçabilité
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: number,
+                  body: `✅ **Résolu par la PR #${prNumber}**\nCe ticket a été fermé automatiquement suite à la fusion des changements.`
+                });
+
+                // 2. Fermeture du ticket
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: number,
+                  state: 'closed',
+                  state_reason: 'completed'
+                });
+
+                console.log(`Issue #${number} traitée.`);
+              } catch (error) {
+                console.error(`Erreur sur l'issue #${number}: ${error.message}`);
+              }
+            }
