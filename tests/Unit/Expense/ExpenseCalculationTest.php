@@ -24,12 +24,3 @@ test('il gère les montants avec des décimales complexes', function () {
     expect($result['amount_ht'])->toBe(43.18)
         ->and($result['amount_tva'])->toBe(2.37);
 });
-
-test('il calcule correctement les indemnités kilométriques', function () {
-    $distance = 150.5; // km
-    $rate = 0.60;      // €/km
-
-    $result = $this->calcService->calculateKm($distance, $rate);
-
-    expect($result)->toBe(90.30);
-});

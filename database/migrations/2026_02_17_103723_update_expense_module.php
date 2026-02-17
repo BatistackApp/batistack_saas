@@ -19,14 +19,13 @@ return new class extends Migration {
 
         // 3. Mise à jour des items pour la précision des IK et de l'analytique
         Schema::table('expense_items', function (Blueprint $table) {
-            // Champs spécifiques aux Indemnités Kilométriques
+            $table->boolean('is_mileage')->default(false)->after('expense_category_id');
+            $table->boolean('is_fixed_allowance')->default(false)->after('is_mileage'); // Pour les forfaits convention collective
             $table->decimal('distance_km', 8, 2)->nullable()->after('description');
-            $table->integer('vehicle_power')->nullable()->after('distance_km'); // Chevaux fiscaux
-            $table->string('start_location')->nullable()->after('vehicle_power');
-            $table->string('end_location')->nullable()->after('start_location');
-
-            // Pour le suivi de refacturation projet
-            $table->boolean('is_billable')->default(true)->after('amount_ttc');
+            $table->integer('vehicle_power')->nullable()->after('distance_km');
+            $table->string('start_location')->nullable();
+            $table->string('end_location')->nullable();
+            $table->boolean('is_billable')->default(true);
         });
     }
 
@@ -41,7 +40,7 @@ return new class extends Migration {
         });
 
         Schema::table('expense_items', function (Blueprint $table) {
-            $table->dropColumn(['distance_km', 'vehicle_power', 'start_location', 'end_location', 'is_billable']);
+            $table->dropColumn(['is_mileage', 'is_fixed_allowance', 'distance_km', 'vehicle_power', 'start_location', 'end_location', 'is_billable']);
         });
     }
 };
