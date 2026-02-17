@@ -9,9 +9,12 @@ use Illuminate\Validation\ValidationException;
 
 class ExpenseItemObserver
 {
-    public function __construct(
-        protected ExpenseCalculationService $calculationService
-    ) {}
+    protected ExpenseCalculationService $calculationService;
+
+    public function __construct()
+    {
+        $this->calculationService = app(ExpenseCalculationService::class);
+    }
 
     /**
      * Empêche la modification d'un item si la note est déjà soumise ou validée.
@@ -19,6 +22,11 @@ class ExpenseItemObserver
     public function saving(ExpenseItem $item): void
     {
         $report = $item->report;
+        // Si le rapport n'est pas chargé, on essaie de le charger
+        if (!$report && $item->expense_report_id) {
+            $report = $item->report()->first();
+        }
+
         if ($report && ! in_array($report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
             throw ValidationException::withMessages([
                 'report' => "Impossible de modifier une ligne d'une note de frais verrouillée (Statut: {$report->status->value}).",
@@ -38,10 +46,15 @@ class ExpenseItemObserver
 
     private function updateReportTotals(ExpenseItem $item): void
     {
-        $item->load('report');
+        // On s'assure de recharger la relation pour avoir l'objet frais
+        $report = $item->report;
 
-        if ($item->report) {
-            $this->calculationService->refreshReportTotals($item->report);
+        if (!$report && $item->expense_report_id) {
+            $report = $item->report()->first();
+        }
+
+        if ($report) {
+            $this->calculationService->refreshReportTotals($report);
         }
     }
 }

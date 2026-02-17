@@ -66,10 +66,10 @@ class ExpenseReportController extends Controller
     /**
      * Passage du statut Brouillon à Soumis.
      */
-    public function submit(ExpenseReport $report): JsonResponse
+    public function submit(ExpenseReport $expenseReport): JsonResponse
     {
         try {
-            $this->workflowService->submit($report);
+            $this->workflowService->submit($expenseReport);
             return response()->json(['message' => 'Note de frais soumise avec succès.']);
         } catch (ExpenseModuleException $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode());

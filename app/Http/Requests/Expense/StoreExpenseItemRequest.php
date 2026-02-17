@@ -32,7 +32,7 @@ class StoreExpenseItemRequest extends FormRequest
             'amount_ttc'          => ['required_unless:is_mileage,true', 'nullable', 'numeric', 'min:0'],
             'tax_rate'            => ['required_unless:is_mileage,true', 'nullable', 'numeric', 'in:0,2.1,5.5,10,20'],
 
-            'receipt'             => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'receipt_path'             => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ];
     }
 
@@ -48,14 +48,6 @@ class StoreExpenseItemRequest extends FormRequest
 
     public function authorize(): bool
     {
-        $reportId = $this->input('expense_report_id') ?? $this->route('expense_item')?->expense_report_id;
-        $report = ExpenseReport::find($reportId);
-
-        if (!$report) return false;
-
-        $isOwner = $report->user_id === auth()->id();
-        $isEditable = in_array($report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected]);
-
-        return $isOwner && $isEditable;
+        return auth()->user()->can('tenant.expenses.manage');
     }
 }

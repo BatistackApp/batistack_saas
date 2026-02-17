@@ -35,12 +35,12 @@ class ExpenseApprovalController extends Controller
     public function updateStatus(UpdateExpenseStatusRequest $request, ExpenseReport $expenseReport): JsonResponse
     {
         try {
-            if ($request->status === ExpenseStatus::Approved) {
+            if ($request->status === ExpenseStatus::Approved->value) {
                 $this->workflowService->approve($expenseReport, auth()->id());
                 return response()->json(['message' => 'Note approuvée et imputation lancée.']);
             }
 
-            if ($request->status === ExpenseStatus::Rejected) {
+            if ($request->status === ExpenseStatus::Rejected->value) {
                 // On met à jour le motif avant de rejeter
                 $expenseReport->update(['rejection_reason' => $request->reason]);
                 $this->workflowService->reject($expenseReport, $request->reason);

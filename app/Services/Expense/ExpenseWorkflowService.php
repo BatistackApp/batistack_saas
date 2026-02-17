@@ -41,7 +41,7 @@ class ExpenseWorkflowService
             'submitted_at' => now(),
         ]);
 
-        $validators = User::permission('validate-expenses')->get();
+        $validators = User::permission('tenant.expenses.validate')->get();
         Notification::send($validators, new ExpenseSubmittedNotification($report));
     }
 

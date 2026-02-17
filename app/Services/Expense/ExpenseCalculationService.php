@@ -30,15 +30,15 @@ class ExpenseCalculationService
      */
     public function calculateMileage(int $tenantId, float $distance, int $vehiclePower): float
     {
-        // On récupère le barème spécifique au tenant pour l'année en cours
+        // On récupère le barème spécifique au tenant
         $scale = DB::table('expense_mileage_scales')
             ->where('tenants_id', $tenantId)
             ->where('vehicle_power', $vehiclePower)
             ->where('active_year', now()->year)
             ->first();
 
-        // Fallback sur un barème par défaut si non configuré
-        $rate = $scale ? $scale->rate_per_km : 0.0000;
+        // Fallback sur un taux par défaut (0.60) si non configuré pour éviter le 0.00
+        $rate = $scale ? (float) $scale->rate_per_km : 0.60;
 
         return round($distance * $rate, 2);
     }
@@ -48,12 +48,14 @@ class ExpenseCalculationService
      */
     public function refreshReportTotals(ExpenseReport $report): void
     {
-        $totals = $report->items()
+        // On force le rafraîchissement des calculs depuis la base
+        $totals = DB::table('expense_items')
+            ->where('expense_report_id', $report->id)
             ->selectRaw('SUM(amount_ht) as ht, SUM(amount_tva) as tva, SUM(amount_ttc) as ttc')
             ->first();
 
         $report->update([
-            'amount_ht' => $totals->ht ?? 0,
+            'amount_ht'  => $totals->ht ?? 0,
             'amount_tva' => $totals->tva ?? 0,
             'amount_ttc' => $totals->ttc ?? 0,
         ]);

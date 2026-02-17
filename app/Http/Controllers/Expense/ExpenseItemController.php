@@ -24,49 +24,32 @@ class ExpenseItemController extends Controller
         $data = $request->validated();
         $amounts = [];
 
-        // Cas 1 : Indemnités Kilométriques
+        // Logique de bascule Kilométrage vs Standard
         if ($request->boolean('is_mileage')) {
-            // Ici on pourrait récupérer le taux du tenant, exemple fixe à 0.60€ pour l'exemple
-            $rate = 0.60;
-            $totalKm = $this->calcService->calculateKm($data['distance_km'], $rate);
+            $ttc = $this->calcService->calculateMileage(
+                auth()->user()->tenants_id,
+                $data['distance_km'],
+                $data['vehicle_power'] ?? 5
+            );
 
             $amounts = [
-                'amount_ttc' => $totalKm,
-                'amount_ht'  => $totalKm, // Pas de TVA sur les IK en général
+                'amount_ttc' => $ttc,
+                'amount_ht'  => $ttc, // Pas de TVA sur les IK
                 'amount_tva' => 0,
-                'tax_rate'   => 0,
-                'metadata'   => array_merge($data['metadata'] ?? [], [
-                    'distance_km'    => $data['distance_km'],
-                    'vehicle_power'  => $data['vehicle_power'],
-                    'start_location' => $data['start_location'] ?? null,
-                    'end_location'   => $data['end_location'] ?? null,
-                ])
+                'tax_rate'   => 0
             ];
-        }
-        // Cas 2 : Frais standard sur justificatif
-        else {
-            $calc = $this->calcService->calculateFromTtc($data['amount_ttc'], $data['tax_rate']);
-            $amounts = [
-                'amount_ttc' => $calc['amount_ttc'],
-                'amount_ht'  => $calc['amount_ht'],
-                'amount_tva' => $calc['amount_tva'],
-                'tax_rate'   => $data['tax_rate'],
-            ];
+        } else {
+            $amounts = $this->calcService->calculateFromTtc($data['amount_ttc'], $data['tax_rate']);
         }
 
-        // Gestion du fichier
-        if ($request->hasFile('receipt')) {
+        if ($request->hasFile('receipt_path')) {
             $tenantId = auth()->user()->tenants_id;
-            $path = $request->file('receipt')->store("tenants/{$tenantId}/expenses/receipts", 'public');
-            $amounts['receipt_path'] = $path;
+            $data['receipt_path'] = $request->file('receipt_path')->store("tenants/{$tenantId}/expenses", 'public');
         }
 
         $item = ExpenseItem::create(array_merge($data, $amounts));
 
-        return response()->json([
-            'message' => 'Ligne de frais ajoutée.',
-            'data'    => $item->load('category')
-        ], 201);
+        return response()->json($item->load('category'), 201);
     }
 
     /**
