@@ -16,7 +16,7 @@ Route::prefix('fleet')->group(function () {
 
     // --- 1. Gestion du Parc (Véhicules) ---
     Route::apiResource('vehicles', VehicleController::class)
-        ->names('fleet.vehicles');
+        ->names('fleet.vehicles')->except(['destroy']);
 
     Route::prefix('vehicles/{vehicle}')->group(function () {
         Route::post('sync-api', [VehicleController::class, 'syncApi'])->name('fleet.vehicles.sync-api');
@@ -33,7 +33,7 @@ Route::prefix('fleet')->group(function () {
     // --- 3. Maintenance & Plans ---
     Route::apiResource('maintenance-plans', MaintenancePlanController::class)->names('fleet.maintenance-plans');
 
-    Route::apiResource('maintenances', MaintenanceController::class)->names('fleet.maintenances');
+    Route::apiResource('maintenances', MaintenanceController::class)->names('fleet.maintenances')->except(['update', 'destroy']);
     Route::prefix('maintenances/{maintenance}')->group(function () {
         Route::patch('start', [MaintenanceController::class, 'start'])->name('fleet.maintenances.start');
         Route::patch('complete', [MaintenanceController::class, 'complete'])->name('fleet.maintenances.complete');

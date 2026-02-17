@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\GPAO;
 
+use App\Enums\GPAO\WorkOrderStatus;
+use App\Exceptions\GPAO\ProductionModuleException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GPAO\FinalizeWorkOrderRequest;
 use App\Http\Requests\GPAO\StoreWorkOrderRequest;
@@ -50,6 +52,20 @@ class WorkOrderController extends Controller
         $workOrder->update($request->validated());
 
         return response()->json($workOrder);
+    }
+
+    public function destroy(WorkOrder $workOrder)
+    {
+        if ($workOrder->status !== WorkOrderStatus::Draft || $workOrder->status !== WorkOrderStatus::Planned) {
+            throw new ProductionModuleException(
+                message: 'Impossible de supprimé un ordre de fabrication déjà lancé',
+                code: 422
+            );
+        }
+
+        $workOrder->delete();
+
+        return response()->json(['message' => 'Ordre de fabrication supprimé.']);
     }
 
     /**

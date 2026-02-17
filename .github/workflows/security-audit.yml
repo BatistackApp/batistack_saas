@@ -1,0 +1,90 @@
+name: 🛡️ Security Audit
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 0 * * 1' # S'exécute tous les lundis à minuit
+
+permissions:
+  contents: read
+  security-events: write # Requis pour afficher les alertes dans l'onglet Security
+
+jobs:
+  # 1. Analyse des secrets (Clés API, Mots de passe)
+  trufflehog:
+    name: 🔑 Secret Scanning
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Nécessaire pour scanner tout l'historique Git
+
+      - name: TruffleHog OSS
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --debug --only-verified # Ne remonte que les clés vérifiées si possible
+
+  # 2. Analyse des dépendances PHP et JS
+  dependencies-audit:
+    name: 📦 Dependencies Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check PHP Security (Composer)
+        run: |
+          composer audit
+        # Note: 'composer audit' est natif depuis Composer 2.4
+
+      - name: Check JS Security (NPM)
+        run: npm audit --audit-level=high
+
+  # 3. Analyse Statique du Code (CodeQL)
+  psalm-security:
+    name: 🔍 SAST Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: dom, curl, libxml, mbstring, zip, pdo_sqlite
+          tools: composer:v2
+
+      - name: Install Dependencies
+        run: |
+          composer install --no-progress --no-suggest --prefer-dist
+          # Installation du plugin Laravel pour Psalm
+          composer require --dev psalm/plugin-laravel
+
+      - name: Run Psalm Taint Analysis
+        # L'option --taint-analysis active le scan de sécurité
+        # L'option --report=checkstyle permet d'exporter les résultats si besoin
+        run: ./vendor/bin/psalm --taint-analysis --output-format=github
+
+  # 4. Scan des vulnérabilités Laravel (Specific)
+  laravel-security:
+    name: 🐘 Laravel Security Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+
+      - name: Install Enlightn (Security Checker)
+        run: |
+          composer require --dev enlightn/enlightn
+          # Ce scan vérifie les mauvaises configurations CSRF, Cookies, Headers, etc.
+          # php artisan enlighten:security (nécessite config spécifique)

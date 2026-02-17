@@ -1,0 +1,539 @@
+name: CI Modulaire - Tests SQLite
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+    types: [ opened, synchronize ]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  test-logic:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+
+      # 1. Détection des changements par module
+      - name: Détection des changements
+        uses: dorny/paths-filter@v3
+        id: changes
+        with:
+          filters: |
+            core:
+              - 'app/Console/Core/**'
+              - 'app/Enums/Core/**'
+              - 'app/Exceptions/Core/**'
+              - 'app/Http/Controllers/Core/**'
+              - 'app/Http/Middleware/Core/**'
+              - 'app/Http/Requests/Core/**'
+              - 'app/Jobs/Core/**'
+              - 'app/Mail/Core/**'
+              - 'app/Models/Core/**'
+              - 'app/Models/User.php'
+              - 'app/Notifications/Core/**'
+              - 'app/Observers/Core/**'
+              - 'app/Providers/Core/**'
+              - 'app/Rules/Core/**'
+              - 'app/Services/Core/**'
+              - 'app/Traits/HasTenant.php'
+            hr:
+              - 'app/Console/Commands/HR/**'
+              - 'app/Enums/HR/**'
+              - 'app/Exceptions/HR/**'
+              - 'app/Http/Controllers/HR/**'
+              - 'app/Http/Middleware/HR/**'
+              - 'app/Http/Requests/HR/**'
+              - 'app/Jobs/HR/**'
+              - 'app/Mail/HR/**'
+              - 'app/Models/HR/**'
+              - 'app/Notifications/HR/**'
+              - 'app/Observers/HR/**'
+              - 'app/Providers/HumanResourceServiceProvider.php'
+              - 'app/Rules/HR/**'
+              - 'app/Services/HR/**'
+              - 'database/factories/HR/**'
+              - 'lang/fr/hr.php'
+              - 'routes/api/hr.php'
+              - 'tests/Unit/HR/**'
+              - 'tests/Feature/HR/**'
+            accounting:
+              - 'app/Console/Commands/Accounting/**'
+              - 'app/Enums/Accounting/**'
+              - 'app/Exceptions/Accounting/**'
+              - 'app/Http/Controllers/Accounting/**'
+              - 'app/Http/Middleware/Accounting/**'
+              - 'app/Http/Requests/Accounting/**'
+              - 'app/Jobs/Accounting/**'
+              - 'app/Mail/Accounting/**'
+              - 'app/Models/Accounting/**'
+              - 'app/Notifications/Accounting/**'
+              - 'app/Observers/Accounting/**'
+              - 'app/Providers/AccountingServiceProvider.php'
+              - 'app/Rules/Accounting/**'
+              - 'app/Services/Accounting/**'
+              - 'database/factories/Accounting/**'
+              - 'lang/fr/accounting.php'
+              - 'routes/api/accounting.php'
+              - 'tests/Unit/Accounting/**'
+              - 'tests/Feature/Accounting/**'
+            articles:
+              - 'app/Console/Commands/Articles/**'
+              - 'app/Enums/Articles/**'
+              - 'app/Exceptions/Articles/**'
+              - 'app/Http/Controllers/Articles/**'
+              - 'app/Http/Middleware/Articles/**'
+              - 'app/Http/Requests/Articles/**'
+              - 'app/Jobs/Articles/**'
+              - 'app/Mail/Articles/**'
+              - 'app/Models/Articles/**'
+              - 'app/Notifications/Articles/**'
+              - 'app/Observers/Articles/**'
+              - 'app/Providers/ArticlesServiceProvider.php'
+              - 'app/Rules/Articles/**'
+              - 'app/Services/Articles/**'
+              - 'database/factories/Articles/**'
+              - 'lang/fr/articles.php'
+              - 'routes/api/articles.php'
+              - 'tests/Unit/Articles/**'
+              - 'tests/Feature/Articles/**'
+            banque:
+              - 'app/Console/Commands/Banque/**'
+              - 'app/Enums/Banque/**'
+              - 'app/Exceptions/Banque/**'
+              - 'app/Http/Controllers/Banque/**'
+              - 'app/Http/Middleware/Banque/**'
+              - 'app/Http/Requests/Banque/**'
+              - 'app/Jobs/Banque/**'
+              - 'app/Mail/Banque/**'
+              - 'app/Models/Banque/**'
+              - 'app/Notifications/Banque/**'
+              - 'app/Observers/Banque/**'
+              - 'app/Providers/BankServiceProvider.php'
+              - 'app/Rules/Banque/**'
+              - 'app/Services/Banque/**'
+              - 'database/factories/Banque/**'
+              - 'lang/fr/bank.php'
+              - 'routes/api/banque.php'
+              - 'tests/Unit/Banque/**'
+              - 'tests/Feature/Banque/**'
+            bim:
+              - 'app/Console/Commands/Bim/**'
+              - 'app/Enums/Bim/**'
+              - 'app/Exceptions/Bim/**'
+              - 'app/Http/Controllers/Bim/**'
+              - 'app/Http/Middleware/Bim/**'
+              - 'app/Http/Requests/Bim/**'
+              - 'app/Jobs/Bim/**'
+              - 'app/Mail/Bim/**'
+              - 'app/Models/Bim/**'
+              - 'app/Notifications/Bim/**'
+              - 'app/Observers/Bim/**'
+              - 'app/Providers/BimServiceProvider.php'
+              - 'app/Rules/Bim/**'
+              - 'app/Services/Bim/**'
+              - 'database/factories/Bim/**'
+              - 'lang/fr/bim.php'
+              - 'routes/api/bim.php'
+              - 'tests/Unit/Bim/**'
+              - 'tests/Feature/Bim/**'
+            commerce:
+              - 'app/Console/Commands/Commerce/**'
+              - 'app/Enums/Commerce/**'
+              - 'app/Exceptions/Commerce/**'
+              - 'app/Http/Controllers/Commerce/**'
+              - 'app/Http/Middleware/Commerce/**'
+              - 'app/Http/Requests/Commerce/**'
+              - 'app/Jobs/Commerce/**'
+              - 'app/Mail/Commerce/**'
+              - 'app/Models/Commerce/**'
+              - 'app/Notifications/Commerce/**'
+              - 'app/Observers/Commerce/**'
+              - 'app/Providers/CommerceServiceProvider.php'
+              - 'app/Rules/Commerce/**'
+              - 'app/Services/Commerce/**'
+              - 'database/factories/Commerce/**'
+              - 'lang/fr/commerce.php'
+              - 'routes/api/commerce.php'
+              - 'tests/Unit/Commerce/**'
+              - 'tests/Feature/Commerce/**'
+            expense:
+              - 'app/Console/Commands/Expense/**'
+              - 'app/Enums/Expense/**'
+              - 'app/Exceptions/Expense/**'
+              - 'app/Http/Controllers/Expense/**'
+              - 'app/Http/Middleware/Expense/**'
+              - 'app/Http/Requests/Expense/**'
+              - 'app/Jobs/Expense/**'
+              - 'app/Mail/Expense/**'
+              - 'app/Models/Expense/**'
+              - 'app/Notifications/Expense/**'
+              - 'app/Observers/Expense/**'
+              - 'app/Providers/ExpenseServiceProvider.php'
+              - 'app/Rules/Expense/**'
+              - 'app/Services/Expense/**'
+              - 'database/factories/Expense/**'
+              - 'lang/fr/expense.php'
+              - 'routes/api/expense.php'
+              - 'tests/Unit/Expense/**'
+              - 'tests/Feature/Expense/**'
+            fleet:
+              - 'app/Console/Commands/Fleet/**'
+              - 'app/Enums/Fleet/**'
+              - 'app/Exceptions/Fleet/**'
+              - 'app/Http/Controllers/Fleet/**'
+              - 'app/Http/Middleware/Fleet/**'
+              - 'app/Http/Requests/Fleet/**'
+              - 'app/Jobs/Fleet/**'
+              - 'app/Mail/Fleet/**'
+              - 'app/Models/Fleet/**'
+              - 'app/Notifications/Fleet/**'
+              - 'app/Observers/Fleet/**'
+              - 'app/Providers/FleetServiceProvider.php'
+              - 'app/Rules/Fleet/**'
+              - 'app/Services/Fleet/**'
+              - 'database/factories/Fleet/**'
+              - 'lang/fr/fleet.php'
+              - 'routes/api/fleet.php'
+              - 'tests/Unit/Fleet/**'
+              - 'tests/Feature/Fleet/**'
+            ged:
+              - 'app/Console/Commands/GED/**'
+              - 'app/Enums/GED/**'
+              - 'app/Exceptions/GED/**'
+              - 'app/Http/Controllers/GED/**'
+              - 'app/Http/Middleware/GED/**'
+              - 'app/Http/Requests/GED/**'
+              - 'app/Jobs/GED/**'
+              - 'app/Mail/GED/**'
+              - 'app/Models/GED/**'
+              - 'app/Notifications/GED/**'
+              - 'app/Observers/GED/**'
+              - 'app/Providers/GEDServiceProvider.php'
+              - 'app/Rules/GED/**'
+              - 'app/Services/GED/**'
+              - 'database/factories/GED/**'
+              - 'lang/fr/ged.php'
+              - 'routes/api/ged.php'
+              - 'tests/Unit/GED/**'
+              - 'tests/Feature/GED/**'
+            gpao:
+              - 'app/Console/Commands/GPAO/**'
+              - 'app/Enums/GPAO/**'
+              - 'app/Exceptions/GPAO/**'
+              - 'app/Http/Controllers/GPAO/**'
+              - 'app/Http/Middleware/GPAO/**'
+              - 'app/Http/Requests/GPAO/**'
+              - 'app/Jobs/GPAO/**'
+              - 'app/Mail/GPAO/**'
+              - 'app/Models/GPAO/**'
+              - 'app/Notifications/GPAO/**'
+              - 'app/Observers/GPAO/**'
+              - 'app/Providers/GPAOServiceProvider.php'
+              - 'app/Rules/GPAO/**'
+              - 'app/Services/GPAO/**'
+              - 'database/factories/GPAO/**'
+              - 'lang/fr/gpao.php'
+              - 'routes/api/gpao.php'
+              - 'tests/Unit/GPAO/**'
+              - 'tests/Feature/GPAO/**'
+            intervention:
+              - 'app/Console/Commands/Intervention/**'
+              - 'app/Enums/Intervention/**'
+              - 'app/Exceptions/Intervention/**'
+              - 'app/Http/Controllers/Intervention/**'
+              - 'app/Http/Middleware/Intervention/**'
+              - 'app/Http/Requests/Intervention/**'
+              - 'app/Jobs/Intervention/**'
+              - 'app/Mail/Intervention/**'
+              - 'app/Models/Intervention/**'
+              - 'app/Notifications/Intervention/**'
+              - 'app/Observers/Intervention/**'
+              - 'app/Providers/InterventionServiceProvider.php'
+              - 'app/Rules/Intervention/**'
+              - 'app/Services/Intervention/**'
+              - 'database/factories/Intervention/**'
+              - 'lang/fr/intervention.php'
+              - 'routes/api/intervention.php'
+              - 'tests/Unit/Intervention/**'
+              - 'tests/Feature/Intervention/**'
+            locations:
+              - 'app/Console/Commands/Locations/**'
+              - 'app/Enums/Locations/**'
+              - 'app/Exceptions/Locations/**'
+              - 'app/Http/Controllers/Locations/**'
+              - 'app/Http/Middleware/Locations/**'
+              - 'app/Http/Requests/Locations/**'
+              - 'app/Jobs/Locations/**'
+              - 'app/Mail/Locations/**'
+              - 'app/Models/Locations/**'
+              - 'app/Notifications/Locations/**'
+              - 'app/Observers/Locations/**'
+              - 'app/Providers/LocationsServiceProvider.php'
+              - 'app/Rules/Locations/**'
+              - 'app/Services/Locations/**'
+              - 'database/factories/Locations/**'
+              - 'lang/fr/locations.php'
+              - 'routes/api/locations.php'
+              - 'tests/Unit/Locations/**'
+              - 'tests/Feature/Locations/**'
+            payroll:
+              - 'app/Console/Commands/Payroll/**'
+              - 'app/Enums/Payroll/**'
+              - 'app/Exceptions/Payroll/**'
+              - 'app/Http/Controllers/Payroll/**'
+              - 'app/Http/Middleware/Payroll/**'
+              - 'app/Http/Requests/Payroll/**'
+              - 'app/Jobs/Payroll/**'
+              - 'app/Mail/Payroll/**'
+              - 'app/Models/Payroll/**'
+              - 'app/Notifications/Payroll/**'
+              - 'app/Observers/Payroll/**'
+              - 'app/Providers/PayrollServiceProvider.php'
+              - 'app/Rules/Payroll/**'
+              - 'app/Services/Payroll/**'
+              - 'database/factories/Payroll/**'
+              - 'lang/fr/payroll.php'
+              - 'routes/api/payroll.php'
+              - 'tests/Unit/Payroll/**'
+              - 'tests/Feature/Payroll/**'
+            pilotage:
+              - 'app/Console/Commands/Pilotage/**'
+              - 'app/Enums/Pilotage/**'
+              - 'app/Exceptions/Pilotage/**'
+              - 'app/Http/Controllers/Pilotage/**'
+              - 'app/Http/Middleware/Pilotage/**'
+              - 'app/Http/Requests/Pilotage/**'
+              - 'app/Jobs/Pilotage/**'
+              - 'app/Mail/Pilotage/**'
+              - 'app/Models/Pilotage/**'
+              - 'app/Notifications/Pilotage/**'
+              - 'app/Observers/Pilotage/**'
+              - 'app/Providers/PilotageServiceProvider.php'
+              - 'app/Rules/Pilotage/**'
+              - 'app/Services/Pilotage/**'
+              - 'database/factories/Pilotage/**'
+              - 'lang/fr/pilotage.php'
+              - 'routes/api/pilotage.php'
+              - 'tests/Unit/Pilotage/**'
+              - 'tests/Feature/Pilotage/**'
+
+            tiers:
+              - 'app/Console/Commands/Tiers/**'
+              - 'app/Enums/Tiers/**'
+              - 'app/Exceptions/Tiers/**'
+              - 'app/Http/Controllers/Tiers/**'
+              - 'app/Http/Middleware/Tiers/**'
+              - 'app/Http/Requests/Tiers/**'
+              - 'app/Jobs/Tiers/**'
+              - 'app/Mail/Tiers/**'
+              - 'app/Models/Tiers/**'
+              - 'app/Notifications/Tiers/**'
+              - 'app/Observers/Tiers/**'
+              - 'app/Providers/TiersServiceProvider.php'
+              - 'app/Rules/Tiers/**'
+              - 'app/Services/Tiers/**'
+              - 'database/factories/Tiers/**'
+              - 'lang/fr/tiers.php'
+              - 'routes/api/tiers.php'
+              - 'tests/Unit/Tiers/**'
+              - 'tests/Feature/Tiers/**'
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: mbstring, xml, ctype, iconv, sqlite3, pdo_sqlite, bcmath, gd
+          coverage: pcov
+          tools: composer:v2, phpstan, pint
+
+      - name: Cache des dépendence composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        run: composer install --no-ansi --no-interaction --no-scripts --no-progress --prefer-dist
+
+      - name: Vérification du Style (Pint)
+        run: ./vendor/bin/pint --test
+
+      - name: Analyse Statique (PHPStan / Larastan)
+        run: ./vendor/bin/phpstan analyse --error-format=github
+
+      - name: Copy .env.testing
+        run: cp .env.example .env.testing
+
+      - name: Generate Key
+        run: php artisan key:generate --env=testing
+
+      # 2. Exécution conditionnelle des tests avec SQLite
+      # Note : On utilise DB_DATABASE=:memory: pour une vitesse maximale
+
+      - name: Run All Tests (Core Change)
+        if: steps.changes.outputs.core == 'true'
+        run: |
+          php artisan test --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=core" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run HR Module Tests
+        if: steps.changes.outputs.hr == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/HR tests/Unit/HR --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=hr" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Expense Module Tests
+        if: steps.changes.outputs.expense == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Expense tests/Unit/Expense --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=expense" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Accounting Module Tests
+        if: steps.changes.outputs.accounting == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Accounting tests/Unit/Accounting --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=accounting" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Articles Module Tests
+        if: steps.changes.outputs.articles == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Articles tests/Unit/Articles --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=articles" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Banque Module Tests
+        if: steps.changes.outputs.banque == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Banque tests/Unit/Banque --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=banque" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Bim Module Tests
+        if: steps.changes.outputs.bim == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Bim tests/Unit/Bim --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=bim" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Commerce Module Tests
+        if: steps.changes.outputs.commerce == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Commerce tests/Unit/Commerce --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=commerce" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Fleet Module Tests
+        if: steps.changes.outputs.fleet == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Fleet tests/Unit/Fleet --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=fleet" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run GED Module Tests
+        if: steps.changes.outputs.ged == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/GED tests/Unit/GED --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=ged" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run GPAO Module Tests
+        if: steps.changes.outputs.gpao == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/GPAO tests/Unit/GPAO --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=gpao" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Intervention Module Tests
+        if: steps.changes.outputs.intervention == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Intervention tests/Unit/Intervention --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=intervention" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Locations Module Tests
+        if: steps.changes.outputs.locations == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Locations tests/Unit/Locations --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=locations" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Payroll Module Tests
+        if: steps.changes.outputs.payroll == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Payroll tests/Unit/Payroll --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=payroll" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Tiers Module Tests
+        if: steps.changes.outputs.tiers == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Tiers tests/Unit/Tiers --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=tiers" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: Run Pilotage Module Tests
+        if: steps.changes.outputs.pilotage == 'true' && steps.changes.outputs.core == 'false'
+        run: |
+          php artisan test tests/Feature/Pilotage tests/Unit/Pilotage --parallel --coverage-clover=coverage.xml
+          echo "CODECOV_FLAG=pilotage" >> $GITHUB_ENV
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
+
+      - name: No tests required
+        if: steps.changes.outputs.core == 'false' && steps.changes.outputs.hr == 'false' && steps.changes.outputs.expense == 'false'
+        run: echo "Aucun changement impactant les modules métier. Skip des tests."
+
+      - name: Upload to Codecov
+        if: env.CODECOV_FLAG != ''
+        uses: codecov/codecov-action@v4
+        with:
+          file: ./coverage.xml
+          flags: ${{ env.CODECOV_FLAG }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
+
+      - name: Rapport Final
+        if: always()
+        run: echo "CI terminée pour le flag ${{ env.CODECOV_FLAG }}."

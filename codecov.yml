@@ -1,0 +1,379 @@
+# Configuration globale pour le projet Laravel Modulaire
+codecov:
+  require_ci_to_pass: yes
+  notify:
+    after_n_builds: 1
+
+coverage:
+  precision: 2
+  round: down
+  range: "60...100"
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: auto
+
+# Système de Carryforward pour ne pas perdre la couverture des modules non testés
+flag_management:
+  default_rules:
+    carryforward: true
+
+flags:
+  core:
+    paths:
+      - app/Console/Commands/Core/
+      - app/Enums/Core/
+      - app/Exceptions/Core/
+      - app/Http/Controllers/Core/
+      - app/Http/Middleware/Core/
+      - app/Http/Requests/Core/
+      - app/Jobs/Core/
+      - app/Mail/Core/
+      - app/Models/Core/
+      - app/Models/User.php
+      - app/Notifications/Core/
+      - app/Observers/Core/
+      - app/Providers/CoreServiceProvider.php
+      - app/Providers/AppServiceProvider.php
+      - app/Rules/Core/
+      - app/Services/Core/
+      - app/Traits/HasTenant.php
+      - database/factories/Core/
+      - lang/fr/core.php
+      - routes/api/api.php
+      - tests/Unit/Core/
+      - tests/Feature/Core/
+
+  accounting:
+    paths:
+      - app/Console/Commands/Accounting/
+      - app/Enums/Accounting/
+      - app/Exceptions/Accounting/
+      - app/Http/Controllers/Accounting/
+      - app/Http/Middleware/Accounting/
+      - app/Http/Requests/Accounting/
+      - app/Jobs/Accounting/
+      - app/Mail/Accounting/
+      - app/Models/Accounting/
+      - app/Notifications/Accounting/
+      - app/Observers/Accounting/
+      - app/Providers/AccountingServiceProvider.php
+      - app/Rules/Accounting/
+      - app/Services/Accounting/
+      - database/factories/Accounting/
+      - lang/fr/accounting.php
+      - routes/api/accounting.php
+      - tests/Unit/Accounting/
+      - tests/Feature/Accounting/
+
+  articles:
+    paths:
+      - app/Console/Commands/Articles/
+      - app/Enums/Articles/
+      - app/Exceptions/Articles/
+      - app/Http/Controllers/Articles/
+      - app/Http/Middleware/Articles/
+      - app/Http/Requests/Articles/
+      - app/Jobs/Articles/
+      - app/Mail/Articles/
+      - app/Models/Articles/
+      - app/Notifications/Articles/
+      - app/Observers/Articles/
+      - app/Providers/ArticlesServiceProvider.php
+      - app/Rules/Articles/
+      - app/Services/Articles/
+      - database/factories/Articles/
+      - lang/fr/articles.php
+      - routes/api/articles.php
+      - tests/Unit/Articles/
+      - tests/Feature/Articles/
+
+  banque:
+    paths:
+      - app/Console/Commands/Banque/
+      - app/Enums/Banque/
+      - app/Exceptions/Banque/
+      - app/Http/Controllers/Banque/
+      - app/Http/Middleware/Banque/
+      - app/Http/Requests/Banque/
+      - app/Jobs/Banque/
+      - app/Mail/Banque/
+      - app/Models/Banque/
+      - app/Notifications/Banque/
+      - app/Observers/Banque/
+      - app/Providers/BankServiceProvider.php
+      - app/Rules/Banque/
+      - app/Services/Banque/
+      - database/factories/Banque/
+      - lang/fr/banque.php
+      - routes/api/banque.php
+      - tests/Unit/Banque/
+      - tests/Feature/Banque/
+
+  bim:
+    paths:
+      - app/Console/Commands/BIM/
+      - app/Enums/BIM/
+      - app/Exceptions/BIM/
+      - app/Http/Controllers/BIM/
+      - app/Http/Middleware/BIM/
+      - app/Http/Requests/BIM/
+      - app/Jobs/BIM/
+      - app/Mail/BIM/
+      - app/Models/BIM/
+      - app/Notifications/BIM/
+      - app/Observers/BIM/
+      - app/Providers/BIMServiceProvider.php
+      - app/Rules/BIM/
+      - app/Services/BIM/
+      - database/factories/BIM/
+      - lang/fr/bim.php
+      - routes/api/bim.php
+      - tests/Unit/BIM/
+      - tests/Feature/BIM/
+
+  commerce:
+    paths:
+      - app/Console/Commands/Commerce/
+      - app/Enums/Commerce/
+      - app/Exceptions/Commerce/
+      - app/Http/Controllers/Commerce/
+      - app/Http/Middleware/Commerce/
+      - app/Http/Requests/Commerce/
+      - app/Jobs/Commerce/
+      - app/Mail/Commerce/
+      - app/Models/Commerce/
+      - app/Notifications/Commerce/
+      - app/Observers/Commerce/
+      - app/Providers/CommerceServiceProvider.php
+      - app/Rules/Commerce/
+      - app/Services/Commerce/
+      - database/factories/Commerce/
+      - lang/fr/commerce.php
+      - routes/api/commerce.php
+      - tests/Unit/Commerce/
+      - tests/Feature/Commerce/
+
+  expense:
+    paths:
+      - app/Console/Commands/Expense/
+      - app/Enums/Expense/
+      - app/Exceptions/Expense/
+      - app/Http/Controllers/Expense/
+      - app/Http/Middleware/Expense/
+      - app/Http/Requests/Expense/
+      - app/Jobs/Expense/
+      - app/Mail/Expense/
+      - app/Models/Expense/
+      - app/Notifications/Expense/
+      - app/Observers/Expense/
+      - app/Providers/ExpenseServiceProvider.php
+      - app/Rules/Expense/
+      - app/Services/Expense/
+      - database/factories/Expense/
+      - lang/fr/expense.php
+      - routes/api/expense.php
+      - tests/Unit/Expense/
+      - tests/Feature/Expense/
+
+  fleet:
+    paths:
+      - app/Console/Commands/Fleet/
+      - app/Enums/Fleet/
+      - app/Exceptions/Fleet/
+      - app/Http/Controllers/Fleet/
+      - app/Http/Middleware/Fleet/
+      - app/Http/Requests/Fleet/
+      - app/Jobs/Fleet/
+      - app/Mail/Fleet/
+      - app/Models/Fleet/
+      - app/Notifications/Fleet/
+      - app/Observers/Fleet/
+      - app/Providers/FleetServiceProvider.php
+      - app/Rules/Fleet/
+      - app/Services/Fleet/
+      - database/factories/Fleet/
+      - lang/fr/fleet.php
+      - routes/api/fleet.php
+      - tests/Unit/Fleet/
+      - tests/Feature/Fleet/
+
+  ged:
+    paths:
+      - app/Console/Commands/GED/
+      - app/Enums/GED/
+      - app/Exceptions/GED/
+      - app/Http/Controllers/GED/
+      - app/Http/Middleware/GED/
+      - app/Http/Requests/GED/
+      - app/Jobs/GED/
+      - app/Mail/GED/
+      - app/Models/GED/
+      - app/Notifications/GED/
+      - app/Observers/GED/
+      - app/Providers/GEDServiceProvider.php
+      - app/Rules/GED/
+      - app/Services/GED/
+      - database/factories/GED/
+      - lang/fr/ged.php
+      - routes/api/ged.php
+      - tests/Unit/GED/
+      - tests/Feature/GED/
+
+  gpao:
+    paths:
+      - app/Console/Commands/GPAO/
+      - app/Enums/GPAO/
+      - app/Exceptions/GPAO/
+      - app/Http/Controllers/GPAO/
+      - app/Http/Middleware/GPAO/
+      - app/Http/Requests/GPAO/
+      - app/Jobs/GPAO/
+      - app/Mail/GPAO/
+      - app/Models/GPAO/
+      - app/Notifications/GPAO/
+      - app/Observers/GPAO/
+      - app/Providers/GPAOServiceProvider.php
+      - app/Rules/GPAO/
+      - app/Services/GPAO/
+      - database/factories/GPAO/
+      - lang/fr/gpao.php
+      - routes/api/gpao.php
+      - tests/Unit/GPAO/
+      - tests/Feature/GPAO/
+
+  hr:
+    paths:
+      - app/Console/Commands/HR/
+      - app/Enums/HR/
+      - app/Exceptions/HR/
+      - app/Http/Controllers/HR/
+      - app/Http/Middleware/HR/
+      - app/Http/Requests/HR/
+      - app/Jobs/HR/
+      - app/Mail/HR/
+      - app/Models/HR/
+      - app/Notifications/HR/
+      - app/Observers/HR/
+      - app/Providers/HumanResourceServiceProvider.php
+      - app/Rules/HR/
+      - app/Services/HR/
+      - database/factories/HR/
+      - lang/fr/hr.php
+      - routes/api/hr.php
+      - tests/Unit/HR/
+      - tests/Feature/HR/
+
+  intervention:
+    paths:
+      - app/Console/Commands/Intervention/
+      - app/Enums/Intervention/
+      - app/Exceptions/Intervention/
+      - app/Http/Controllers/Intervention/
+      - app/Http/Middleware/Intervention/
+      - app/Http/Requests/Intervention/
+      - app/Jobs/Intervention/
+      - app/Mail/Intervention/
+      - app/Models/Intervention/
+      - app/Notifications/Intervention/
+      - app/Observers/Intervention/
+      - app/Providers/InterventionServiceProvider.php
+      - app/Rules/Intervention/
+      - app/Services/Intervention/
+      - database/factories/Intervention/
+      - lang/fr/intervention.php
+      - routes/api/intervention.php
+      - tests/Unit/Intervention/
+      - tests/Feature/Intervention/
+
+  locations:
+    paths:
+      - app/Console/Commands/Locations/
+      - app/Enums/Locations/
+      - app/Exceptions/Locations/
+      - app/Http/Controllers/Locations/
+      - app/Http/Middleware/Locations/
+      - app/Http/Requests/Locations/
+      - app/Jobs/Locations/
+      - app/Mail/Locations/
+      - app/Models/Locations/
+      - app/Notifications/Locations/
+      - app/Observers/Locations/
+      - app/Providers/AccountingServiceProvider.php
+      - app/Rules/Locations/
+      - app/Services/Locations/
+      - database/factories/Locations/
+      - lang/fr/locations.php
+      - routes/api/locations.php
+      - tests/Unit/Locations/
+      - tests/Feature/Locations/
+
+  payroll:
+    paths:
+      - app/Console/Commands/Payroll/
+      - app/Enums/Payroll/
+      - app/Exceptions/Payroll/
+      - app/Http/Controllers/Payroll/
+      - app/Http/Middleware/Payroll/
+      - app/Http/Requests/Payroll/
+      - app/Jobs/Payroll/
+      - app/Mail/Payroll/
+      - app/Models/Payroll/
+      - app/Notifications/Payroll/
+      - app/Observers/Payroll/
+      - app/Providers/PayrollServiceProvider.php
+      - app/Rules/Payroll/
+      - app/Services/Payroll/
+      - database/factories/Payroll/
+      - lang/fr/payroll.php
+      - routes/api/payroll.php
+      - tests/Unit/Payroll/
+      - tests/Feature/Payroll/
+
+  pilotage:
+    paths:
+      - app/Console/Commands/Pilotage/
+      - app/Enums/Pilotage/
+      - app/Exceptions/Pilotage/
+      - app/Http/Controllers/Pilotage/
+      - app/Http/Middleware/Pilotage/
+      - app/Http/Requests/Pilotage/
+      - app/Jobs/Pilotage/
+      - app/Mail/Pilotage/
+      - app/Models/Pilotage/
+      - app/Notifications/Pilotage/
+      - app/Observers/Pilotage/
+      - app/Providers/PilotageServiceProvider.php
+      - app/Rules/Pilotage/
+      - app/Services/Pilotage/
+      - database/factories/Pilotage/
+      - lang/fr/pilotage.php
+      - routes/api/pilotage.php
+      - tests/Unit/Pilotage/
+      - tests/Feature/Pilotage/
+
+  tiers:
+    paths:
+      - app/Console/Commands/Tiers/
+      - app/Enums/Tiers/
+      - app/Exceptions/Tiers/
+      - app/Http/Controllers/Tiers/
+      - app/Http/Middleware/Tiers/
+      - app/Http/Requests/Tiers/
+      - app/Jobs/Tiers/
+      - app/Mail/Tiers/
+      - app/Models/Tiers/
+      - app/Notifications/Tiers/
+      - app/Observers/Tiers/
+      - app/Providers/TiersServiceProvider.php
+      - app/Rules/Tiers/
+      - app/Services/Tiers/
+      - database/factories/Tiers/
+      - lang/fr/tiers.php
+      - routes/api/tiers.php
+      - tests/Unit/Tiers/
+      - tests/Feature/Tiers/

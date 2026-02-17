@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Locations;
 
+use App\Enums\Locations\RentalStatus;
+use App\Exceptions\Locations\RentalModuleException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Locations\StoreRentalContractRequest;
 use App\Http\Requests\Locations\UpdateRentalContractRequest;
@@ -38,5 +40,21 @@ class RentalContractController extends Controller
     {
         $rentalContract->update($request->validated());
         return response()->json($rentalContract);
+    }
+
+    /**
+     * @throws RentalModuleException
+     */
+    public function destroy(RentalContract $rentalContract)
+    {
+        if ($rentalContract->status !== RentalStatus::DRAFT) {
+            throw new RentalModuleException(
+                message: 'Impossible de supprimer un contrat de location en cours.',
+                code: 422
+            );
+        }
+
+        $rentalContract->delete();
+        return response()->json(['message' => 'Contrat de location supprimé.']);
     }
 }
