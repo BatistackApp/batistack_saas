@@ -36,17 +36,15 @@ class TimeTrackingService
     public function approveBulk(array $entryIds): int
     {
         return DB::transaction(function () use ($entryIds) {
-            $count = 0;
             $entries = TimeEntry::whereIn('id', $entryIds)
                 ->where('status', TimeEntryStatus::Verified)
                 ->get();
 
             foreach ($entries as $entry) {
                 $this->approveEntry($entry);
-                $count++;
             }
 
-            return $count;
+            return $entries->count();
         });
     }
 
@@ -56,7 +54,7 @@ class TimeTrackingService
     public function submitEntry(TimeEntry $entry): void
     {
         if ($entry->status !== TimeEntryStatus::Draft && $entry->status !== TimeEntryStatus::Rejected) {
-            throw ValidationException::withMessages(['status' => "Seuls les brouillons ou les pointages rejetés peuvent être soumis."]);
+            throw ValidationException::withMessages(['status' => 'Seuls les brouillons ou les pointages rejetés peuvent être soumis.']);
         }
 
         $this->transition($entry, TimeEntryStatus::Submitted, "Soumission par l'utilisateur.");
@@ -68,13 +66,15 @@ class TimeTrackingService
     public function verifyEntry(TimeEntry $entry, ?string $comment = null): void
     {
         if ($entry->status !== TimeEntryStatus::Submitted) {
-            throw ValidationException::withMessages(['status' => "Le pointage doit être soumis pour être vérifié."]);
+            throw ValidationException::withMessages([
+                'status' => "Seuls les pointages soumis peuvent être vérifiés.",
+            ]);
         }
 
         $entry->verified_at = now();
         $entry->verified_by = Auth::id();
 
-        $this->transition($entry, TimeEntryStatus::Verified, $comment ?? "Vérification terrain effectuée.");
+        $this->transition($entry, TimeEntryStatus::Verified, $comment ?? 'Vérification terrain effectuée.');
     }
 
     /**
@@ -83,13 +83,15 @@ class TimeTrackingService
     public function approveEntry(TimeEntry $entry): void
     {
         if ($entry->status !== TimeEntryStatus::Verified) {
-            throw ValidationException::withMessages(['status' => "Le pointage doit être vérifié par un chef de chantier avant approbation finale."]);
+            throw ValidationException::withMessages([
+                'status' => "Le pointage doit être vérifié par un manager (N1) avant l'approbation finale."
+            ]);
         }
 
         $entry->approved_at = now();
         $entry->approved_by = Auth::id();
 
-        $this->transition($entry, TimeEntryStatus::Approved, $comment ?? "Approbation finale et clôture.");
+        $this->transition($entry, TimeEntryStatus::Approved, $comment ?? 'Approbation finale et clôture.');
 
         // Action financière associée
         $this->imputeCostToProject($entry);
@@ -101,12 +103,12 @@ class TimeTrackingService
     public function rejectEntry(TimeEntry $entry, string $reason): void
     {
         if (in_array($entry->status, [TimeEntryStatus::Draft, TimeEntryStatus::Approved])) {
-            throw ValidationException::withMessages(['status' => "Impossible de rejeter un pointage déjà approuvé ou encore en brouillon."]);
+            throw ValidationException::withMessages(['status' => 'Impossible de rejeter un pointage déjà approuvé ou encore en brouillon.']);
         }
 
         $entry->rejection_note = $reason;
 
-        $this->transition($entry, TimeEntryStatus::Rejected, "Rejet : " . $reason);
+        $this->transition($entry, TimeEntryStatus::Rejected, 'Rejet : '.$reason);
     }
 
     /**
@@ -142,5 +144,6 @@ class TimeTrackingService
         // Ici, on pourrait mettre à jour une table 'project_costs' ou envoyer vers la GPAO
         // Pour l'instant, nous stockons l'info de coût dénormalisée si besoin
         $entry->updateQuietly(['valuation_amount' => $totalCost]);
+        $entry->project()->increment('actual_labor_cost', $totalCost);
     }
 }

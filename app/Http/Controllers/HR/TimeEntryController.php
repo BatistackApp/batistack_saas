@@ -70,16 +70,39 @@ class TimeEntryController extends Controller
      */
     public function verify(VerifyTimeEntryRequest $request, TimeEntry $timeEntry): JsonResponse
     {
-        if ($request->status === TimeEntryStatus::Approved->value) {
-            $this->timeTrackingService->approveEntry($timeEntry);
-        } else {
-            $timeEntry->update($request->validated());
-        }
+        $targetStatus = TimeEntryStatus::from($request->status);
 
-        return response()->json([
-            'message' => 'Statut du pointage mis à jour',
-            'data' => $timeEntry,
-        ]);
+        try {
+            switch ($targetStatus) {
+                case TimeEntryStatus::Verified:
+                    $this->timeTrackingService->verifyEntry($timeEntry);
+                    $message = 'Pointage vérifié avec succès par le niveau N1.';
+                    break;
+
+                case TimeEntryStatus::Approved:
+                    $this->timeTrackingService->approveEntry($timeEntry);
+                    $message = 'Pointage approuvé définitivement et imputé au projet.';
+                    break;
+
+                case TimeEntryStatus::Rejected:
+                    $this->timeTrackingService->rejectEntry($timeEntry, $request->notes);
+                    $message = "Le pointage a été rejeté et renvoyé à l'employé.";
+                    break;
+
+                default:
+                    return response()->json(['error' => 'Transition de statut non gérée.'], 422);
+            }
+
+            return response()->json([
+                'message' => $message,
+                'data' => $timeEntry->fresh(['employee', 'project']),
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 422);
+        }
     }
 
     public function destroy(TimeEntry $timeEntry): JsonResponse
