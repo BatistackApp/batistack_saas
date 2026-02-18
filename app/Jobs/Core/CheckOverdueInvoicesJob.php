@@ -28,9 +28,7 @@ class CheckOverdueInvoicesJob implements ShouldQueue
 
             $tenantsWithOverdueInvoices = Tenants::whereHas('subscriptions', function ($q) use ($overdueThreshold) {
                 $q->where('stripe_status', 'past_due')
-                    ->orWhere(function ($q) use ($overdueThreshold) {
-                        $q->where('created_at', '<', $overdueThreshold);
-                    });
+                    ->where('created_at', '<', $overdueThreshold);
             })->get();
 
             foreach ($tenantsWithOverdueInvoices as $tenant) {

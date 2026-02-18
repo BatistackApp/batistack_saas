@@ -25,6 +25,7 @@ it('provisions a tenant with all core modules', function () {
         'slug' => 'test-tenant',
         'custom_domain' => null,
         'settings' => [],
+        'email' => 'test@test.com',
     ]);
 
     // Assert : Vérifier la création du tenant
@@ -60,6 +61,7 @@ it('creates tenant database schema', function () {
         'name' => 'Database Tenant',
         'slug' => 'db-tenant',
         'settings' => [],
+        'email' => 'test@test.com',
     ]);
 
     // Vérifier que le tenant a été créé avec le nom de base de données

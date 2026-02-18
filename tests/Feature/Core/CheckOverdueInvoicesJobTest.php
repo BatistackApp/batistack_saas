@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Core\TenantStatus;
 use App\Jobs\Core\CheckOverdueInvoicesJob;
 use App\Models\Core\Tenants;
@@ -52,7 +54,7 @@ describe('CheckOverdueInvoicesJob', function () {
         expect($tenant->status)->toBe(TenantStatus::Suspended);
     });
 
-    it('n\'affecte pas les factures payées < 30 jours', function () {
+    it('n\'affecte pas les factures impayées depuis moins de 30 jours', function () {
         Notification::fake();
         $tenant = Tenants::factory()
             ->create(['status' => TenantStatus::Active->value]);
@@ -71,6 +73,6 @@ describe('CheckOverdueInvoicesJob', function () {
 
         $tenant->refresh();
 
-        expect($tenant->status)->toBe(TenantStatus::Active->value);
+        expect($tenant->status)->toBe(TenantStatus::Active);
     });
 });

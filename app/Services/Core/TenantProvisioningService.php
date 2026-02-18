@@ -26,6 +26,7 @@ class TenantProvisioningService
                 'status' => \App\Enums\Core\TenantStatus::Active,
                 'activated_at' => now(),
                 'settings' => $data['settings'] ?? [],
+                'email' => $data['email'],
             ]);
 
             // 2. Déclarer le sous-domaine (OVH en production)
