@@ -35,13 +35,15 @@ it('calcule le delta HT correctement entre deux situations successives', functio
     ]);
 
     // 2. Situation n°1 : 30% d'avancement
-    $this->actingAs($this->user)->postJson('/api/commerce/invoices/progress', [
+    $response = $this->actingAs($this->user)->postJson('/api/commerce/invoices/create-progress', [
         'quote_id' => $quote->id,
         'situation_number' => 1,
         'progress_data' => [
             ['quote_item_id' => $quoteItem->id, 'progress_percentage' => 30],
         ],
     ]);
+
+    dd($response->json());
 
     $sit1 = Invoices::where('situation_number', 1)->first();
     // On valide la sit1 pour qu'elle soit prise en compte dans le calcul de la sit2

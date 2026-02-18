@@ -12,7 +12,7 @@ Route::prefix('commerce')->group(function () {
     Route::prefix('purchase')->group(function () {
         Route::get('/', [\App\Http\Controllers\Commerce\PurchaseOrderController::class, 'index']);
         Route::post('/', [\App\Http\Controllers\Commerce\PurchaseOrderController::class, 'store']);
-        Route::post('/{id}/receive', [\App\Http\Controllers\Commerce\PurchaseOrderController::class, 'receive']);
-        Route::get('/{id}', [\App\Http\Controllers\Commerce\PurchaseOrderController::class, 'show']);
+        Route::post('/{order}/receive', [\App\Http\Controllers\Commerce\PurchaseOrderController::class, 'receive']);
+        Route::get('/{order}', [\App\Http\Controllers\Commerce\PurchaseOrderController::class, 'show']);
     });
 });

@@ -55,6 +55,7 @@ it('met à jour les stocks et le statut lors d\'une réception partielle', funct
     $response = $this->actingAs($this->user)
         ->postJson("/api/commerce/purchase/{$order->id}/receive", [
             'warehouse_id' => $warehouse->id,
+            'delivery_note_ref' => 'BL896632026',
             'items' => [
                 ['item_id' => $item->id, 'quantity' => 40],
             ],

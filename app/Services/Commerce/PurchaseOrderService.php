@@ -30,8 +30,13 @@ class PurchaseOrderService
     /**
      * Enregistre une réception de marchandise avec historique complet.
      */
-    public function recordReception(PurchaseOrder $order, Warehouse $warehouse, array $itemsData, string $deliveryNoteRef, ?string $receivedAt = null): void
-    {
+    public function recordReception(
+        PurchaseOrder $order,
+        Warehouse $warehouse,
+        array $itemsData,
+        string $deliveryNoteRef,
+        ?string $receivedAt = null
+    ): void {
         DB::transaction(function () use ($order, $warehouse, $itemsData, $deliveryNoteRef, $receivedAt) {
             foreach ($itemsData as $data) {
                 $item = PurchaseOrderItem::findOrFail($data['item_id']);
