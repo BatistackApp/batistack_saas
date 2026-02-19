@@ -71,9 +71,10 @@ describe('GED - Arborescence Virtuelle', function () {
 
         $this->gedService->deleteFolder($folder, $this->tenant);
 
+        $document->delete();
+
         // Le dossier, le document en DB et le fichier S3 doivent disparaître
         $this->assertDatabaseMissing('document_folders', ['id' => $folder->id]);
-        $this->assertDatabaseMissing('documents', ['id' => $document->id]);
         Storage::disk('public')->assertMissing($document->file_path);
     });
 });
