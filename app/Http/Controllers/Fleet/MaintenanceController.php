@@ -76,7 +76,7 @@ class MaintenanceController extends Controller
         return response()->json([
             'message' => 'La maintenance a été clôturée avec succès.',
             'data' => $maintenance->fresh(),
-        ]);
+        ], 200);
     }
 
     /**
