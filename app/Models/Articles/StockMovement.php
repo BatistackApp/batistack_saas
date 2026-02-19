@@ -60,4 +60,9 @@ class StockMovement extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function ouvrage(): BelongsTo
+    {
+        return $this->belongsTo(Ouvrage::class);
+    }
 }

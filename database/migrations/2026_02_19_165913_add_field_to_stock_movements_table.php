@@ -10,6 +10,11 @@ return new class extends Migration {
         Schema::table('stock_movements', function (Blueprint $table) {
             $table->foreignIdFor(\App\Models\Articles\Ouvrage::class)->nullable()->constrained()->nullOnDelete();
         });
+
+        Schema::table('ouvrages', function (Blueprint $table) {
+            $table->foreignIdFor(\App\Models\Articles\Article::class)->nullable()->constrained()->nullOnDelete();
+            $table->decimal('cump_ht', 15, 2)->nullable();
+        });
     }
 
     public function down(): void
@@ -17,6 +22,12 @@ return new class extends Migration {
         Schema::table('stock_movements', function (Blueprint $table) {
             $table->dropColumn('ouvrage_id');
             $table->dropForeign('ouvrage_id');
+        });
+
+        Schema::table('ouvrages', function (Blueprint $table) {
+            $table->dropColumn('articles_id');
+            $table->dropForeign('articles_id');
+            $table->dropColumn('cump_ht');
         });
     }
 };

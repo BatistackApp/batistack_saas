@@ -33,7 +33,7 @@ beforeEach(function () {
         'bin_location' => 'A1',
     ]);
 
-    $this->ouvrage = Ouvrage::factory()->create(['tenants_id' => $this->tenantsId, 'articles_id' => $this->article->id]);
+    $this->ouvrage = Ouvrage::factory()->create(['tenants_id' => $this->tenantsId, 'article_id' => $this->article->id]);
     $this->ouvrage->components()->attach($this->article->id, ['quantity_needed' => 2]);
 
     $this->workCenter = WorkCenter::factory()->create(['tenants_id' => $this->tenantsId]);
