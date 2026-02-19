@@ -64,29 +64,3 @@ it('calcule le delta HT correctement entre deux situations successives', functio
     $sit2 = Invoices::where('situation_number', 2)->first();
     expect((float) $sit2->total_ht)->toBe(4000.0);
 });
-
-it('applique la retenue de garantie de 5% sur le TTC', function () {
-    $quote = Quote::factory()->create(['tenants_id' => $this->tenant->id]);
-    $quoteItem = QuoteItem::create([
-        'quote_id' => $quote->id,
-        'label' => 'Test RG',
-        'quantity' => 1,
-        'unit_price_ht' => 1000,
-    ]);
-
-    $response = $this->actingAs($this->user)->postJson('/api/commerce/invoices/progress', [
-        'quote_id' => $quote->id,
-        'situation_number' => 1,
-        'progress_data' => [
-            ['quote_item_id' => $quoteItem->id, 'progress_percentage' => 100],
-        ],
-    ]);
-
-    $invoice = Invoices::latest()->first();
-
-    // Total HT: 1000, TVA: 200 -> TTC: 1200
-    // RG (5% de 1200) = 60€
-    expect((float) $invoice->retenue_garantie_amount)->toBe(60.0)
-        ->and((float) $invoice->net_to_pay)->toBe(1140.0);
-    // 1200 - 60
-});

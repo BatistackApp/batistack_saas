@@ -41,7 +41,7 @@ it('refuse l\'affectation si le conducteur n\'a aucun permis enregistré', funct
     $driver->update(['tiers_id' => $tier->id]); // On suppose l'existence de cette FK
 
     $response = $this->actingAs($this->user)
-        ->postJson('/api/fleet/vehicles/assignments', [
+        ->postJson(route('fleet.assignments.store'), [
             'vehicle_id' => $this->vehicle->id,
             'user_id' => $driver->id,
             'started_at' => now()->toDateTimeString(),
@@ -68,17 +68,27 @@ it('refuse l\'affectation si le permis est expiré même sans certification spé
     ]);
 
     $response = $this->actingAs($this->user)
-        ->postJson('/api/fleet/vehicles/assignments', [
+        ->postJson(route('fleet.assignments.store'), [
             'vehicle_id' => $this->vehicle->id,
             'user_id' => $driver->id,
             'started_at' => now()->toDateTimeString(),
         ]);
 
-    $response->assertStatus(422);
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['user_id']);
+
+    expect($response->json('errors.user_id.0'))->toContain('expiré');
 });
 
 it('autorise l\'affectation si le conducteur est parfaitement en règle', function () {
     $driver = User::factory()->create(['tenants_id' => $this->tenant->id]);
+    $vehicle = Vehicle::factory()->create([
+        'tenants_id' => $this->tenant->id,
+        'internal_code' => 'TEST-V-002',
+        'current_odometer' => 1000,
+        'type' => \App\Enums\Fleet\VehicleType::Truck,
+        'required_certification_type' => null,
+    ]);
 
     // Simulation d'un permis valide (Logique simplifiée pour le test)
     // Note : Le service de conformité utilise le DriverComplianceService.
@@ -95,8 +105,8 @@ it('autorise l\'affectation si le conducteur est parfaitement en règle', functi
 
     // Dans ce test, nous mockons ou créons les conditions de succès
     $response = $this->actingAs($this->user)
-        ->postJson('/api/fleet/vehicles/assignments', [
-            'vehicle_id' => $this->vehicle->id,
+        ->postJson(route('fleet.assignments.store'), [
+            'vehicle_id' => $vehicle->id,
             'user_id' => $driver->id,
             'started_at' => now()->toDateTimeString(),
         ]);
@@ -106,7 +116,7 @@ it('autorise l\'affectation si le conducteur est parfaitement en règle', functi
 
     if ($response->status() === 201) {
         $this->assertDatabaseHas('vehicle_assignments', [
-            'vehicle_id' => $this->vehicle->id,
+            'vehicle_id' => $vehicle->id,
             'user_id' => $driver->id,
             'ended_at' => null,
         ]);
@@ -133,6 +143,7 @@ it('calcule correctement le TCO incluant carburant et péages', function () {
 
     $response = $this->actingAs($this->user)
         ->getJson("/api/fleet/vehicles/{$this->vehicle->id}/analytics/tco");
+
 
     $response->assertStatus(200)
         ->assertJsonPath('analytics.energy_ht', 100)

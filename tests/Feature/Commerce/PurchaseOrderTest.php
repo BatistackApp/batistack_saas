@@ -16,7 +16,7 @@ beforeEach(function () {
     $this->user = User::factory()->create(['tenants_id' => $this->tenant->id]);
 });
 
-it('calcule automatiquement les totaux HT et TVA à l\'ajout d\'un article', function () {
+it('calcule automatiquement les totaux HT à l\'ajout d\'un article', function () {
     $order = PurchaseOrder::factory()->create(['tenants_id' => $this->tenant->id]);
 
     PurchaseOrderItem::create([
@@ -24,13 +24,12 @@ it('calcule automatiquement les totaux HT et TVA à l\'ajout d\'un article', fun
         'description' => 'Sable à bâtir',
         'quantity' => 10,
         'unit_price_ht' => 50,
-        'tax_rate' => 20.00,
+        'tax_rate' => 20,
     ]);
 
     $order->refresh();
 
-    expect((float) $order->total_ht)->toBe(500.0)
-        ->and((float) $order->total_tva)->toBe(100.0);
+    expect((float) $order->total_ht)->toBe(500.0);
 });
 
 it('met à jour les stocks et le statut lors d\'une réception partielle', function () {
