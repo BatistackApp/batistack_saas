@@ -64,6 +64,7 @@ class TimeEntry extends Model
             'status' => TimeEntryStatus::class,
             'verified_at' => 'datetime',
             'approved_at' => 'datetime',
+            'valuation_amount' => 'decimal:2',
         ];
     }
 }

@@ -15,6 +15,14 @@ return new class extends Migration {
             $table->foreignIdFor(\App\Models\Articles\Article::class)->nullable()->constrained()->nullOnDelete();
             $table->decimal('cump_ht', 15, 2)->nullable();
         });
+
+        Schema::table('time_entries', function (Blueprint $table) {
+            $table->decimal('valuation_amount')->default(0);
+        });
+
+        Schema::table('projects', function (Blueprint $table) {
+            $table->decimal('actual_labor_cost')->default(0);
+        });
     }
 
     public function down(): void
@@ -28,6 +36,14 @@ return new class extends Migration {
             $table->dropColumn('articles_id');
             $table->dropForeign('articles_id');
             $table->dropColumn('cump_ht');
+        });
+
+        Schema::table('time_entries', function (Blueprint $table) {
+            $table->dropColumn('valuation_amount');
+        });
+
+        Schema::table('projects', function (Blueprint $table) {
+            $table->dropColumn('actual_labor_cost');
         });
     }
 };
