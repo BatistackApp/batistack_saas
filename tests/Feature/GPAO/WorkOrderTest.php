@@ -33,7 +33,7 @@ beforeEach(function () {
         'bin_location' => 'A1',
     ]);
 
-    $this->ouvrage = Ouvrage::factory()->create(['tenants_id' => $this->tenantsId]);
+    $this->ouvrage = Ouvrage::factory()->create(['tenants_id' => $this->tenantsId, 'articles_id' => $this->article->id]);
     $this->ouvrage->components()->attach($this->article->id, ['quantity_needed' => 2]);
 
     $this->workCenter = WorkCenter::factory()->create(['tenants_id' => $this->tenantsId]);
@@ -120,6 +120,8 @@ test('la finalisation d\'un OF avec quantité partielle recalcule le coût unita
         ->postJson(route('work-orders.finalize', $wo), [
             'quantity_produced' => 8,
         ]);
+
+    dd($response->json());
 
     $response->assertStatus(200);
 

@@ -52,8 +52,9 @@ class ProductionValuationService
             // 5. Entrée en stock de l'ouvrage produit
             StockMovement::create([
                 'tenants_id' => $wo->tenants_id,
-                'ouvrage_id' => $wo->ouvrage_id,
                 'warehouse_id' => $wo->warehouse_id,
+                'ouvrage_id' => $wo->ouvrage_id,
+                'article_id' => $wo->ouvrage->article->id,
                 'type' => StockMovementType::Entry,
                 'quantity' => $finalQty,
                 'unit_cost_ht' => $unitCost,
