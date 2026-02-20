@@ -119,8 +119,7 @@ class FleetAnalyticsService
             // Note : Attention si le véhicule a roulé depuis, cette valeur a pu changer.
             return (float) ($lastEntry->odometer_reading - $startMileage);
         }
-        dd($lastEntry->odometer_reading, $previousEntry->odometer_reading);
 
-        return (float) ($previousEntry->odometer_reading - $lastEntry->odometer_reading);
+        return (float) ($lastEntry->odometer_reading - $previousEntry->odometer_reading);
     }
 }
