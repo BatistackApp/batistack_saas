@@ -33,7 +33,7 @@ class InterventionWorkflowService
         // Vérification conformité client via ProjectManagementService
         if ($intervention->project) {
             if (! $this->projectService->checkCustomerCompliance($intervention->project)) {
-                throw new ComplianceException('Le client ne respecte pas les normes du projet.');
+                throw new ComplianceException('Le client ne respecte pas les normes du projet. Le client est suspendu');
             }
         }
 

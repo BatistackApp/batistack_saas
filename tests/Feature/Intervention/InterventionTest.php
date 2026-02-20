@@ -111,10 +111,16 @@ test('on ne peut pas démarrer une intervention pour un client suspendu', functi
         'status' => \App\Enums\Tiers\TierStatus::Suspended,
     ]);
 
+    $project = \App\Models\Projects\Project::factory()->create([
+        'tenants_id' => $this->tenantId,
+        'customer_id' => $suspendedCustomer->id,
+    ]);
+
     $intervention = Intervention::factory()->create([
         'tenants_id' => $this->tenantId,
         'customer_id' => $suspendedCustomer->id,
         'status' => InterventionStatus::Planned,
+        'project_id' => $project->id,
     ]);
 
     $response = $this->actingAs($this->user)
