@@ -86,7 +86,7 @@ it('peut lister les pointages d\'un employé avec filtres et résumé', function
         'end_date' => $endDate,
     ]));
 
-    //dd($response->json());
+    // dd($response->json());
 
     $response->assertStatus(200)
         ->assertJsonCount(2, 'entries')

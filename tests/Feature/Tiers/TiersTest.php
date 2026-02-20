@@ -6,7 +6,6 @@ use App\Enums\Tiers\TierDocumentType;
 use App\Enums\Tiers\TierStatus;
 use App\Enums\Tiers\TierType as TierTypeEnum;
 use App\Jobs\Tiers\CheckTiersActivityJob;
-use App\Jobs\Tiers\VerifyUrssafAttestationJob;
 use App\Models\Tiers\TierDocument;
 use App\Models\Tiers\TierDocumentRequirement;
 use App\Models\Tiers\TierQualification;

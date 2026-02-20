@@ -4,13 +4,12 @@ namespace App\Services\Tiers;
 
 use App\Enums\Tiers\TierType;
 use App\Models\Tiers\Tiers;
-use Illuminate\Support\Str;
 
 class TierCodeGenerator
 {
     public function generate(TierType $type): string
     {
-        $prefix = match($type) {
+        $prefix = match ($type) {
             TierType::Customer => 'CLI',
             TierType::Supplier => 'SUP',
             TierType::Subcontractor => 'SUB',

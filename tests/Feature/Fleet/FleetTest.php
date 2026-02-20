@@ -8,7 +8,6 @@ use App\Models\Fleet\VehicleAssignment;
 use App\Models\Fleet\VehicleConsumption;
 use App\Models\Projects\Project;
 use App\Models\User;
-use App\Notifications\Fleet\MaintenanceAlertNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 
@@ -203,7 +202,6 @@ it('clôture automatiquement l\'affectation précédente lors d\'un nouveau mouv
     $newAssignment = VehicleAssignment::where('project_id', $projectB->id)->whereNull('ended_at')->first();
     expect($newAssignment)->not->toBeNull();
 });
-
 
 /**
  * 4. TEST DE VALIDATION DU CODE INTERNE

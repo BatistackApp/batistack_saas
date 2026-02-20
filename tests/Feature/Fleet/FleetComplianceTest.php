@@ -144,7 +144,6 @@ it('calcule correctement le TCO incluant carburant et péages', function () {
     $response = $this->actingAs($this->user)
         ->getJson("/api/fleet/vehicles/{$this->vehicle->id}/analytics/tco");
 
-
     $response->assertStatus(200)
         ->assertJsonPath('analytics.energy_ht', 100)
         ->assertJsonPath('analytics.tolls_ht', 25.5)

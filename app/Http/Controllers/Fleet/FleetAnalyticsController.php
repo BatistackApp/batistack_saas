@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Fleet\Vehicle;
 use App\Services\Fleet\FleetAnalyticsService;
 use App\Services\Fleet\FleetComplianceService;
-use Carbon\Carbon;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

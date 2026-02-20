@@ -68,7 +68,6 @@ test('la validation d\'une période clôture la paie et lance l\'imputation chan
             'confirm_lock' => true,
         ]);
 
-
     $response->assertStatus(200);
     expect($this->period->refresh()->status)->toBe(PayrollStatus::Validated);
 

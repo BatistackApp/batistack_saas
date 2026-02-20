@@ -59,8 +59,6 @@ class ProjectBudgetService
             return ($phase->progress_percentage / 100) * $phase->allocated_budget;
         });
 
-
-
         return ($weightedProgress / $totalInternal) * 100;
     }
 }
