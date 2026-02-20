@@ -14,10 +14,7 @@ class TenantsObserver
         private OvhDomainService $ovhDomainService,
     ) {}
 
-    public function created(Tenants $tenants): void
-    {
-        Log::info("Tenant created: {$tenants->slug}", ['tenant_id' => $tenants->id]);
-    }
+    public function created(Tenants $tenants): void {}
 
     public function updating(Tenants $tenants): void
     {

@@ -47,7 +47,7 @@ class PurchaseOrderController extends Controller
 
         try {
             $warehouse = Warehouse::findOrFail($request->warehouse_id);
-            $this->purchaseService->recordReception($order, $warehouse, $request->items);
+            $this->purchaseService->recordReception($order, $warehouse, $request->items, $request->delivery_note_ref);
 
             return response()->json(['message' => 'Réception enregistrée et stocks mis à jour.']);
         } catch (\Exception $e) {

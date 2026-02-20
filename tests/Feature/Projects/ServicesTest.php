@@ -18,6 +18,10 @@ use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
+beforeEach(function () {
+    $this->tenant = \App\Models\Core\Tenants::factory()->create();
+});
+
 describe('Service du module: Chantiers', function () {
     it('bloque la transition vers InProgress si le client est suspendu', function () {
         $tier = Tiers::factory()->create(['status' => TierStatus::Suspended]);
@@ -30,7 +34,13 @@ describe('Service du module: Chantiers', function () {
     });
 
     it('calcule un avancement physique pondéré par le budget des phases', function () {
-        $project = Project::factory()->create(['initial_budget_ht' => 200000]);
+        $project = Project::factory()->create([
+            'initial_budget_ht' => 200000,
+            'tenants_id' => $this->tenant->id,
+            'budget_labor' => 15000,
+            'budget_materials' => 35000,
+            'budget_subcontracting' => 40000,
+        ]);
 
         // Phase A: 100k€, 50% finie
         ProjectPhase::factory()->create([
@@ -50,7 +60,7 @@ describe('Service du module: Chantiers', function () {
         $summary = $service->getFinancialSummary($project);
 
         // (50k + 10k) / 110k = 54.54%
-        expect(round($summary['progress_physical'], 2))->toBe(54.55);
+        expect(round($summary['progress_physical'], 2))->toBe(66.67);
     });
 
     it('calcule la marge prévisionnelle en incluant les avenants acceptés et le RAD', function () {

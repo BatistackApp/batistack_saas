@@ -8,11 +8,11 @@ Route::prefix('payroll')->group(function () {
     Route::apiResource('payroll-periods', PayrollPeriodController::class)->except('show', 'update', 'destroy');
 
     // Génération massive des bulletins pour une période
-    Route::post('payroll-periods/{payrollPeriod}/generate', [PayrollPeriodController::class, 'generatePayslips'])
+    Route::post('payroll-periods/{period}/generate', [PayrollPeriodController::class, 'generatePayslips'])
         ->name('payroll-periods.generate');
 
     // Clôture et validation de la période
-    Route::patch('payroll-periods/{payroll_period}/validate', [PayrollPeriodController::class, 'validatePeriod'])
+    Route::patch('payroll-periods/{period}/validate', [PayrollPeriodController::class, 'validatePeriod'])
         ->name('payroll-periods.validate');
 
     // --- Gestion des Bulletins Individuels ---

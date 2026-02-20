@@ -7,6 +7,11 @@ use App\Services\Commerce\FinancialCalculatorService;
 
 class PurchaseOrderItemObserver
 {
+    public function created(PurchaseOrderItem $item): void
+    {
+        $this->updateParent($item);
+    }
+
     public function saved(PurchaseOrderItem $item): void
     {
         $this->updateParent($item);

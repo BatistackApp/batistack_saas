@@ -14,7 +14,7 @@ class FinancialCalculatorService
     /**
      * Recalcule et met à jour les totaux d'un document (Devis, Commande ou Facture).
      */
-    public function updateDocumentTotals(Model $document): void
+    public function updateDocumentTotals(Quote|PurchaseOrder|Invoices|Model $document): void
     {
         $itemTable = $this->getItemTable($document);
         $foreignKey = $this->getForeignKey($document);

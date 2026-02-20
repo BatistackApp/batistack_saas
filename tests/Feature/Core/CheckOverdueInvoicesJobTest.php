@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Enums\Core\TenantStatus;
 use App\Jobs\Core\CheckOverdueInvoicesJob;
 use App\Models\Core\Tenants;
@@ -9,6 +11,7 @@ uses(RefreshDatabase::class);
 
 describe('CheckOverdueInvoicesJob', function () {
     it('suspend un tenant avec facture impayée depuis 30+ jours', function () {
+        Notification::fake();
         $tenant = Tenants::factory()
             ->create(['status' => TenantStatus::Active->value]);
 
@@ -27,7 +30,7 @@ describe('CheckOverdueInvoicesJob', function () {
 
         $tenant->refresh();
 
-        expect($tenant->status)->toBe(TenantStatus::Suspended->value);
+        expect($tenant->status)->toBe(TenantStatus::Suspended);
     });
 
     it('ignore les tenants déjà suspendus', function () {
@@ -40,6 +43,7 @@ describe('CheckOverdueInvoicesJob', function () {
             'stripe_price' => 'price_monthly_468',
             'quantity' => 1,
             'created_at' => now()->subDays(35),
+            'type' => Tenants::class,
         ]);
 
         $job = new CheckOverdueInvoicesJob;
@@ -47,10 +51,11 @@ describe('CheckOverdueInvoicesJob', function () {
 
         $tenant->refresh();
 
-        expect($tenant->status)->toBe(TenantStatus::Suspended->value);
+        expect($tenant->status)->toBe(TenantStatus::Suspended);
     });
 
-    it('n\'affecte pas les factures payées < 30 jours', function () {
+    it('n\'affecte pas les factures impayées depuis moins de 30 jours', function () {
+        Notification::fake();
         $tenant = Tenants::factory()
             ->create(['status' => TenantStatus::Active->value]);
 
@@ -60,6 +65,7 @@ describe('CheckOverdueInvoicesJob', function () {
             'stripe_price' => 'price_monthly_468',
             'quantity' => 1,
             'created_at' => now()->subDays(15),
+            'type' => Tenants::class,
         ]);
 
         $job = new CheckOverdueInvoicesJob;
@@ -67,6 +73,6 @@ describe('CheckOverdueInvoicesJob', function () {
 
         $tenant->refresh();
 
-        expect($tenant->status)->toBe(TenantStatus::Active->value);
+        expect($tenant->status)->toBe(TenantStatus::Active);
     });
 });

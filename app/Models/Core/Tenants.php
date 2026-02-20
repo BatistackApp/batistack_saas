@@ -31,8 +31,7 @@ class Tenants extends Model
 
     public function subscriptions(): HasMany
     {
-        return $this->hasMany(Subscription::class, 'user_id', 'id')
-            ->where('type', self::class);
+        return $this->hasMany(Subscription::class, 'user_id', 'id');
     }
 
     public function infoHolidays(): HasMany

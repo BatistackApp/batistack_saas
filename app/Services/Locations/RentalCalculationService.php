@@ -4,7 +4,6 @@ namespace App\Services\Locations;
 
 use App\Models\Locations\RentalItem;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Carbon;
 
 /**
  * Service de calcul financier (Moteur de prix).
@@ -52,11 +51,11 @@ class RentalCalculationService
         // Pour les jobs quotidiens (durée exacte de 24h), on ne fait pas de +1 inclusif
         // car le job tourne chaque jour.
         if ($item->is_weekend_included) {
-            return (int) $start->diffInDays($end);
+            return (int) $start->diffInDays($end) + 1;
         }
 
-        return (int) $start->diffInDaysFiltered(function (Carbon $date) {
+        return (int) $start->diffInDaysFiltered(function (CarbonImmutable $date) {
             return ! $date->isWeekend();
-        }, $end);
+        }, $end->addDay());
     }
 }

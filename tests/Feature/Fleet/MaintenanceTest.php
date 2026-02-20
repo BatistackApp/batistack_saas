@@ -70,7 +70,7 @@ it('peut signaler une nouvelle panne sur un véhicule', function () {
     $response = $this->postJson('/api/fleet/maintenances', $payload);
 
     $response->assertStatus(201)
-        ->assertJsonPath('maintenance_status', MaintenanceStatus::Reported->value);
+        ->assertJsonPath('data.maintenance_status', MaintenanceStatus::Reported->value);
 
     $this->assertDatabaseHas('vehicle_maintenances', [
         'vehicle_id' => $this->vehicle->id,

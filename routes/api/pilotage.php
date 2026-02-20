@@ -8,7 +8,7 @@ use App\Http\Controllers\Pilotage\KpiSnapshotController;
 Route::prefix('pilotage/indicators')->group(function () {
     Route::get('/', [KpiIndicatorController::class, 'index'])->name('kpi.indicators.index');
     Route::post('/', [KpiIndicatorController::class, 'store'])->name('kpi.indicators.store');
-    Route::get('{kpi_indicator}/history', [KpiIndicatorController::class, 'history'])->name('kpi.indicators.history');
+    Route::get('{indicator}/history', [KpiIndicatorController::class, 'history'])->name('kpi.indicators.history');
 });
 
 // --- Tableaux de Bord (Données chaudes) ---

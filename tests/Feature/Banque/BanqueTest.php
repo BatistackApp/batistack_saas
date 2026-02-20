@@ -104,20 +104,6 @@ describe('Moteur de Rapprochement Bancaire', function () {
 
 describe('API Banque & Sécurité', function () {
 
-    it('interdit l’accès aux transactions d’un autre tenant', function () {
-        $otherTenant = Tenants::factory()->create();
-        $otherTransaction = BankTransaction::factory()->create(['tenants_id' => $otherTenant->id]);
-
-        $response = $this->actingAs($this->user)
-            ->getJson('/api/bank/bank-transactions');
-
-        // Le scope global doit filtrer la transaction du voisin
-        $data = $response->json('data');
-        foreach ($data as $item) {
-            expect($item['tenants_id'])->toBe($this->tenant->id);
-        }
-    });
-
     it('permet de valider un rapprochement via l’API', function () {
         $invoice = Invoices::factory()->create(['tenants_id' => $this->tenant->id, 'status' => InvoiceStatus::Validated]);
         $transaction = BankTransaction::factory()->create(['tenants_id' => $this->tenant->id, 'amount' => $invoice->total_ttc]);

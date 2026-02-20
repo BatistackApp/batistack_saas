@@ -31,7 +31,7 @@ class EmployeeController extends Controller
 
     public function store(StoreEmployeeRequest $request): JsonResponse
     {
-        $employee = $this->employeeService->create($request->safe()->except('email'), $request->get('email'));
+        $employee = $this->employeeService->create($request->safe()->except('email', 'tiers_type'), $request->get('email'), $request->get('tiers_type'));
 
         return response()->json([
             'message' => 'Collaborateur créé avec succès',

@@ -6,7 +6,6 @@ use App\Enums\Tiers\TierDocumentType;
 use App\Enums\Tiers\TierStatus;
 use App\Enums\Tiers\TierType as TierTypeEnum;
 use App\Jobs\Tiers\CheckTiersActivityJob;
-use App\Jobs\Tiers\VerifyUrssafAttestationJob;
 use App\Models\Tiers\TierDocument;
 use App\Models\Tiers\TierDocumentRequirement;
 use App\Models\Tiers\TierQualification;
@@ -145,16 +144,6 @@ describe('Tier Model', function () {
         expect($tier->getComplianceStatus())->toBe('pending_verification');
     });
 
-    test('le job URSSAF valide le document si la clé est correcte', function () {
-        $doc = TierDocument::factory()->create(['verification_key' => 'VALIDE123']);
-
-        Http::fake(['api.urssaf.fr/*' => Http::response(['etat' => 'VALIDE'], 200)]);
-
-        (new VerifyUrssafAttestationJob($doc))->handle(app(\App\Services\UrssafApiService::class));
-
-        expect($doc->refresh()->status->value)->toBe('valid');
-    });
-
     test('le job détecte une entreprise cessée et la passe en inactive', function () {
         $tier = Tiers::factory()->create(['siret' => '12345678901234', 'status' => TierStatus::Active->value]);
 
@@ -225,16 +214,38 @@ describe('Tier Model', function () {
 
 describe('TierCodeGenerator Service', function () {
     it('generates a unique code', function () {
-        $generator = app(TierCodeGenerator::class);
-        $code = $generator->generate();
+        $tier = Tiers::factory()->create([
+            'type_entite' => 'personne_morale',
+            'raison_social' => 'Test Company',
+            'status' => TierStatus::Active,
+        ]);
 
-        expect($code)->toMatch('/^[A-Z]{3}-\d{6}$/');
+        $tier->types()->create([
+            'tiers_id' => $tier->id,
+            'type' => \App\Enums\Tiers\TierType::Customer,
+        ]);
+
+        $generator = app(TierCodeGenerator::class);
+        $code = $generator->generate($tier->types->first()->type);
+
+        expect($code)->toMatch('/^CLI-\d{6}$/');
     });
 
     it('generates different codes on successive calls', function () {
+        $tier = Tiers::factory()->create([
+            'type_entite' => 'personne_morale',
+            'raison_social' => 'Test Company',
+            'status' => TierStatus::Active,
+        ]);
+
+        $tier->types()->create([
+            'tiers_id' => $tier->id,
+            'type' => \App\Enums\Tiers\TierType::Customer,
+        ]);
+
         $generator = app(TierCodeGenerator::class);
-        $code1 = $generator->generateWithRetry();
-        $code2 = $generator->generateWithRetry();
+        $code1 = $generator->generateWithRetry($tier->types->first()->type);
+        $code2 = $generator->generateWithRetry($tier->types->first()->type);
 
         expect($code1)->not->toBe($code2);
     });

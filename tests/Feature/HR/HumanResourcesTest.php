@@ -46,6 +46,7 @@ test('un administrateur peut voir les détails d’un employé spécifique', fun
 
 test('peut créer un collaborateur avec tous les champs obligatoires', function () {
     Notification::fake();
+    Event::fake();
     $data = [
         'first_name' => 'Jean',
         'last_name' => 'Dupont',
@@ -56,6 +57,7 @@ test('peut créer un collaborateur avec tous les champs obligatoires', function 
         'hired_at' => now()->format('Y-m-d'),
         'is_active' => true,
         'email' => 'test@test.com',
+        'tiers_type' => 'employee',
     ];
 
     $response = $this->actingAs($this->admin)

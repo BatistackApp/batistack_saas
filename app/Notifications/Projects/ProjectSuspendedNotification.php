@@ -12,7 +12,7 @@ class ProjectSuspendedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    public function __construct(private Project $project) {}
+    public function __construct(public Project $project) {}
 
     public function via($notifiable): array
     {

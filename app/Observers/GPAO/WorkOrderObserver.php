@@ -33,8 +33,8 @@ class WorkOrderObserver
     {
         if ($wo->wasChanged('status')) {
 
-            // 1. Passage à PLANNED = Consommation des matières
-            if ($wo->status === WorkOrderStatus::Planned && $wo->getOriginal('status') === WorkOrderStatus::Draft) {
+            // 1. Passage à IN PROGRESS = Consommation des matières
+            if ($wo->status === WorkOrderStatus::InProgress && $wo->getOriginal('status') === WorkOrderStatus::Planned) {
                 app(ProductionOrchestrator::class)->consumeComponents($wo);
             }
 

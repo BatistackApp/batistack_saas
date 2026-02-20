@@ -41,7 +41,7 @@ class CheckVehicleComplianceJob implements ShouldQueue
         }
 
         if ($needsAlert) {
-            $recipients = User::role(['fleet_manager', 'tenant_admin'])->get();
+            $recipients = User::role(['tenant_admin'])->get();
             Notification::send($recipients, new MaintenanceAlertNotification($this->vehicle, $reason));
         }
     }

@@ -83,7 +83,7 @@ class FleetMaintenanceService
     /**
      * Clôture une intervention et met à jour les métriques.
      */
-    public function completeIntervention(VehicleMaintenance $maintenance, array $data): bool
+    public function completeIntervention(VehicleMaintenance $maintenance, array $data): VehicleMaintenance
     {
         return DB::transaction(function () use ($maintenance, $data) {
             $completedAt = isset($data['completed_at']) ? Carbon::parse($data['completed_at']) : now();

@@ -12,7 +12,7 @@ class TierObserver
     public function creating(Tiers $tier): void
     {
         if (empty($tier->code_tiers)) {
-            $tier->code_tiers = $this->codeGenerator->generateWithRetry();
+            $tier->code_tiers = $this->codeGenerator->generateWithRetry($tier->types->first()->type);
         }
 
         if (empty($tier->pays)) {

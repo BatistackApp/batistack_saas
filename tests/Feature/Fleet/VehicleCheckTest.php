@@ -16,8 +16,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     // Initialisation des permissions et des données de base
     \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'fleet.manage', 'guard_name' => 'web']);
-    $role = Role::firstOrCreate(['name' => 'fleet.manage', 'guard_name' => 'web']);
-    $role = Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+    $role = Role::firstOrCreate(['name' => 'tenant_amin', 'guard_name' => 'web']);
 
     $this->tenant = Tenants::factory()->create();
     $this->user = User::factory()->create(['tenants_id' => $this->tenant->id]);

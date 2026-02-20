@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Enums\Core\InvoiceStatus;
+use App\Enums\Commerce\InvoiceStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Core\Invoice;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Stripe\Exception\SignatureVerificationException;
+use Stripe\Invoice;
 use Stripe\Webhook;
 
 class StripeWebhookController extends Controller

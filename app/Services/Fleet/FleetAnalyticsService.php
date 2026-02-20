@@ -25,7 +25,7 @@ class FleetAnalyticsService
 
         // 2. Coûts de péages
         $tollCosts = (string) $vehicle->tolls()
-            ->whereBetween('entry_at', [$startDate, $endDate])
+            ->whereBetween('exit_at', [$startDate, $endDate])
             ->sum('amount_ht');
 
         // 3. NOUVEAU : Coûts de Maintenance (Préventive + Curative)
@@ -87,13 +87,39 @@ class FleetAnalyticsService
 
     private function getDistanceTraveled(Vehicle $vehicle, CarbonImmutable $start, CarbonImmutable $end): float
     {
-        $first = $vehicle->consumptions()->where('date', '>=', $start)->orderBy('date', 'asc')->first();
-        $last = $vehicle->consumptions()->where('date', '<=', $end)->orderBy('date', 'desc')->first();
+        // 1. On récupère le relevé le plus récent dans la période
+        $lastEntry = $vehicle->consumptions()
+            ->where('date', '<=', $end)
+            ->orderBy('date', 'desc')
+            ->first();
 
-        if (! $first || ! $last) {
+        if (! $lastEntry) {
             return 0.0;
         }
 
-        return (float) ($last->odometer_reading - $first->odometer_reading);
+        // 2. On cherche le relevé juste AVANT le début de la période
+        $previousEntry = $vehicle->consumptions()
+            ->where('date', '<', $start)
+            ->orderBy('date', 'desc')
+            ->first();
+
+        // 3. Si pas de relevé avant, on prend le premier relevé DE LA période
+        // mais on le compare au kilométrage de départ du véhicule (si disponible)
+        if (! $previousEntry) {
+            $firstEntryInPeriod = $vehicle->consumptions()
+                ->where('date', '>=', $start)
+                ->orderBy('date', 'asc')
+                ->first();
+
+            // Ici, on suppose que 'current_odometer' à la création du véhicule
+            // est notre point zéro. Idéalement, il faudrait un champ 'initial_odometer'.
+            $startMileage = $vehicle->initial_odometer ?? 0;
+
+            // Si vous utilisez 'current_odometer' comme base lors de la création :
+            // Note : Attention si le véhicule a roulé depuis, cette valeur a pu changer.
+            return (float) ($lastEntry->odometer_reading - $startMileage);
+        }
+
+        return (float) ($lastEntry->odometer_reading - $previousEntry->odometer_reading);
     }
 }
