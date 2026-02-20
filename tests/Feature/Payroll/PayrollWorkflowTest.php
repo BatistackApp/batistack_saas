@@ -35,10 +35,11 @@ test('la génération de paie agrège correctement les heures de pointage approu
     // Création de 2 pointages approuvés (8h chacun = 16h total)
     TimeEntry::factory()->count(2)->create([
         'employee_id' => $this->employee->id,
-        'date' => '2025-11-05',
+        'date' => '2025-11-15',
         'hours' => 8,
         'status' => TimeEntryStatus::Approved,
         'has_meal_allowance' => true,
+        'tenants_id' => $this->tenant->id,
     ]);
 
     // Lancement de la génération via l'API
@@ -50,8 +51,6 @@ test('la génération de paie agrège correctement les heures de pointage approu
     // Vérifier que le bulletin existe
     $payslip = $this->period->payslips()->where('employee_id', $this->employee->id)->first();
     expect($payslip)->not->toBeNull();
-
-    dd($payslip);
 
     // Vérifier la ligne de salaire de base (16h)
     $baseLine = $payslip->lines()->where('label', 'Salaire de base')->first();
@@ -69,6 +68,7 @@ test('la validation d\'une période clôture la paie et lance l\'imputation chan
             'confirm_lock' => true,
         ]);
 
+
     $response->assertStatus(200);
     expect($this->period->refresh()->status)->toBe(PayrollStatus::Validated);
 
@@ -78,7 +78,7 @@ test('la validation d\'une période clôture la paie et lance l\'imputation chan
 
 test('on ne peut pas modifier un bulletin si la période est validée', function () {
     $this->period->update(['status' => PayrollStatus::Validated]);
-    $payslip = \App\Models\Payroll\Payslip::factory()->create(['payroll_period_id' => $this->period->id]);
+    $payslip = \App\Models\Payroll\Payslip::factory()->create(['payroll_period_id' => $this->period->id, 'tenants_id' => $this->tenant->id]);
 
     $response = $this->actingAs($this->admin)
         ->postJson(route('payslips.adjustments', $payslip), [

@@ -12,7 +12,7 @@ Route::prefix('payroll')->group(function () {
         ->name('payroll-periods.generate');
 
     // Clôture et validation de la période
-    Route::patch('payroll-periods/{payroll_period}/validate', [PayrollPeriodController::class, 'validatePeriod'])
+    Route::patch('payroll-periods/{period}/validate', [PayrollPeriodController::class, 'validatePeriod'])
         ->name('payroll-periods.validate');
 
     // --- Gestion des Bulletins Individuels ---

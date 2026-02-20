@@ -85,6 +85,7 @@ class PayrollPeriodController extends Controller
     public function validatePeriod(UpdatePayrollStatusRequest $request, PayrollPeriod $period): JsonResponse
     {
         try {
+            $request->validated();
             $this->workflowService->validatePeriod($period);
 
             return response()->json(['message' => 'Période validée et clôturée avec succès.']);
