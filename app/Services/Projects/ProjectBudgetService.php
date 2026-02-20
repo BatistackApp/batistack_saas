@@ -50,6 +50,7 @@ class ProjectBudgetService
     private function calculateWeightedProgress(Project $project): float
     {
         $totalInternal = $project->totalInternalBudget();
+
         if ($totalInternal <= 0) {
             return 0;
         }
@@ -57,6 +58,8 @@ class ProjectBudgetService
         $weightedProgress = $project->phases->sum(function ($phase) {
             return ($phase->progress_percentage / 100) * $phase->allocated_budget;
         });
+
+
 
         return ($weightedProgress / $totalInternal) * 100;
     }
