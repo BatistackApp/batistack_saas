@@ -113,7 +113,7 @@ test('on ne peut pas démarrer une intervention pour un client suspendu', functi
 
     $project = \App\Models\Projects\Project::factory()->create([
         'tenants_id' => $this->tenantId,
-        'customer_id' => $suspendedCustomer,
+        'customer_id' => $suspendedCustomer->id,
     ]);
 
     $intervention = Intervention::factory()->create([

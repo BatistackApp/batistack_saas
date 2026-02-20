@@ -51,6 +51,8 @@ test('la génération de paie agrège correctement les heures de pointage approu
     $payslip = $this->period->payslips()->where('employee_id', $this->employee->id)->first();
     expect($payslip)->not->toBeNull();
 
+    dd($payslip);
+
     // Vérifier la ligne de salaire de base (16h)
     $baseLine = $payslip->lines()->where('label', 'Salaire de base')->first();
     expect((float) $baseLine->base)->toEqual(16.0);
