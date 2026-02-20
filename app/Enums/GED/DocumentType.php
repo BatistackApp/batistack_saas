@@ -7,28 +7,40 @@ use Illuminate\Contracts\Support\Htmlable;
 
 enum DocumentType: string implements HasLabel
 {
-    case Contract = 'contract';
-    case Invoice = 'invoice';
+    // Technique & Chantier
     case Plan = 'plan';
     case TechnicalDoc = 'technical_doc';
-    case Certificate = 'certificate'; // Habilitations, assurances
-    case Identity = 'identity';
+    case Ppsps = 'ppsps';
+    case Doe = 'doe';
     case Photo = 'photo';
+
+    // Administratif & Légal (CRITIQUE)
+    case DecennialInsurance = 'decennial_insurance';
+    case UrssafVigilance = 'urssaf_vigilance';
+    case Kbis = 'kbis';
+    case ProfessionalLicense = 'professional_license';
+    case Identity = 'identity';
+    case Contract = 'contract';
+    case Invoice = 'invoice';
+
     case Other = 'other';
-    case DriverLicence = 'driver_licence';
 
     public function getLabel(): string|Htmlable|null
     {
         return match ($this) {
-            self::Contract => __('ged.document_types.contract'),
-            self::Invoice => __('ged.document_types.invoice'),
             self::Plan => __('ged.document_types.plan'),
             self::TechnicalDoc => __('ged.document_types.technical_doc'),
-            self::Certificate => __('ged.document_types.certificate'),
-            self::Identity => __('ged.document_types.identity'),
+            self::Ppsps => __('ged.document_types.ppsps'),
+            self::Doe => __('ged.document_types.doe'),
             self::Photo => __('ged.document_types.photo'),
+            self::DecennialInsurance => __('ged.document_types.decennial_insurance'),
+            self::UrssafVigilance => __('ged.document_types.urssaf_vigilance'),
+            self::Kbis => __('ged.document_types.kbis'),
+            self::ProfessionalLicense => __('ged.document_types.professional_license'),
+            self::Identity => __('ged.document_types.identity'),
+            self::Contract => __('ged.document_types.contract'),
+            self::Invoice => __('ged.document_types.invoice'),
             self::Other => __('ged.document_types.other'),
-            self::DriverLicence => __('ged.document_types.driver_licence'),
         };
     }
 }
