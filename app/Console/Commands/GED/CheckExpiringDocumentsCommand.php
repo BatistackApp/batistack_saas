@@ -15,29 +15,74 @@ class CheckExpiringDocumentsCommand extends Command
 
     public function handle(): void
     {
-        // On récupère les documents qui expirent dans exactement 30, 15 ou 7 jours
-        $intervals = [30, 15, 7];
+        /**
+         * Logique de seuils :
+         * 30 jours : Première alerte
+         * 15 jours : Rappel intermédiaire
+         * 7 jours  : Alerte urgente
+         * < 3 jours : Alerte quotidienne jusqu'à expiration
+         */
+        $thresholds = [
+            ['days' => 30, 'cooldown' => 14], // Alerte à J-30, puis silence pendant 14j
+            ['days' => 15, 'cooldown' => 7],  // Alerte à J-15, puis silence pendant 7j
+            ['days' => 7,  'cooldown' => 4],  // Alerte à J-7, puis silence pendant 4j
+            ['days' => 3,  'cooldown' => 0],  // Alerte quotidienne les 3 derniers jours
+        ];
 
-        foreach ($intervals as $days) {
+        foreach ($thresholds as $threshold) {
+            $days = $threshold['days'];
+            $cooldown = $threshold['cooldown'];
+
+            // On cible les documents expirant dans cette plage
             $targetDate = now()->addDays($days)->toDateString();
 
-            Document::where('expires_at', $targetDate)
-                ->where('is_valid', true)
+            Document::where('expires_at', '<=', $targetDate)
+                ->where('expires_at', '>', now()->toDateString()) // Pas encore expiré
+                ->where('status', 'active') // Uniquement les documents actifs
+                ->where(function ($query) use ($cooldown) {
+                    $query->whereNull('last_alert_sent_at')
+                        ->orWhere('last_alert_sent_at', '<=', now()->subDays($cooldown)->startOfDay());
+                })
                 ->with(['uploader', 'tenant'])
                 ->chunk(100, function ($documents) use ($days) {
                     foreach ($documents as $document) {
-                        // Notifier l'uploadeur et les admins du tenant
-                        $recipients = collect([$document->uploader])
-                            ->concat($document->tenant->users()->where('role', 'admin')->get())
-                            ->filter()
-                            ->unique('id');
-
-                        Notification::send($recipients, new DocumentExpiringNotification($document, $days));
+                        $this->sendNotification($document, $days);
                     }
                 });
         }
 
         $this->info('Vérification des expirations terminée.');
+    }
 
+    /**
+     * Envoie la notification et met à jour le timestamp
+     */
+    protected function sendNotification(Document $document, int $daysRemaining): void
+    {
+        // Construction de la liste des destinataires (Uploadeur + Admins du Tenant)
+        $recipients = collect();
+
+        if ($document->uploader) {
+            $recipients->push($document->uploader);
+        }
+
+        $admins = $document->tenant->users()
+            ->where('role', 'admin')
+            ->get();
+
+        $recipients = $recipients->concat($admins)
+            ->filter()
+            ->unique('id');
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new DocumentExpiringNotification($document, $daysRemaining));
+
+            // On marque le document pour éviter le spam lors du prochain passage
+            $document->update([
+                'last_alert_sent_at' => now()
+            ]);
+
+            $this->line("Alerte envoyée pour : {$document->name} (Expire dans {$daysRemaining}j environ)");
+        }
     }
 }

@@ -14,6 +14,7 @@ return new class extends Migration
             $table->boolean('is_valid')->default(false)->after('status');
             $table->foreignId('validated_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamp('validated_at')->nullable();
+            $table->timestamp('last_alert_sent_at')->nullable()->after('expires_at');
 
             $table->index(['tenants_id', 'type']);
             $table->index(['tenants_id', 'status']);
@@ -29,6 +30,7 @@ return new class extends Migration
             $table->dropColumn('is_valid');
             $table->dropColumn('validated_by');
             $table->dropColumn('validated_at');
+            $table->dropColumn('last_alert_sent_at');
 
             $table->dropIndex(['expires_at', 'status']);
 

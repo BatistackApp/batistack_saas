@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\GED;
 
 use App\Enums\GED\DocumentStatus;
+use App\Enums\GED\DocumentType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GED\BulkActionRequest;
 use App\Http\Requests\GED\StoreDocumentRequest;
@@ -30,35 +31,52 @@ class DocumentController extends Controller
         $type = $request->query('type');
         $status = $request->query('status');
 
-        // 1. Récupération des dossiers (uniquement si on n'est pas en train de filtrer par type)
+        // 1. Récupération des dossiers :
+        // On ne les affiche que si on n'applique pas de filtre global (type/statut)
+        // car les dossiers n'ont pas de type/statut propre.
         $folders = [];
-        if (! $type && ! $status) {
+        if (!$type && !$status) {
             $folders = DocumentFolder::where('tenants_id', $tenantId)
                 ->where('parent_id', $parentId)
                 ->orderBy('name')
                 ->get();
         }
 
-        // 2. Récupération des documents avec filtres BTP
+        // 2. Récupération des documents avec filtres
         $query = Document::where('tenants_id', $tenantId)
-            ->with('uploader:id,first_name,last_name');
+            ->with('uploader:id,first_name,last_name')
+            ->latest();
 
+        // Si folder_id est présent, on filtre systématiquement à l'intérieur
+        if ($parentId) {
+            $query->where('folder_id', $parentId);
+        }
+
+        // Filtres optionnels (Type et Statut)
         if ($type) {
             $query->where('type', $type);
-        } else {
-            $query->where('folder_id', $parentId);
         }
 
         if ($status) {
             $query->where('status', $status);
         }
 
-        $documents = $query->latest()->paginate(40);
+        $documents = $query->paginate(30);
+
+        // 3. Contexte de navigation (Breadcrumb)
+        $currentFolder = $parentId
+            ? DocumentFolder::where('tenants_id', $tenantId)->find($parentId)
+            : null;
 
         return response()->json([
+            'current_folder' => $currentFolder,
+            'breadcrumb' => $this->getBreadcrumb($parentId),
             'folders' => $folders,
             'documents' => $documents,
-            'path' => $this->getBreadcrumb($parentId),
+            'filters' => [
+                'type' => $type,
+                'status' => $status,
+            ]
         ]);
     }
 
@@ -68,15 +86,23 @@ class DocumentController extends Controller
     public function store(StoreDocumentRequest $request): JsonResponse
     {
         try {
+            // Correction : Cast explicite de la string vers l'Enum DocumentType
+            $type = DocumentType::from($request->type ?? 'other');
+
+            // Récupération du dossier si fourni
+            $folder = $request->folder_id
+                ? DocumentFolder::where('tenants_id', auth()->user()->tenants_id)->find($request->folder_id)
+                : null;
+
             $document = $this->gedService->upload(
                 $request->file('file'),
-                $request->only(['folder_id', 'type', 'expires_at', 'description', 'metadata'])
+                $type,
+                null, // documentable (polymorphisme) si non spécifié
+                $folder,
+                $request->metadata ?? []
             );
 
-            return response()->json([
-                'message' => 'Document ajouté avec succès',
-                'document' => $document,
-            ], 201);
+            return response()->json($document, 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
@@ -134,11 +160,11 @@ class DocumentController extends Controller
     {
         $ids = $request->document_ids;
         $action = $request->action;
-
         $count = 0;
+
         Document::whereIn('id', $ids)
             ->where('tenants_id', auth()->user()->tenants_id)
-            ->chunk(50, function ($documents) use ($action, $request, &$count) {
+            ->chunkById(100, function ($documents) use ($action, $request, &$count) {
                 foreach ($documents as $doc) {
                     match ($action) {
                         'delete' => $this->gedService->deleteDocument($doc),
