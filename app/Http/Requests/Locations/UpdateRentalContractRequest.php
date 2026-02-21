@@ -13,9 +13,15 @@ class UpdateRentalContractRequest extends FormRequest
         return [
             'label' => ['sometimes', 'string', 'max:255'],
             'start_date_planned' => ['sometimes', 'date'],
-            'end_date_planned' => ['nullable', 'date', 'after_or_equal:start_date_planned'],
-            'status' => ['sometimes', Rule::enum(RentalStatus::class)],
+            'end_date_planned' => [
+                'nullable',
+                'date',
+                'after_or_equal:start_date_planned',
+            ],
             'notes' => ['nullable', 'string'],
+            // Le statut est géré par une requête dédiée généralement,
+            // mais on le permet ici pour la flexibilité admin.
+            'status' => ['sometimes', Rule::enum(RentalStatus::class)],
         ];
     }
 

@@ -83,8 +83,8 @@ class Tiers extends Model
     public function isCompliant(): bool
     {
         return in_array($this->getComplianceStatus(), [
-            TierComplianceStatus::Compliant,
-            TierComplianceStatus::ToRenew,
+            TierComplianceStatus::Compliant->value,
+            TierComplianceStatus::ToRenew->value,
         ]);
     }
 }

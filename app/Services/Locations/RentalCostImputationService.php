@@ -25,19 +25,21 @@ class RentalCostImputationService
             return;
         }
 
+        // Récupération de l'affectation active (Assignment)
+        $activeAssignment = $contract->assignments()->whereNull('released_at')->latest()->first();
+        // Si pas d'affectation spécifique, on fallback sur le projet racine du contrat
+        $targetProjectId = $activeAssignment ? $activeAssignment->project_id : $contract->project_id;
+
         $yesterday = now()->subDay()->startOfDay();
         $today = now()->startOfDay();
 
-        DB::transaction(function () use ($contract, $yesterday, $today) {
+        DB::transaction(function () use ($contract, $targetProjectId, $yesterday, $today) {
             foreach ($contract->items as $item) {
                 $cost = $this->calculationService->calculateItemCost($item, $yesterday, $today);
 
                 if ($cost > 0) {
-                    // Création de l'écriture de coût réel
-                    // On assume une table project_costs ou équivalent que ProjectBudgetService agrège
-
                     DB::table('project_imputations')->insert([
-                        'project_id' => $contract->project_id,
+                        'project_id' => $targetProjectId,
                         'type' => 'rental',
                         'amount' => $cost,
                     ]);
