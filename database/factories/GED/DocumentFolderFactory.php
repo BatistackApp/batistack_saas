@@ -14,11 +14,8 @@ class DocumentFolderFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->name(),
-            'color' => $this->faker->word(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
+            'name' => $this->faker->word(),
+            'color' => $this->faker->safeHexColor(),
             'tenants_id' => Tenants::factory(),
         ];
     }

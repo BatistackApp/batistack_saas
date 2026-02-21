@@ -15,10 +15,17 @@ return [
         'contract' => 'Contrat',
         'invoice' => 'Facture',
         'other' => 'Autre document',
+        'certificate' => 'Certificat',
+        'driver_licence' => 'Permis de conduire',
+        'report' => 'Rapport',
+        'safety_sheet' => 'Fiche de sécurité',
     ],
     'status' => [
-        'active' => 'Actif',
+        'draft' => 'Brouillon',
+        'pending_validation' => 'En attente de validation',
+        'validated' => 'Validé',
+        'rejected' => 'Rejeté',
+        'expired' => 'Expiré',
         'archived' => 'Archivé',
-        'obsolete' => 'Obsolète (Indice précédent)',
     ]
 ];
