@@ -2,10 +2,13 @@
 
 namespace App\Services\GED;
 
+use App\Enums\GED\DocumentStatus;
+use App\Enums\GED\DocumentType;
 use App\Exceptions\GED\QuotaExceededException;
 use App\Models\Core\Tenants;
 use App\Models\GED\Document;
 use App\Models\GED\DocumentFolder;
+use App\Models\User;
 use DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -18,6 +21,85 @@ class GEDService
     public function __construct(
         protected QuotaService $quotaService
     ) {}
+
+    public function upload(
+        UploadedFile $file,
+        DocumentType $type,
+        ?Model $documentable = null,
+        ?DocumentFolder $folder = null,
+        array $metadata = [],
+    ): Document {
+        $tenant = auth()->user()->tenant;
+
+        // 1. Vérification Quota
+        if (! $this->quotaService->canUpload($tenant, $file->getSize())) {
+            throw new QuotaExceededException(
+                $tenant->storage_used,
+                $file->getSize(),
+                $this->quotaService->getStorageLimit($tenant)
+            );
+        }
+
+        // 2. Détermination du chemin
+        $resourceFolder = $documentable
+            ? Str::plural(strtolower(class_basename($documentable))).'/'.$documentable->id
+            : 'general';
+
+        $path = "tenants/{$tenant->id}/ged/{$resourceFolder}/".now()->format('Y/m');
+
+        return $this->processUpload($file, $tenant, $path, [
+            'type' => $type,
+            'documentable_type' => $documentable ? get_class($documentable) : null,
+            'documentable_id' => $documentable?->getKey(),
+            'folder_id' => $folder?->id,
+            'status' => DocumentStatus::PendingValidation, // Par défaut en attente pour le BTP
+            'metadata' => $metadata,
+            'version' => 1,
+        ]);
+    }
+
+    /**
+     * Gestion du Versioning (Remplacement d'un document existant)
+     */
+    public function createNewVersion(Document $oldDocument, UploadedFile $file): Document
+    {
+        return DB::transaction(function () use ($oldDocument, $file) {
+            // Archive l'ancienne version
+            $oldDocument->update(['status' => DocumentStatus::Archived]);
+
+            // Upload la nouvelle version
+            return $this->upload(
+                file: $file,
+                type: $oldDocument->type,
+                documentable: $oldDocument->documentable,
+                folder: $oldDocument->folder,
+                metadata: array_merge($oldDocument->metadata ?? [], [
+                    'previous_version_id' => $oldDocument->id,
+                    'version' => $oldDocument->version + 1,
+                ])
+            );
+        });
+    }
+
+    /**
+     * Validation de conformité (Spécifique BTP)
+     */
+    public function validate(Document $document, User $validator, bool $isValid = true, ?string $reason = null): Document
+    {
+        return DB::transaction(function () use ($document, $validator, $isValid, $reason) {
+            $document->update([
+                'status' => $isValid ? DocumentStatus::Validated : DocumentStatus::Rejected,
+                'is_valid' => $isValid,
+                'validated_by' => $validator->id,
+                'validated_at' => now(),
+                'metadata' => array_merge($document->metadata ?? [], [
+                    'rejection_reason' => $isValid ? null : $reason,
+                ]),
+            ]);
+
+            return $document;
+        });
+    }
 
     /**
      * Upload un document lié à une ressource spécifique (Projet, Employé, etc.)
@@ -152,18 +234,20 @@ class GEDService
     protected function processUpload(UploadedFile $file, Tenants $tenant, string $path, array $data): Document
     {
         return DB::transaction(function () use ($file, $tenant, $path, $data) {
-            $fileName = $file->getClientOriginalName();
-            $storagePath = Storage::disk('public')->putFileAs($path, $file, $fileName);
+            $extension = $file->getClientOriginalExtension();
+            $uuidName = Str::uuid().'.'.$extension;
+
+            $storagePath = Storage::disk('public')->putFileAs($path, $file, $uuidName);
 
             $document = Document::create(array_merge([
-                'name' => $fileName,
+                'name' => $file->getClientOriginalName(),
                 'tenants_id' => $tenant->id,
-                'file_name' => $fileName,
+                'file_name' => $uuidName,
                 'file_path' => $storagePath,
                 'size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'user_id' => auth()->id(),
-                'extension' => $file->getExtension(),
+                'extension' => $extension,
             ], $data));
 
             // Mise à jour du quota via QuotaService (UNIQUE SOURCE DE VÉRITÉ)
