@@ -12,6 +12,7 @@ use App\Models\Tiers\Tiers;
 use App\Observers\Intervention\InterventionObserver;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -64,9 +65,23 @@ class Intervention extends Model
             'status' => InterventionStatus::class,
             'billing_type' => BillingType::class,
             'planned_at' => 'datetime',
-            'total_ht' => 'decimal:2',
-            'total_cost_ht' => 'decimal:2',
+            'started_at' => 'datetime',
+            'completed_at' => 'datetime',
+            'amount_ht' => 'decimal:2',
+            'material_cost_ht' => 'decimal:2',
+            'labor_cost_ht' => 'decimal:2',
             'margin_ht' => 'decimal:2',
         ];
     }
+
+    /**
+     * Accesseur pour le coût total HT (Somme Matériel + MO)
+     */
+    protected function amountCostHt(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->material_cost_ht + $this->labor_cost_ht,
+        );
+    }
+
 }
