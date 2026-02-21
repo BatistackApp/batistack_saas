@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\GED;
 
+use App\Enums\GED\DocumentStatus;
 use App\Models\GED\Document;
 use App\Notifications\GED\DocumentExpiringNotification;
 use Illuminate\Console\Command;
@@ -38,7 +39,7 @@ class CheckExpiringDocumentsCommand extends Command
 
             Document::where('expires_at', '<=', $targetDate)
                 ->where('expires_at', '>', now()->toDateString()) // Pas encore expiré
-                ->where('status', 'active') // Uniquement les documents actifs
+                ->where('status', DocumentStatus::Validated->value) // Uniquement les documents actifs
                 ->where(function ($query) use ($cooldown) {
                     $query->whereNull('last_alert_sent_at')
                         ->orWhere('last_alert_sent_at', '<=', now()->subDays($cooldown)->startOfDay());
