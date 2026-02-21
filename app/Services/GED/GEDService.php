@@ -42,10 +42,10 @@ class GEDService
 
         // 2. Détermination du chemin
         $resourceFolder = $documentable
-            ? Str::plural(strtolower(class_basename($documentable))) . '/' . $documentable->id
+            ? Str::plural(strtolower(class_basename($documentable))).'/'.$documentable->id
             : 'general';
 
-        $path = "tenants/{$tenant->id}/ged/{$resourceFolder}/" . now()->format('Y/m');
+        $path = "tenants/{$tenant->id}/ged/{$resourceFolder}/".now()->format('Y/m');
 
         return $this->processUpload($file, $tenant, $path, [
             'type' => $type,
@@ -75,7 +75,7 @@ class GEDService
                 folder: $oldDocument->folder,
                 metadata: array_merge($oldDocument->metadata ?? [], [
                     'previous_version_id' => $oldDocument->id,
-                    'version' => $oldDocument->version + 1
+                    'version' => $oldDocument->version + 1,
                 ])
             );
         });
@@ -93,8 +93,8 @@ class GEDService
                 'validated_by' => $validator->id,
                 'validated_at' => now(),
                 'metadata' => array_merge($document->metadata ?? [], [
-                    'rejection_reason' => $isValid ? null : $reason
-                ])
+                    'rejection_reason' => $isValid ? null : $reason,
+                ]),
             ]);
 
             return $document;
@@ -235,7 +235,7 @@ class GEDService
     {
         return DB::transaction(function () use ($file, $tenant, $path, $data) {
             $extension = $file->getClientOriginalExtension();
-            $uuidName = Str::uuid() . '.' . $extension;
+            $uuidName = Str::uuid().'.'.$extension;
 
             $storagePath = Storage::disk('public')->putFileAs($path, $file, $uuidName);
 

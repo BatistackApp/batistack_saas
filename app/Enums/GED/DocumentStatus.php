@@ -6,7 +6,7 @@ use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum DocumentStatus: string implements HasLabel, HasColor
+enum DocumentStatus: string implements HasColor, HasLabel
 {
     case Draft = 'draft';
     case PendingValidation = 'pending_validation';

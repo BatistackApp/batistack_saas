@@ -9,8 +9,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
-use Spatie\PdfToImage\Pdf;
 use Spatie\ImageOptimizer\OptimizerChainFactory;
+use Spatie\PdfToImage\Pdf;
 
 class GenerateThumbnailJob implements ShouldQueue
 {
@@ -24,10 +24,10 @@ class GenerateThumbnailJob implements ShouldQueue
         $thumbName = 'thumb_'.pathinfo($this->document->file_name, PATHINFO_FILENAME).'.jpg';
         $destFolder = "tenants/{$this->document->tenants_id}/thumbnails";
 
-        if (!Storage::disk('public')->exists($destFolder)) {
+        if (! Storage::disk('public')->exists($destFolder)) {
             Storage::disk('public')->makeDirectory($destFolder);
         }
-        $destRelativePath = $destFolder . '/' . $thumbName;
+        $destRelativePath = $destFolder.'/'.$thumbName;
         $destFullPath = Storage::disk('public')->path($destRelativePath);
 
         try {
@@ -52,12 +52,12 @@ class GenerateThumbnailJob implements ShouldQueue
             $this->document->update([
                 'metadata' => array_merge($this->document->metadata ?? [], [
                     'thumbnail' => $destRelativePath,
-                    'has_thumbnail' => true
+                    'has_thumbnail' => true,
                 ]),
             ]);
 
         } catch (\Exception $e) {
-            \Log::error("Erreur traitement média GED [Doc ID: {$this->document->id}]: " . $e->getMessage());
+            \Log::error("Erreur traitement média GED [Doc ID: {$this->document->id}]: ".$e->getMessage());
         }
     }
 }

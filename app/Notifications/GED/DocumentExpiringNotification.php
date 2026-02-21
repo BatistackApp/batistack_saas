@@ -40,7 +40,7 @@ class DocumentExpiringNotification extends Notification implements ShouldQueue
             'document_id' => $this->document->id,
             'document_name' => $this->document->name,
             'days_remaining' => $this->daysRemaining,
-            'type' => 'expiration_warning'
+            'type' => 'expiration_warning',
         ];
     }
 }

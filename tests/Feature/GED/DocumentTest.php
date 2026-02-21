@@ -1,18 +1,17 @@
 <?php
 
 use App\Enums\GED\DocumentStatus;
+use App\Enums\GED\DocumentType;
 use App\Exceptions\GED\QuotaExceededException;
 use App\Jobs\GED\GenerateThumbnailJob;
 use App\Models\Core\Tenants;
 use App\Models\GED\Document;
 use App\Models\GED\DocumentFolder;
-use App\Models\HR\Employee;
 use App\Models\Projects\Project;
 use App\Models\User;
 use App\Services\GED\GEDService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
-use App\Enums\GED\DocumentType;
 
 uses(RefreshDatabase::class);
 
@@ -71,7 +70,7 @@ describe('GED Service - Logique Métier', function () {
         $file = UploadedFile::fake()->create('devis.pdf', 100);
 
         // On s'assure de passer les bons arguments pour éviter le TypeError
-        expect(fn() => $this->gedService->upload($file, DocumentType::Other))
+        expect(fn () => $this->gedService->upload($file, DocumentType::Other))
             ->toThrow(QuotaExceededException::class);
     });
 
@@ -112,7 +111,7 @@ describe('GED API - Endpoints & Navigation', function () {
         Document::factory()->count(3)->create([
             'tenants_id' => $this->tenant->id,
             'folder_id' => null,
-            'status' => DocumentStatus::Validated
+            'status' => DocumentStatus::Validated,
         ]);
 
         $response = $this->getJson(route('ged.index'));
@@ -135,13 +134,13 @@ describe('GED API - Endpoints & Navigation', function () {
     it('permet de créer un dossier', function () {
         $response = $this->postJson(route('ged.folders.store'), [
             'name' => 'Plans EXE',
-            'color' => '#FF0000'
+            'color' => '#FF0000',
         ]);
 
         $response->assertStatus(201);
         $this->assertDatabaseHas('document_folders', [
             'name' => 'Plans EXE',
-            'tenants_id' => $this->tenant->id
+            'tenants_id' => $this->tenant->id,
         ]);
     });
 
@@ -151,7 +150,7 @@ describe('GED API - Endpoints & Navigation', function () {
 
         $response = $this->postJson(route('ged.documents.bulk'), [
             'document_ids' => $ids,
-            'action' => 'archive'
+            'action' => 'archive',
         ]);
 
         $response->assertStatus(200);

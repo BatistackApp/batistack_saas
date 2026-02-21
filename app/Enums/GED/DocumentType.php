@@ -6,7 +6,7 @@ use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 use Illuminate\Contracts\Support\Htmlable;
 
-enum DocumentType: string implements HasLabel, HasIcon
+enum DocumentType: string implements HasIcon, HasLabel
 {
     case Contract = 'contract';
     case Invoice = 'invoice';

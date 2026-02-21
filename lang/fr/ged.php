@@ -27,5 +27,5 @@ return [
         'rejected' => 'Rejeté',
         'expired' => 'Expiré',
         'archived' => 'Archivé',
-    ]
+    ],
 ];

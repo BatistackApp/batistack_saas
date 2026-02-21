@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers\GED;
 
+use App\Enums\GED\DocumentStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\GED\BulkActionRequest;
 use App\Http\Requests\GED\StoreDocumentRequest;
 use App\Http\Requests\GED\StoreFolderRequest;
 use App\Http\Requests\GED\UpdateDocumentRequest;
-use App\Enums\GED\DocumentStatus;
 use App\Models\GED\Document;
 use App\Models\GED\DocumentFolder;
 use App\Services\GED\GEDService;
@@ -32,7 +32,7 @@ class DocumentController extends Controller
 
         // 1. Récupération des dossiers (uniquement si on n'est pas en train de filtrer par type)
         $folders = [];
-        if (!$type && !$status) {
+        if (! $type && ! $status) {
             $folders = DocumentFolder::where('tenants_id', $tenantId)
                 ->where('parent_id', $parentId)
                 ->orderBy('name')
@@ -58,7 +58,7 @@ class DocumentController extends Controller
         return response()->json([
             'folders' => $folders,
             'documents' => $documents,
-            'path' => $this->getBreadcrumb($parentId)
+            'path' => $this->getBreadcrumb($parentId),
         ]);
     }
 
@@ -75,7 +75,7 @@ class DocumentController extends Controller
 
             return response()->json([
                 'message' => 'Document ajouté avec succès',
-                'document' => $document
+                'document' => $document,
             ], 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
@@ -91,7 +91,7 @@ class DocumentController extends Controller
 
         return response()->json([
             'message' => 'Document mis à jour',
-            'document' => $document
+            'document' => $document,
         ]);
     }
 
@@ -123,6 +123,7 @@ class DocumentController extends Controller
     public function stats(): JsonResponse
     {
         $stats = $this->gedService->getQuotaStats();
+
         return response()->json($stats);
     }
 
@@ -167,7 +168,9 @@ class DocumentController extends Controller
      */
     protected function getBreadcrumb($folderId): array
     {
-        if (!$folderId) return [];
+        if (! $folderId) {
+            return [];
+        }
 
         $breadcrumb = [];
         $tenantId = auth()->user()->tenants_id;
@@ -175,8 +178,8 @@ class DocumentController extends Controller
 
         while ($current) {
             array_unshift($breadcrumb, ['id' => $current->id, 'name' => $current->name]);
-            $current = $current->parent_id 
-                ? DocumentFolder::where('tenants_id', $tenantId)->find($current->parent_id) 
+            $current = $current->parent_id
+                ? DocumentFolder::where('tenants_id', $tenantId)->find($current->parent_id)
                 : null;
         }
 
