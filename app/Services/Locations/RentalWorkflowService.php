@@ -47,19 +47,20 @@ class RentalWorkflowService
      * Déclenche l'appel de reprise (Off-Hire).
      * Stoppe la facturation théorique.
      */
-    public function requestOffHire(RentalContract $contract, Carbon $requestedAt): void
+    public function requestOffHire(RentalContract $contract, Carbon $requestedAt, ?string $reference = null): void
     {
         if ($contract->status !== RentalStatus::ACTIVE) {
             throw new RentalWorkflowException("Seul un contrat actif peut faire l'objet d'un appel de reprise.");
         }
 
-        DB::transaction(function () use ($contract, $requestedAt) {
+        DB::transaction(function () use ($contract, $requestedAt, $reference) {
             // On impute les derniers coûts jusqu'à la date de demande
             $this->imputationService->imputeDailyCost($contract);
 
             $contract->update([
                 'status' => RentalStatus::OFF_HIRE,
                 'off_hire_requested_at' => $requestedAt,
+                'notes' => trim($contract->notes . "\nArrêt demandé le " . $requestedAt->format('d/m/Y') . " (Réf: $reference).")
             ]);
 
             // On clôture l'affectation chantier en cours
@@ -94,6 +95,7 @@ class RentalWorkflowService
         });
     }
 
+
     /**
      * Termine une location (Retour matériel).
      */
@@ -116,5 +118,41 @@ class RentalWorkflowService
                 'actual_return_at' => $actualDate,
             ]);
         });
+    }
+
+    /**
+     * Étape 3 : Confirmation du retour physique (Reprise par le loueur).
+     * Clôture définitive du dossier et dernière imputation des coûts.
+     */
+    public function confirmReturn(RentalContract $contract, Carbon $actualReturnDate): void
+    {
+        // On peut terminer depuis ACTIVE (retour direct) ou OFF_HIRE (retour après appel)
+        if (!in_array($contract->status, [RentalStatus::ACTIVE, RentalStatus::OFF_HIRE])) {
+            throw new RentalWorkflowException("Le contrat n'est pas dans un état permettant la clôture.");
+        }
+
+        DB::transaction(function () use ($contract, $actualReturnDate) {
+            // 1. On effectue la dernière imputation analytique pour le projet
+            // Le service d'imputation utilisera off_hire_requested_at si présent pour borner le calcul
+            $this->imputationService->imputeDailyCost($contract);
+
+            // 2. Mise à jour finale du contrat
+            $contract->update([
+                'status' => RentalStatus::ENDED,
+                'actual_return_at' => $actualReturnDate,
+            ]);
+        });
+    }
+
+    /**
+     * Annule un contrat (uniquement si en brouillon).
+     */
+    public function cancelContract(RentalContract $contract): void
+    {
+        if ($contract->status !== RentalStatus::DRAFT) {
+            throw new RentalWorkflowException("Impossible d'annuler un contrat déjà activé.");
+        }
+
+        $contract->update(['status' => RentalStatus::CANCELLED]);
     }
 }
