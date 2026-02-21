@@ -79,7 +79,7 @@ class CheckExpiringDocumentsCommand extends Command
 
             // On marque le document pour éviter le spam lors du prochain passage
             $document->update([
-                'last_alert_sent_at' => now()
+                'last_alert_sent_at' => now(),
             ]);
 
             $this->line("Alerte envoyée pour : {$document->name} (Expire dans {$daysRemaining}j environ)");

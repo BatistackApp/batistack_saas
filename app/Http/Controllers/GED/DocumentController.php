@@ -35,7 +35,7 @@ class DocumentController extends Controller
         // On ne les affiche que si on n'applique pas de filtre global (type/statut)
         // car les dossiers n'ont pas de type/statut propre.
         $folders = [];
-        if (!$type && !$status) {
+        if (! $type && ! $status) {
             $folders = DocumentFolder::where('tenants_id', $tenantId)
                 ->where('parent_id', $parentId)
                 ->orderBy('name')
@@ -76,7 +76,7 @@ class DocumentController extends Controller
             'filters' => [
                 'type' => $type,
                 'status' => $status,
-            ]
+            ],
         ]);
     }
 
