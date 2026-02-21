@@ -39,15 +39,9 @@ class RentalCostImputationService
 
                 if ($cost > 0) {
                     DB::table('project_imputations')->insert([
-                        'tenants_id' => $contract->tenants_id,
                         'project_id' => $targetProjectId,
-                        'source_type' => 'rental_contract',
-                        'source_id' => $contract->id,
-                        'item_label' => $item->label,
-                        'amount_ht' => $cost,
-                        'imputed_at' => now(),
-                        'created_at' => now(),
-                        'updated_at' => now(),
+                        'type' => 'rental',
+                        'amount' => $cost,
                     ]);
                 }
             }
