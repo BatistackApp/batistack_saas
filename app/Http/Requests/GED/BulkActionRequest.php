@@ -10,15 +10,15 @@ class BulkActionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'document_ids' => 'required|array',
+            'document_ids' => ['required', 'array'],
             'document_ids.*' => [
                 Rule::exists('documents', 'id')->where('tenants_id', $this->user()->tenants_id),
             ],
-            'action' => 'required|in:move,delete,archive',
+            'action' => ['required', 'in:move,delete,archive,validate'],
             'target_folder_id' => [
                 'required_if:action,move',
                 'nullable',
-                Rule::exists('folders', 'id')->where('tenants_id', $this->user()->tenants_id),
+                Rule::exists('document_folders', 'id')->where('tenants_id', $this->user()->tenants_id),
             ],
         ];
     }

@@ -2,6 +2,7 @@
 
 namespace Database\Factories\GED;
 
+use App\Enums\GED\DocumentStatus;
 use App\Enums\GED\DocumentType;
 use App\Models\Core\Tenants;
 use App\Models\GED\Document;
@@ -25,7 +26,7 @@ class DocumentFactory extends Factory
             'mime_type' => 'application/pdf',
             'size' => $this->faker->numberBetween(1000, 5000000),
             'version' => 1,
-            'status' => 'active',
+            'status' => $this->faker->randomElement(DocumentStatus::cases()),
             'metadata' => ['author' => $this->faker->name()],
         ];
     }
