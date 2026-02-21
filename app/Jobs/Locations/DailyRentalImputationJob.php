@@ -18,8 +18,8 @@ class DailyRentalImputationJob implements ShouldQueue
     public function handle(RentalCostImputationService $imputationService): void
     {
         RentalContract::where('status', RentalStatus::ACTIVE)
-            ->with('items')
-            ->chunk(100, function ($contracts) use ($imputationService) {
+            ->with(['items', 'assignments' => fn($q) => $q->whereNull('released_at')])
+            ->chunk(50, function ($contracts) use ($imputationService) {
                 foreach ($contracts as $contract) {
                     $imputationService->imputeDailyCost($contract);
                 }

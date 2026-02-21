@@ -13,6 +13,8 @@ class RentalInspection extends Model
 
     protected $fillable = [
         'rental_contract_id', 'inspector_id', 'type', 'notes', 'photos',
+        'client_signature',
+        'provider_signature',
     ];
 
     public function contract(): BelongsTo
