@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Storage;
 use Spatie\PdfToImage\Pdf;
+use Spatie\ImageOptimizer\OptimizerChainFactory;
 
 class GenerateThumbnailJob implements ShouldQueue
 {
@@ -23,26 +24,40 @@ class GenerateThumbnailJob implements ShouldQueue
         $thumbName = 'thumb_'.pathinfo($this->document->file_name, PATHINFO_FILENAME).'.jpg';
         $destFolder = "tenants/{$this->document->tenants_id}/thumbnails";
 
-        Storage::disk('public')->makeDirectory($destFolder);
-        $destPath = Storage::disk('public')->path($destFolder.'/'.$thumbName);
+        if (!Storage::disk('public')->exists($destFolder)) {
+            Storage::disk('public')->makeDirectory($destFolder);
+        }
+        $destRelativePath = $destFolder . '/' . $thumbName;
+        $destFullPath = Storage::disk('public')->path($destRelativePath);
 
         try {
+            // 1. Génération de la miniature
             if ($this->document->extension === 'pdf') {
                 $pdf = new Pdf($sourcePath);
-                $pdf->saveImage($destPath);
-            } elseif (in_array($this->document->extension, ['jpg', 'jpeg', 'png', 'webp'])) {
-                // Utilisation simple de GD ou Intervention Image
+                $pdf->saveImage($destFullPath);
+            } elseif (in_array(strtolower($this->document->extension), ['jpg', 'jpeg', 'png', 'webp'])) {
                 $img = imagecreatefromstring(Storage::disk('public')->get($this->document->file_path));
                 $scaled = imagescale($img, 300);
-                imagejpeg($scaled, $destPath);
+                imagejpeg($scaled, $destFullPath, 80);
+                imagedestroy($img);
+                imagedestroy($scaled);
             }
 
-            // Mise à jour des métadonnées du document avec le chemin de la miniature
+            // 2. Optimisation de la miniature (si générée)
+            if (file_exists($destFullPath)) {
+                OptimizerChainFactory::create()->optimize($destFullPath);
+            }
+
+            // 3. Mise à jour des métadonnées
             $this->document->update([
-                'metadata' => array_merge($this->document->metadata ?? [], ['thumbnail' => $destFolder.'/'.$thumbName]),
+                'metadata' => array_merge($this->document->metadata ?? [], [
+                    'thumbnail' => $destRelativePath,
+                    'has_thumbnail' => true
+                ]),
             ]);
+
         } catch (\Exception $e) {
-            \Log::error('Erreur miniature GED: '.$e->getMessage());
+            \Log::error("Erreur traitement média GED [Doc ID: {$this->document->id}]: " . $e->getMessage());
         }
     }
 }

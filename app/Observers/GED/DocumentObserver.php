@@ -2,6 +2,7 @@
 
 namespace App\Observers\GED;
 
+use App\Jobs\GED\GenerateThumbnailJob;
 use App\Models\GED\Document;
 use App\Notifications\GED\QuotaWarningNotification;
 use App\Services\GED\GEDService;
@@ -16,16 +17,16 @@ class DocumentObserver
     public function created(Document $document): void
     {
         $tenant = $document->tenant;
-        $usageStats = $this->quotaService->getUsageStats($tenant); // Appeler QuotaService directement avec le tenant
-        $percentage = $usageStats['percentage'];
 
-        // Si on dépasse 80%, on alerte les administrateurs du Tenant
-        if ($percentage >= 80) {
+        // 1. Vérification du quota et notification si > 80%
+        $usageStats = $this->quotaService->getUsageStats($tenant);
+        if ($usageStats['percentage'] >= 80) {
             $admins = $tenant->users()->where('role', 'admin')->get();
-            Notification::send($admins, new QuotaWarningNotification($tenant, $percentage));
+            Notification::send($admins, new QuotaWarningNotification($tenant, $usageStats['percentage']));
         }
 
-        \App\Jobs\GED\GenerateThumbnailJob::dispatch($document);
+        // 2. Génération de la miniature en arrière-plan
+        GenerateThumbnailJob::dispatch($document);
     }
 
     public function forceDeleted(Document $document): void
@@ -34,9 +35,13 @@ class DocumentObserver
             Storage::disk('public')->delete($document->file_path);
         }
 
-        // Supprimer aussi la miniature si elle existe, en utilisant le chemin stocké dans les métadonnées
-        if (isset($document->metadata['thumbnail']) && Storage::disk('public')->exists($document->metadata['thumbnail'])) {
-            Storage::disk('public')->delete($document->metadata['thumbnail']);
+        // 2. Suppression de la miniature (stockée dans metadata)
+        $thumbnail = $document->metadata['thumbnail'] ?? null;
+        if ($thumbnail && Storage::disk('public')->exists($thumbnail)) {
+            Storage::disk('public')->delete($thumbnail);
         }
+
+        // 3. Libération du quota
+        $this->quotaService->decrementUsedStorage($document->tenant, $document->size);
     }
 }
