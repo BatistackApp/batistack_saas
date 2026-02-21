@@ -27,7 +27,6 @@ class RentalContract extends Model
         'actual_pickup_at', 'actual_return_at',
         'status', 'notes',
         'delivery_cost_ht', 'return_cost_ht', 'cleaning_fees_ht', 'refuel_fees_ht',
-        'released_at',
     ];
 
     public function provider(): BelongsTo

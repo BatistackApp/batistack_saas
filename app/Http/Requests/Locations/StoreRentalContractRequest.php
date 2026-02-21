@@ -23,7 +23,8 @@ class StoreRentalContractRequest extends FormRequest
             ],
             'project_phase_id' => [
                 'nullable',
-                Rule::exists('project_phases', 'id') // La phase est liée au projet
+                Rule::exists('project_phases', 'id')
+                    ->where('project_id', $this->project_id)// La phase est liée au projet
             ],
             'label' => ['required', 'string', 'max:255'],
             'start_date_planned' => ['required', 'date', 'after_or_equal:today'],
