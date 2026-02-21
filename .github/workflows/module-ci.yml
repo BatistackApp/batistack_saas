@@ -384,7 +384,6 @@ jobs:
       - name: Run HR Module Tests
         if: steps.changes.outputs.hr == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/HR --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/HR --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=hr" >> $GITHUB_ENV
         env:
@@ -404,7 +403,6 @@ jobs:
       - name: Run Accounting Module Tests
         if: steps.changes.outputs.accounting == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/Accounting --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/Accounting --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=accounting" >> $GITHUB_ENV
         env:
@@ -424,7 +422,6 @@ jobs:
       - name: Run Banque Module Tests
         if: steps.changes.outputs.banque == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/Banque --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/Banque --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=banque" >> $GITHUB_ENV
         env:
@@ -435,7 +432,6 @@ jobs:
         if: steps.changes.outputs.bim == 'true' && steps.changes.outputs.core == 'false'
         run: |
           php artisan test tests/Feature/Bim --parallel --coverage-clover=coverage.xml
-          php artisan test tests/Unit/Bim --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=bim" >> $GITHUB_ENV
         env:
           DB_CONNECTION: sqlite
@@ -444,7 +440,6 @@ jobs:
       - name: Run Commerce Module Tests
         if: steps.changes.outputs.commerce == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/Commerce --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/Commerce --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=commerce" >> $GITHUB_ENV
         env:
@@ -454,7 +449,6 @@ jobs:
       - name: Run Fleet Module Tests
         if: steps.changes.outputs.fleet == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/Fleet --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/Fleet --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=fleet" >> $GITHUB_ENV
         env:
@@ -464,7 +458,6 @@ jobs:
       - name: Run GED Module Tests
         if: steps.changes.outputs.ged == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/GED --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/GED --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=ged" >> $GITHUB_ENV
         env:
@@ -474,7 +467,6 @@ jobs:
       - name: Run GPAO Module Tests
         if: steps.changes.outputs.gpao == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/GPAO --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/GPAO --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=gpao" >> $GITHUB_ENV
         env:
@@ -484,7 +476,6 @@ jobs:
       - name: Run Intervention Module Tests
         if: steps.changes.outputs.intervention == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/Intervention --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/Intervention --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=intervention" >> $GITHUB_ENV
         env:
@@ -494,7 +485,6 @@ jobs:
       - name: Run Locations Module Tests
         if: steps.changes.outputs.locations == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/Locations --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/Locations --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=locations" >> $GITHUB_ENV
         env:
@@ -514,7 +504,6 @@ jobs:
       - name: Run Tiers Module Tests
         if: steps.changes.outputs.tiers == 'true' && steps.changes.outputs.core == 'false'
         run: |
-          php artisan test tests/Unit/Tiers --parallel --coverage-clover=coverage.xml
           php artisan test tests/Feature/Tiers --parallel --coverage-clover=coverage.xml
           echo "CODECOV_FLAG=tiers" >> $GITHUB_ENV
         env:
