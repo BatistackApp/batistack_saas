@@ -2,7 +2,6 @@
 
 namespace App\Models\Locations;
 
-use App\Models\Core\Tenants;
 use App\Models\Projects\Project;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

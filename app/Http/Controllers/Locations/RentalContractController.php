@@ -19,9 +19,9 @@ class RentalContractController extends Controller
             ->with(['provider:id,name', 'project:id,name', 'phase:id,name'])
             ->withCount('items')
             // Filtres rapides
-            ->when($request->status, fn($q) => $q->where('status', $request->status))
-            ->when($request->project_id, fn($q) => $q->where('project_id', $request->project_id))
-            ->when($request->provider_id, fn($q) => $q->where('provider_id', $request->provider_id))
+            ->when($request->status, fn ($q) => $q->where('status', $request->status))
+            ->when($request->project_id, fn ($q) => $q->where('project_id', $request->project_id))
+            ->when($request->provider_id, fn ($q) => $q->where('provider_id', $request->provider_id))
             ->latest()
             ->paginate($request->per_page ?? 15);
 
@@ -34,7 +34,7 @@ class RentalContractController extends Controller
 
         return response()->json([
             'message' => 'Contrat de location créé avec succès.',
-            'data' => $contract
+            'data' => $contract,
         ], 201);
     }
 
@@ -44,7 +44,7 @@ class RentalContractController extends Controller
             'items',
             'inspections.inspector:id,first_name,last_name',
             'provider',
-            'project'
+            'project',
         ]));
     }
 
@@ -54,7 +54,7 @@ class RentalContractController extends Controller
 
         return response()->json([
             'message' => 'Contrat mis à jour.',
-            'data' => $rentalContract
+            'data' => $rentalContract,
         ]);
     }
 

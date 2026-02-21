@@ -44,8 +44,8 @@ class RentalStatusController extends Controller
             };
 
             return response()->json([
-                'message' => "Le contrat est passé au statut : " . $newStatus->value,
-                'data' => $rentalContract->fresh()
+                'message' => 'Le contrat est passé au statut : '.$newStatus->value,
+                'data' => $rentalContract->fresh(),
             ]);
 
         } catch (\Exception $e) {

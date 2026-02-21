@@ -64,7 +64,7 @@ class RentalCalculationService
 
         // Calcul hors week-end (jours ouvrés uniquement)
         return (int) $start->diffInDaysFiltered(function (CarbonImmutable $date) {
-                return !$date->isWeekend();
-            }, $end) + ($start->isWeekend() ? 0 : 1);
+            return ! $date->isWeekend();
+        }, $end) + ($start->isWeekend() ? 0 : 1);
     }
 }

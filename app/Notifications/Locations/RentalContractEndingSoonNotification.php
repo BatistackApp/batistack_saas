@@ -33,10 +33,10 @@ class RentalContractEndingSoonNotification extends Notification implements Shoul
 
         if ($this->type === 'ending_soon') {
             $message->line("Le contrat de location '{$this->contract->label}' pour le chantier {$this->contract->project->name} arrive à échéance.")
-                ->line('Date de fin prévue : ' . $this->contract->end_date_planned->format('d/m/Y'))
+                ->line('Date de fin prévue : '.$this->contract->end_date_planned->format('d/m/Y'))
                 ->line('Pensez à confirmer le rendu du matériel ou à prolonger le contrat pour éviter les surcoûts.');
         } else {
-            $message->line("Alerte : Le matériel du contrat {$this->contract->reference} est en 'Off-Hire' depuis le " . $this->contract->off_hire_requested_at->format('d/m/Y') . ".")
+            $message->line("Alerte : Le matériel du contrat {$this->contract->reference} est en 'Off-Hire' depuis le ".$this->contract->off_hire_requested_at->format('d/m/Y').'.')
                 ->line("Le loueur n'a toujours pas confirmé la reprise physique sur le chantier : {$this->contract->project->name}.")
                 ->line("Pensez à relancer le loueur pour libérer l'espace sur site.");
         }

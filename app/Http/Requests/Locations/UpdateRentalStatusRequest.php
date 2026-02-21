@@ -21,7 +21,7 @@ class UpdateRentalStatusRequest extends FormRequest
                 Rule::requiredIf($this->status === RentalStatus::OFF_HIRE->value),
                 'nullable',
                 'string',
-                'max:50'
+                'max:50',
             ],
         ];
     }

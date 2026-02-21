@@ -82,6 +82,7 @@ class RentalContract extends Model
     public function getCurrentProjectAttribute()
     {
         $lastAssignment = $this->assignments()->whereNull('released_at')->latest()->first();
+
         return $lastAssignment ? $lastAssignment->project : $this->project;
     }
 }

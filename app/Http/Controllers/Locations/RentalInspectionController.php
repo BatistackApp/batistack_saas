@@ -25,8 +25,8 @@ class RentalInspectionController extends Controller
         ]);
 
         return response()->json([
-            'message' => "État des lieux enregistré.",
-            'data' => $inspection->load('inspector:id,first_name,last_name')
+            'message' => 'État des lieux enregistré.',
+            'data' => $inspection->load('inspector:id,first_name,last_name'),
         ], 201);
     }
 }

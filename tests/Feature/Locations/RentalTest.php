@@ -1,7 +1,6 @@
 <?php
 
 use App\Enums\Locations\RentalStatus;
-use App\Enums\Tiers\TierStatus;
 use App\Models\Locations\RentalContract;
 use App\Models\Locations\RentalItem;
 use App\Models\Projects\Project;
@@ -11,7 +10,6 @@ use App\Models\User;
 use App\Services\Locations\RentalCalculationService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
 
@@ -45,7 +43,7 @@ it("suit le workflow complet d'une location BTP", function () {
     $contract = RentalContract::factory()->create([
         'tenants_id' => $this->tenantsId,
         'status' => RentalStatus::DRAFT,
-        'provider_id' => $this->provider->id
+        'provider_id' => $this->provider->id,
     ]);
 
     // 2. Activation (Livraison sur chantier)
@@ -88,9 +86,9 @@ it("suit le workflow complet d'une location BTP", function () {
 |--------------------------------------------------------------------------
 */
 
-describe("Moteur de calcul financier", function () {
+describe('Moteur de calcul financier', function () {
 
-    it("applique le tarif journalier pour une courte durée", function () {
+    it('applique le tarif journalier pour une courte durée', function () {
         $contract = RentalContract::factory()->create(['tenants_id' => $this->tenantsId, 'status' => RentalStatus::ACTIVE]);
         $item = new RentalItem([
             'quantity' => 1,
@@ -110,7 +108,7 @@ describe("Moteur de calcul financier", function () {
         expect($cost)->toBe(220.0);
     });
 
-    it("bascule sur le tarif semaine si plus avantageux (dégressivité)", function () {
+    it('bascule sur le tarif semaine si plus avantageux (dégressivité)', function () {
         $contract = RentalContract::factory()->create(['tenants_id' => $this->tenantsId, 'status' => RentalStatus::ACTIVE, 'off_hire_requested_at' => now()->addDay()]);
         $item = new RentalItem([
             'quantity' => 1,
@@ -131,7 +129,7 @@ describe("Moteur de calcul financier", function () {
         expect($cost)->toBe(350.0);
     });
 
-    it("ne facture pas le weekend par défaut", function () {
+    it('ne facture pas le weekend par défaut', function () {
         $contract = RentalContract::factory()->create(['tenants_id' => $this->tenantsId, 'status' => RentalStatus::ACTIVE, 'off_hire_requested_at' => now()->addDay()]);
         $item = new RentalItem([
             'quantity' => 1,
@@ -157,7 +155,7 @@ describe("Moteur de calcul financier", function () {
 |--------------------------------------------------------------------------
 */
 
-it("génère une imputation analytique lors de la clôture", function () {
+it('génère une imputation analytique lors de la clôture', function () {
     $contract = RentalContract::factory()->create([
         'tenants_id' => $this->tenantsId,
         'project_id' => $this->project->id,

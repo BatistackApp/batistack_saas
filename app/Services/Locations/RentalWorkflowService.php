@@ -60,12 +60,12 @@ class RentalWorkflowService
             $contract->update([
                 'status' => RentalStatus::OFF_HIRE,
                 'off_hire_requested_at' => $requestedAt,
-                'notes' => trim($contract->notes . "\nArrêt demandé le " . $requestedAt->format('d/m/Y') . " (Réf: $reference).")
+                'notes' => trim($contract->notes."\nArrêt demandé le ".$requestedAt->format('d/m/Y')." (Réf: $reference)."),
             ]);
 
             // On clôture l'affectation chantier en cours
             $contract->assignments()->whereNull('released_at')->update([
-                'released_at' => $requestedAt
+                'released_at' => $requestedAt,
             ]);
         });
     }
@@ -82,7 +82,7 @@ class RentalWorkflowService
         DB::transaction(function () use ($contract, $newProject, $transferDate) {
             // 1. Clôturer l'affectation actuelle
             $contract->assignments()->whereNull('released_at')->update([
-                'released_at' => $transferDate
+                'released_at' => $transferDate,
             ]);
 
             // 2. Créer la nouvelle affectation
@@ -95,13 +95,12 @@ class RentalWorkflowService
         });
     }
 
-
     /**
      * Termine une location (Retour matériel).
      */
     public function endRental(RentalContract $contract, Carbon $actualDate): void
     {
-        if (!in_array($contract->status, [RentalStatus::ACTIVE, RentalStatus::OFF_HIRE])) {
+        if (! in_array($contract->status, [RentalStatus::ACTIVE, RentalStatus::OFF_HIRE])) {
             throw new RentalWorkflowException('Le contrat doit être actif ou en appel de reprise pour être terminé.');
         }
 
@@ -127,7 +126,7 @@ class RentalWorkflowService
     public function confirmReturn(RentalContract $contract, Carbon $actualReturnDate): void
     {
         // On peut terminer depuis ACTIVE (retour direct) ou OFF_HIRE (retour après appel)
-        if (!in_array($contract->status, [RentalStatus::ACTIVE, RentalStatus::OFF_HIRE])) {
+        if (! in_array($contract->status, [RentalStatus::ACTIVE, RentalStatus::OFF_HIRE])) {
             throw new RentalWorkflowException("Le contrat n'est pas dans un état permettant la clôture.");
         }
 

@@ -16,7 +16,7 @@ class UpdateRentalContractRequest extends FormRequest
             'end_date_planned' => [
                 'nullable',
                 'date',
-                'after_or_equal:start_date_planned'
+                'after_or_equal:start_date_planned',
             ],
             'notes' => ['nullable', 'string'],
             // Le statut est géré par une requête dédiée généralement,
