@@ -20,6 +20,14 @@ class StoreRentalItemRequest extends FormRequest
         ];
     }
 
+    public function messages(): array
+    {
+        return [
+            'quantity.min' => 'La quantité doit être supérieure à 0.',
+            'daily_rate_ht.min' => 'Le tarif ne peut pas être négatif.',
+        ];
+    }
+
     public function authorize(): bool
     {
         $contract = $this->route('rental_contract');

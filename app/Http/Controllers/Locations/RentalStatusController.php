@@ -25,18 +25,29 @@ class RentalStatusController extends Controller
             $newStatus = RentalStatus::from($request->status);
             $actualDate = Carbon::parse($request->actual_date);
 
-            if ($newStatus === RentalStatus::ACTIVE) {
-                $this->workflowService->startRental($rentalContract, $actualDate);
-                $message = 'Location activée : le matériel est désormais sur site.';
-            } elseif ($newStatus === RentalStatus::ENDED) {
-                $this->workflowService->endRental($rentalContract, $actualDate);
-                $message = 'Location terminée : les derniers coûts ont été imputés.';
-            } else {
-                $rentalContract->update(['status' => $newStatus]);
-                $message = 'Statut mis à jour.';
-            }
+            match ($newStatus) {
+                // Étape 1 : Le matériel arrive sur chantier
+                RentalStatus::ACTIVE => $this->workflowService->startRental($rentalContract, $actualDate),
 
-            return response()->json(['message' => $message]);
+                // Étape 2 : On appelle le loueur pour dire qu'on a fini (Fin de facturation)
+                RentalStatus::OFF_HIRE => $this->workflowService->requestOffHire(
+                    $rentalContract,
+                    $actualDate,
+                    $request->off_hire_reference
+                ),
+
+                // Étape 3 : Le loueur a physiquement récupéré le matériel
+                RentalStatus::ENDED => $this->workflowService->confirmReturn($rentalContract, $actualDate),
+
+                // Autres cas simples (Annulation, etc.)
+                default => $rentalContract->update(['status' => $newStatus]),
+            };
+
+            return response()->json([
+                'message' => "Le contrat est passé au statut : " . $newStatus->value,
+                'data' => $rentalContract->fresh()
+            ]);
+
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }

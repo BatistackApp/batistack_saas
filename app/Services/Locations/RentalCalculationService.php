@@ -16,6 +16,12 @@ class RentalCalculationService
      */
     public function calculateItemCost(RentalItem $item, CarbonImmutable $start, CarbonImmutable $end): float
     {
+        // Sécurité : Si le contrat a une date d'Off-Hire, on ne peut pas calculer au-delà
+        $offHireDate = $item->contract->off_hire_requested_at;
+        if ($offHireDate && $end->isAfter($offHireDate)) {
+            $end = CarbonImmutable::instance($offHireDate);
+        }
+
         $days = $this->getBillableDays($item, $start, $end);
 
         if ($days <= 0) {
@@ -48,14 +54,17 @@ class RentalCalculationService
      */
     private function getBillableDays(RentalItem $item, CarbonImmutable $start, CarbonImmutable $end): int
     {
-        // Pour les jobs quotidiens (durée exacte de 24h), on ne fait pas de +1 inclusif
-        // car le job tourne chaque jour.
-        if ($item->is_weekend_included) {
-            return (int) $start->diffInDays($end) + 1;
+        if ($start->isAfter($end)) {
+            return 0;
         }
 
+        if ($item->is_weekend_included) {
+            return $start->diffInDays($end) + 1;
+        }
+
+        // Calcul hors week-end (jours ouvrés uniquement)
         return (int) $start->diffInDaysFiltered(function (CarbonImmutable $date) {
-            return ! $date->isWeekend();
-        }, $end->addDay());
+                return !$date->isWeekend();
+            }, $end) + ($start->isWeekend() ? 0 : 1);
     }
 }

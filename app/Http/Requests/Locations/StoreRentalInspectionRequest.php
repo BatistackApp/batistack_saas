@@ -14,7 +14,11 @@ class StoreRentalInspectionRequest extends FormRequest
             'type' => ['required', Rule::enum(RentalInspectionType::class)],
             'notes' => ['nullable', 'string'],
             'photos' => ['required', 'array', 'min:1'],
-            'photos.*' => ['image', 'max:5120'], // 5 Mo max par photo
+            'photos.*' => ['image', 'max:10240'], // 10 Mo pour la HD chantier
+
+            // Ajouts pour la valeur juridique (Recommandation 6)
+            'client_signature' => ['nullable', 'string'], // Base64 de la signature
+            'provider_signature' => ['nullable', 'string'],
         ];
     }
 

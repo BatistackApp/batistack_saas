@@ -9,38 +9,53 @@ use App\Http\Requests\Locations\StoreRentalContractRequest;
 use App\Http\Requests\Locations\UpdateRentalContractRequest;
 use App\Models\Locations\RentalContract;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class RentalContractController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $contracts = RentalContract::with(['provider', 'project', 'phase'])
+        $contracts = RentalContract::query()
+            ->with(['provider:id,name', 'project:id,name', 'phase:id,name'])
+            ->withCount('items')
+            // Filtres rapides
+            ->when($request->status, fn($q) => $q->where('status', $request->status))
+            ->when($request->project_id, fn($q) => $q->where('project_id', $request->project_id))
+            ->when($request->provider_id, fn($q) => $q->where('provider_id', $request->provider_id))
             ->latest()
-            ->paginate();
+            ->paginate($request->per_page ?? 15);
 
         return response()->json($contracts);
     }
 
     public function store(StoreRentalContractRequest $request): JsonResponse
     {
-        $contract = RentalContract::create(array_merge(
-            $request->validated(),
-            ['tenants_id' => auth()->user()->tenants_id]
-        ));
+        $contract = RentalContract::create($request->validated());
 
-        return response()->json($contract, 201);
+        return response()->json([
+            'message' => 'Contrat de location créé avec succès.',
+            'data' => $contract
+        ], 201);
     }
 
     public function show(RentalContract $rentalContract): JsonResponse
     {
-        return response()->json($rentalContract->load(['items', 'inspections.inspector', 'provider']));
+        return response()->json($rentalContract->load([
+            'items',
+            'inspections.inspector:id,first_name,last_name',
+            'provider',
+            'project'
+        ]));
     }
 
     public function update(UpdateRentalContractRequest $request, RentalContract $rentalContract): JsonResponse
     {
         $rentalContract->update($request->validated());
 
-        return response()->json($rentalContract);
+        return response()->json([
+            'message' => 'Contrat mis à jour.',
+            'data' => $rentalContract
+        ]);
     }
 
     /**
