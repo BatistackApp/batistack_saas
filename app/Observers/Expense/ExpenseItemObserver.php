@@ -9,12 +9,9 @@ use App\Services\Expense\ExpenseCalculationService;
 
 class ExpenseItemObserver
 {
-    protected ExpenseCalculationService $calculationService;
-
-    public function __construct()
-    {
-        $this->calculationService = app(ExpenseCalculationService::class);
-    }
+    public function __construct(
+        protected ExpenseCalculationService $calculationService
+    ) {}
 
     /**
      * Empêche la modification d'un item si la note est déjà soumise ou validée.
@@ -24,37 +21,37 @@ class ExpenseItemObserver
     public function saving(ExpenseItem $item): void
     {
         $report = $item->report;
-        // Si le rapport n'est pas chargé, on essaie de le charger
-        if (! $report && $item->expense_report_id) {
-            $report = $item->report()->first();
+
+        if ($report && !$report->isEditable()) {
+            throw new ReportLockedException(
+                "Action impossible : la note de frais [{$report->label}] est en cours de validation ou payée."
+            );
         }
 
-        if ($report && ! in_array($report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
-            throw new ReportLockedException("Impossible de modifier une ligne d'une note de frais verrouillée (Statut: {$report->status->value}");
+        // Automatisation : Si c'est un frais kilométrique, on force le calcul via le service
+        if ($item->is_mileage && $item->distance_km > 0) {
+            $item->amount_ht = $this->calculationService->calculateMileage(
+                $item->report->tenants_id,
+                (float) $item->distance_km,
+                (int) $item->vehicle_power
+            );
+            // On recalcule la TVA (souvent 0 sur les IK mais dépend du pays/tenant)
+            $item->amount_tva = 0;
+            $item->amount_ttc = $item->amount_ht;
         }
     }
 
     public function saved(ExpenseItem $item): void
     {
-        $this->updateReportTotals($item);
+        if ($item->report) {
+            $this->calculationService->refreshReportTotals($item->report);
+        }
     }
 
     public function deleted(ExpenseItem $item): void
     {
-        $this->updateReportTotals($item);
-    }
-
-    private function updateReportTotals(ExpenseItem $item): void
-    {
-        // On s'assure de recharger la relation pour avoir l'objet frais
-        $report = $item->report;
-
-        if (! $report && $item->expense_report_id) {
-            $report = $item->report()->first();
-        }
-
-        if ($report) {
-            $this->calculationService->refreshReportTotals($report);
+        if ($item->report) {
+            $this->calculationService->refreshReportTotals($item->report);
         }
     }
 }
