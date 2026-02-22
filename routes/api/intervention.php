@@ -12,6 +12,12 @@ Route::prefix('interventions/{intervention}')->group(function () {
     Route::post('start', [InterventionController::class, 'start'])->name('interventions.start');
     Route::post('complete', [InterventionController::class, 'complete'])->name('interventions.complete');
     Route::patch('status', [InterventionController::class, 'updateStatus'])->name('interventions.update-status');
+    Route::post('on-route', [InterventionController::class, 'startRoute'])
+        ->name('interventions.on-route');
+    Route::post('arrive', [InterventionController::class, 'arriveOnSite'])
+        ->name('interventions.arrive');
+    Route::post('on-hold', [InterventionController::class, 'putOnHold'])
+        ->name('interventions.on-hold');
 
     // Sous-ressources : Matériel
     Route::post('items', [InterventionItemController::class, 'store'])->name('interventions.items.store');

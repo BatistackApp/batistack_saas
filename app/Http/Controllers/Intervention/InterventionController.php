@@ -13,6 +13,7 @@ use App\Models\Intervention\Intervention;
 use App\Services\Intervention\InterventionWorkflowService;
 use DB;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class InterventionController extends Controller
 {
@@ -109,6 +110,48 @@ class InterventionController extends Controller
             $this->workflowService->start($intervention);
 
             return response()->json(['message' => 'Intervention démarrée.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Le technicien part vers le site (Statut : En route).
+     * URL: POST /api/interventions/{intervention}/on-route
+     */
+    public function startRoute(Intervention $intervention): JsonResponse
+    {
+        try {
+            $this->workflowService->startRoute($intervention);
+            return response()->json(['message' => 'Statut mis à jour : Technicien en route.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Le technicien arrive sur le lieu de l'intervention.
+     * URL: POST /api/interventions/{intervention}/arrive
+     */
+    public function arriveOnSite(Intervention $intervention): JsonResponse
+    {
+        try {
+            $this->workflowService->arriveOnSite($intervention);
+            return response()->json(['message' => 'Statut mis à jour : Arrivé sur site.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Met l'intervention en pause (Ex: manque de pièces, accès impossible).
+     * URL: POST /api/interventions/{intervention}/on-hold
+     */
+    public function putOnHold(Request $request, Intervention $intervention): JsonResponse
+    {
+        try {
+            $this->workflowService->putOnHold($intervention, $request->reason);
+            return response()->json(['message' => 'Intervention mise en attente.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
