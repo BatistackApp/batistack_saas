@@ -1,13 +1,16 @@
 <?php
 
+use App\Enums\Articles\StockMovementType;
 use App\Enums\HR\TimeEntryStatus;
 use App\Enums\Intervention\BillingType;
 use App\Enums\Intervention\InterventionStatus;
 use App\Models\Articles\Article;
+use App\Models\Articles\StockMovement;
 use App\Models\Articles\Warehouse;
 use App\Models\Core\Tenants;
 use App\Models\HR\Employee;
 use App\Models\Intervention\Intervention;
+use App\Models\Intervention\InterventionItem;
 use App\Models\Projects\Project;
 use App\Models\Tiers\Tiers;
 use App\Models\User;
@@ -172,6 +175,85 @@ test('la clôture exige un rapport, une signature et génère les écritures RH/
     // Si pas d'articles, marge = -175€
     expect((float) $intervention->amount_cost_ht)->toBe(175.0)
         ->and((float) $intervention->margin_ht)->toBe(-175.0);
+});
+
+/**
+ * Test de clôture complet : RH + Finance + STOCK
+ */
+test('la clôture génère les écritures RH, décrémente les stocks et calcule la marge', function () {
+    $this->article->warehouses()->attach($this->mobileWarehouse->id, [
+        'quantity' => 10,
+        'created_at' => now(),
+        'updated_at' => now(),
+    ]);
+    // 1. Préparation de l'intervention en cours
+    $intervention = Intervention::factory()->create([
+        'tenants_id' => $this->tenantId,
+        'status' => InterventionStatus::InProgress,
+        'warehouse_id' => $this->mobileWarehouse->id,
+        'customer_id' => $this->customer->id,
+        'project_id' => Project::factory(),
+    ]);
+
+    // 2. Ajout d'un article consommé (2 unités)
+    InterventionItem::create([
+        'intervention_id' => $intervention->id,
+        'article_id' => $this->article->id,
+        'label' => $this->article->name,
+        'quantity' => 2,
+        'unit_price_ht' => 50.00,
+        'unit_cost_ht' => 20.00, // CUMP
+        'total_ht' => 100.00,
+        'is_billable' => true,
+    ]);
+
+    // 3. Affectation initiale du technicien
+    $intervention->technicians()->attach($this->technician->id, ['hours_spent' => 0]);
+
+    // 4. Payload de clôture
+    $payload = [
+        'report_notes' => 'Remplacement de la vanne effectué.',
+        'client_signature' => 'data:image/png;base64,signature_valide',
+        'completed_at' => now()->format('Y-m-d H:i:s'),
+        'technicians' => [
+            [
+                'employee_id' => $this->technician->id,
+                'hours_spent' => 2.0 // Le technicien a passé 2h
+            ]
+        ]
+    ];
+
+    $response = $this->actingAs($this->user)
+        ->postJson(route('interventions.complete', $intervention), $payload);
+
+    $response->assertStatus(200);
+    $intervention->refresh();
+
+    // --- ASSERTIONS STOCK ---
+    // On vérifie qu'un mouvement de sortie a été créé pour l'article
+    $this->assertDatabaseHas('stock_movements', [
+        'article_id' => $this->article->id,
+        'warehouse_id' => $this->mobileWarehouse->id,
+        'type' => StockMovementType::Exit->value,
+        'quantity' => 2,
+    ]);
+
+    // --- ASSERTIONS RH ---
+    $this->assertDatabaseHas('time_entries', [
+        'employee_id' => $this->technician->id,
+        'hours' => 2.0,
+        'status' => TimeEntryStatus::Submitted->value
+    ]);
+
+    // --- ASSERTIONS FINANCIÈRES ---
+    // Vente : 100€ (2 * 50€)
+    // Coût Matériel : 40€ (2 * 20€)
+    // Coût MO : 100€ (2h * 50€/h)
+    // Coût Total : 140€
+    // Marge : 100 - 140 = -40€
+    expect((float)$intervention->amount_ht)->toBe(100.0)
+        ->and((float)$intervention->amount_cost_ht)->toBe(140.0)
+        ->and((float)$intervention->margin_ht)->toBe(-40.0);
 });
 
 /**
