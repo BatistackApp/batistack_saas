@@ -19,30 +19,33 @@ class InterventionFinancialService
     {
         $intervention->load(['items', 'technicians']);
 
-        // 1. Calcul des fournitures (Vente et Coût)
+        // 1. Calcul des fournitures (Vente et Coût de revient matériel)
         $totalSales = $intervention->items->where('is_billable', true)->sum('total_ht');
+
         $totalMaterialCost = $intervention->items->sum(function ($item) {
-            return (float) $item->quantity * (float) $item->unit_cost_ht;
+            return (float) ($item->quantity * $item->unit_cost_ht);
         });
 
         // 2. Calcul de la main d'œuvre (Basé sur le coût chargé des employés)
         $totalLaborCost = $intervention->technicians->sum(function ($employee) {
-            return (float) $employee->pivot->hours_spent * (float) $employee->hourly_cost_charged;
+            return (float) ($employee->pivot->hours_spent * ($employee->hourly_cost_charged ?? 0));
         });
 
-        $totalCost = $totalMaterialCost + $totalLaborCost;
-        $margin = $totalSales - $totalCost;
+        $margin = $totalSales - ($totalMaterialCost + $totalLaborCost);
 
+        // Mise à jour avec distinction des colonnes (Recommandation BTP)
         $intervention->update([
             'amount_ht' => $totalSales,
-            'amount_cost_ht' => $totalCost,
-            'margin_ht' => $totalSales - $totalCost,
+            'material_cost_ht' => $totalMaterialCost,
+            'labor_cost_ht' => $totalLaborCost,
+            'margin_ht' => $margin,
         ]);
 
+        // Alerte si la marge est trop faible (< 15%)
         if ($totalSales > 0 && ($margin / $totalSales) < 0.15) {
             $managers = User::permission('intervention.manage')->get();
             if ($managers->isNotEmpty()) {
-                Notification::send($managers, new LowMarginAlertNotification($intervention));
+                Notification::send($managers, new LowMarginAlertNotification($intervention, $margin));
             }
         }
     }

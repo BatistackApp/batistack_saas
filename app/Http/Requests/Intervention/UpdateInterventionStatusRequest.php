@@ -12,7 +12,14 @@ class UpdateInterventionStatusRequest extends FormRequest
     {
         return [
             'status' => ['required', Rule::enum(InterventionStatus::class)],
-            'note' => ['nullable', 'string', 'max:1000'],
+            'reason' => ['required_if:status,'.InterventionStatus::Cancelled->value, 'nullable', 'string', 'max:500'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'reason.required_if' => "Un motif d'annulation est obligatoire pour annuler une intervention.",
         ];
     }
 

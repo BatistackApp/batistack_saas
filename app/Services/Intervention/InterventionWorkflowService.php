@@ -27,40 +27,55 @@ class InterventionWorkflowService
     public function start(Intervention $intervention): void
     {
         if ($intervention->status !== InterventionStatus::Planned) {
-            throw new InvalidStatusTransitionException("L'intervention doit être en statut 'Planifiée'.");
+            throw new InvalidStatusTransitionException("L'intervention doit être 'Planifiée' pour être démarrée.");
         }
 
-        // Vérification conformité client via ProjectManagementService
-        if ($intervention->project) {
-            if (! $this->projectService->checkCustomerCompliance($intervention->project)) {
-                throw new ComplianceException('Le client ne respecte pas les normes du projet. Le client est suspendu');
-            }
+        // Vérification de conformité client
+        if ($intervention->project && ! $this->projectService->checkCustomerCompliance($intervention->project)) {
+            throw new ComplianceException('Client non conforme ou suspendu administrativement.');
         }
 
-        $intervention->update(['status' => InterventionStatus::InProgress]);
+        // MODIFICATION : On enregistre l'heure exacte de début
+        $intervention->update([
+            'status' => InterventionStatus::InProgress,
+            'started_at' => now(),
+        ]);
     }
 
     /**
      * Clôture l'intervention (Déstockage + Imputation Heures + Calcul final).
      */
-    public function complete(Intervention $intervention): void
+    public function complete(Intervention $intervention, array $reportData = []): void
     {
         if ($intervention->status !== InterventionStatus::InProgress) {
-            throw new InvalidStatusTransitionException("L'intervention doit être 'En cours' pour être terminée.");
+            throw new InvalidStatusTransitionException("L'intervention doit être 'En cours' pour être clôturée.");
         }
 
-        DB::transaction(function () use ($intervention) {
-            // 1. Vérification et exécution des sorties de stock
+        // MODIFICATION : Validation stricte de la signature client (preuve juridique)
+        if (empty($reportData['client_signature'])) {
+            throw new ComplianceException("La signature du client est obligatoire pour valider le bon d'attachement.");
+        }
+
+        $intervention = $intervention->load('technicians');
+
+        DB::transaction(function () use ($intervention, $reportData) {
+
+            // 1. Mise à jour des données du rapport et du statut
+            // MODIFICATION : On enregistre les notes et l'heure de fin
+            $intervention->update(array_merge($reportData, [
+                'status' => InterventionStatus::Completed,
+                'completed_at' => now(),
+            ]));
+
+            // 2. Gestion des Stocks
             $this->stockManager->validateStockAvailability($intervention);
             $this->stockManager->processStockExits($intervention);
 
-            // 2. Génération des TimeEntries pour les techniciens
+            // 3. Génération des pointages RH
             $this->generateTimeEntries($intervention);
 
-            // 3. Calcul final de la marge
+            // 4. Calcul final de la rentabilité (via le service financier mis à jour)
             $this->financialService->refreshValuation($intervention);
-
-            $intervention->update(['status' => InterventionStatus::Completed]);
 
             if (Auth::user()) {
                 Auth::user()->notify(new InterventionCompletedNotification($intervention));
@@ -79,10 +94,10 @@ class InterventionWorkflowService
                 'employee_id' => $employee->id,
                 'project_id' => $intervention->project_id,
                 'project_phase_id' => $intervention->project_phase_id,
-                'date' => $intervention->planned_at?->toDateString() ?? now()->toDateString(),
+                'date' => $intervention->completed_at?->toDateString() ?? now()->toDateString(),
                 'hours' => $employee->pivot->hours_spent,
                 'status' => TimeEntryStatus::Submitted,
-                'notes' => "Intervention : {$intervention->reference} - {$intervention->label}",
+                'notes' => "Rapport d'intervention [{$intervention->reference}] : ".substr($intervention->report_notes, 0, 100),
             ]);
         }
     }

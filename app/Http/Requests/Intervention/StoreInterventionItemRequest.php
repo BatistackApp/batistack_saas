@@ -14,7 +14,11 @@ class StoreInterventionItemRequest extends FormRequest
             'article_serial_number_id' => ['nullable', 'exists:article_serial_numbers,id'],
             'label' => ['required', 'string', 'max:255'],
             'quantity' => ['required', 'numeric', 'min:0.001'],
+
+            // Prix de vente (peut être forcé manuellement si autorisé)
             'unit_price_ht' => ['required', 'numeric', 'min:0'],
+
+            // Type de ligne
             'is_billable' => ['required', 'boolean'],
         ];
     }
