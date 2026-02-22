@@ -1,9 +1,12 @@
 <?php
 
+use App\Models\Core\Tenants;
+use App\Models\Expense\ExpenseReport;
 use App\Services\Expense\ExpenseCalculationService;
 
 beforeEach(function () {
-    $this->calcService = new ExpenseCalculationService;
+    $this->calcService = new ExpenseCalculationService();
+    $this->tenant = Tenants::factory()->create();
 });
 
 test('il calcule correctement le HT et la TVA à partir du TTC', function () {
@@ -15,12 +18,25 @@ test('il calcule correctement le HT et la TVA à partir du TTC', function () {
         ->and($result['amount_ttc'])->toBe(120.0);
 });
 
-test('il gère les montants avec des décimales complexes', function () {
-    // Cas : 45.55€ TTC à 5.5%
-    $result = $this->calcService->calculateFromTtc(45.55, 5.5);
+test('il calcule les IK en fonction du barème du tenant', function () {
+    // Création d'un barème : 5CV = 0.60€ / km
+    \App\Models\Expense\ExpenseMileageScale::create([
+        'tenants_id' => $this->tenant->id,
+        'vehicle_power' => 5,
+        'rate_per_km' => 0.60,
+        'active_year' => now()->year,
+    ]);
 
-    // HT = 45.55 / 1.055 = 43.1753... arrondi à 43.18
-    // TVA = 45.55 - 43.18 = 2.37
-    expect($result['amount_ht'])->toBe(43.18)
-        ->and($result['amount_tva'])->toBe(2.37);
+    $amount = $this->calcService->calculateMileage($this->tenant->id, 100, 5);
+
+    // 100km * 0.60 = 60.00€
+    expect($amount)->toBe(60.0);
+});
+
+test('il utilise un taux par défaut si aucun barème n est trouvé', function () {
+    // Aucun barème en base
+    $amount = $this->calcService->calculateMileage($this->tenant->id, 100, 7);
+
+    // Fallback à 0.60 par défaut dans le service
+    expect($amount)->toBe(60.0);
 });

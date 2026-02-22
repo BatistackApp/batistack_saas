@@ -22,7 +22,7 @@ Route::prefix('expense')->group(function () {
     Route::delete('items/{expense_item}', [ExpenseItemController::class, 'destroy'])->name('expenses.items.destroy');
 
     // --- Espace Manager & Compta (Validation) ---
-    Route::middleware(['can:tenant.expense.validate'])->group(function () {
+    Route::middleware(['can:tenant.expenses.validate'])->group(function () {
         Route::get('pending', [ExpenseApprovalController::class, 'pending'])
             ->name('expenses.approval.pending');
 

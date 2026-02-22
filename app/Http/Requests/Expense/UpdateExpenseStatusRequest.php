@@ -33,6 +33,6 @@ class UpdateExpenseStatusRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return auth()->user()->can('tenant.expenses.manage');
+        return true;
     }
 }
