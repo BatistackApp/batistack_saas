@@ -5,7 +5,6 @@ use App\Enums\HR\TimeEntryStatus;
 use App\Enums\Intervention\BillingType;
 use App\Enums\Intervention\InterventionStatus;
 use App\Models\Articles\Article;
-use App\Models\Articles\StockMovement;
 use App\Models\Articles\Warehouse;
 use App\Models\Core\Tenants;
 use App\Models\HR\Employee;
@@ -218,9 +217,9 @@ test('la clôture génère les écritures RH, décrémente les stocks et calcule
         'technicians' => [
             [
                 'employee_id' => $this->technician->id,
-                'hours_spent' => 2.0 // Le technicien a passé 2h
-            ]
-        ]
+                'hours_spent' => 2.0, // Le technicien a passé 2h
+            ],
+        ],
     ];
 
     $response = $this->actingAs($this->user)
@@ -242,7 +241,7 @@ test('la clôture génère les écritures RH, décrémente les stocks et calcule
     $this->assertDatabaseHas('time_entries', [
         'employee_id' => $this->technician->id,
         'hours' => 2.0,
-        'status' => TimeEntryStatus::Submitted->value
+        'status' => TimeEntryStatus::Submitted->value,
     ]);
 
     // --- ASSERTIONS FINANCIÈRES ---
@@ -251,9 +250,9 @@ test('la clôture génère les écritures RH, décrémente les stocks et calcule
     // Coût MO : 100€ (2h * 50€/h)
     // Coût Total : 140€
     // Marge : 100 - 140 = -40€
-    expect((float)$intervention->amount_ht)->toBe(100.0)
-        ->and((float)$intervention->amount_cost_ht)->toBe(140.0)
-        ->and((float)$intervention->margin_ht)->toBe(-40.0);
+    expect((float) $intervention->amount_ht)->toBe(100.0)
+        ->and((float) $intervention->amount_cost_ht)->toBe(140.0)
+        ->and((float) $intervention->margin_ht)->toBe(-40.0);
 });
 
 /**
