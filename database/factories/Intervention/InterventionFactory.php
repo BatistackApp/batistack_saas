@@ -19,24 +19,37 @@ class InterventionFactory extends Factory
 
     public function definition(): array
     {
-        return [
-            'reference' => 'INT-'.$this->faker->unique()->numberBetween(1000, 9999),
-            'label' => 'Intervention '.$this->faker->word(),
-            'description' => $this->faker->text(),
-            'planned_at' => Carbon::now(),
-            'status' => $this->faker->randomElement(InterventionStatus::cases()),
-            'billing_type' => $this->faker->randomElement(BillingType::cases()),
-            'amount_ht' => $this->faker->randomFloat(),
-            'amount_cost_ht' => $this->faker->randomFloat(),
-            'margin_ht' => $this->faker->randomFloat(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
+        $amountHt = $this->faker->randomFloat(2, 200, 5000);
+        $materialCost = $amountHt * 0.3;
+        $laborCost = $amountHt * 0.4;
+        $margin = $amountHt - ($materialCost + $laborCost);
 
-            'tenants_id' => Tenants::factory(),
+        return [
+            'reference' => 'INT-' . $this->faker->unique()->numberBetween(10000, 99999),
+            'label' => 'Maintenance ' . $this->faker->sentence(3),
+            'description' => $this->faker->paragraph(),
+            'status' => InterventionStatus::Planned,
+            'billing_type' => BillingType::Regie,
+            'planned_at' => now()->addDays(rand(1, 10)),
+
+            'amount_ht' => $amountHt,
+            'material_cost_ht' => $materialCost,
+            'labor_cost_ht' => $laborCost,
+            'margin_ht' => $margin,
+
             'customer_id' => Tiers::factory(),
-            'warehouse_id' => Warehouse::factory(),
-            'project_id' => Project::factory(),
-            'project_phase_id' => ProjectPhase::factory(),
+            'tenants_id' => Tenants::factory(),
         ];
+    }
+
+    public function completed(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => InterventionStatus::Completed,
+            'report_notes' => 'Problème résolu. Remplacement de la vanne effectué.',
+            'client_signature' => 'data:image/png;base64,iVBORw0KGgoAAAAN...',
+            'client_name' => $this->faker->name(),
+            'completed_at' => now(),
+        ]);
     }
 }
