@@ -43,6 +43,47 @@ class InterventionWorkflowService
     }
 
     /**
+     * Le technicien démarre son trajet vers le site.
+     */
+    public function startRoute(Intervention $intervention): void
+    {
+        $this->validateTransition($intervention, InterventionStatus::OnRoute);
+
+        $intervention->update([
+            'status' => InterventionStatus::OnRoute,
+            'started_at' => now(), // On track le début de la mission globale
+        ]);
+    }
+
+    /**
+     * Le technicien arrive sur site et commence le travail.
+     */
+    public function arriveOnSite(Intervention $intervention): void
+    {
+        $this->validateTransition($intervention, InterventionStatus::InProgress);
+
+        // Vérification de conformité client (bloquant au démarrage réel)
+        if ($intervention->project && ! $this->projectService->checkCustomerCompliance($intervention->project)) {
+            throw new ComplianceException('Client non conforme ou suspendu. Intervention bloquée.');
+        }
+
+        $intervention->update(['status' => InterventionStatus::InProgress]);
+    }
+
+    /**
+     * Met l'intervention en attente (Pièce manquante, accès impossible).
+     */
+    public function putOnHold(Intervention $intervention, string $reason): void
+    {
+        $this->validateTransition($intervention, InterventionStatus::OnHold);
+
+        $intervention->update([
+            'status' => InterventionStatus::OnHold,
+            'report_notes' => $intervention->report_notes . "\n[MISE EN ATTENTE " . now()->format('d/m/Y H:i') . "] : " . $reason,
+        ]);
+    }
+
+    /**
      * Clôture l'intervention (Déstockage + Imputation Heures + Calcul final).
      */
     public function complete(Intervention $intervention, array $reportData = []): void
@@ -57,6 +98,8 @@ class InterventionWorkflowService
         }
 
         $intervention = $intervention->load('technicians');
+
+        $this->validateTransition($intervention, InterventionStatus::Completed);
 
         DB::transaction(function () use ($intervention, $reportData) {
 
@@ -81,6 +124,26 @@ class InterventionWorkflowService
                 Auth::user()->notify(new InterventionCompletedNotification($intervention));
             }
         });
+    }
+
+    /**
+     * Logique de validation des transitions d'états.
+     */
+    protected function validateTransition(Intervention $intervention, InterventionStatus $targetStatus): void
+    {
+        $allowed = match($targetStatus) {
+            InterventionStatus::OnRoute => $intervention->status === InterventionStatus::Planned,
+            InterventionStatus::InProgress => in_array($intervention->status, [InterventionStatus::OnRoute, InterventionStatus::OnHold]),
+            InterventionStatus::OnHold => $intervention->status === InterventionStatus::InProgress,
+            InterventionStatus::Completed => in_array($intervention->status, [InterventionStatus::InProgress, InterventionStatus::OnHold]),
+            default => false
+        };
+
+        if (!$allowed) {
+            throw new InvalidStatusTransitionException(
+                "Transition impossible de {$intervention->status->value} vers {$targetStatus->value}"
+            );
+        }
     }
 
     /**

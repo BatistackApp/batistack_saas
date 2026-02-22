@@ -9,16 +9,17 @@ class StoreInterventionItemRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // On doit avoir soit un article, soit un ouvrage
             'article_id' => ['required_without:ouvrage_id', 'nullable', 'exists:articles,id'],
             'ouvrage_id' => ['required_without:article_id', 'nullable', 'exists:ouvrages,id'],
+
             'article_serial_number_id' => ['nullable', 'exists:article_serial_numbers,id'],
             'label' => ['required', 'string', 'max:255'],
             'quantity' => ['required', 'numeric', 'min:0.001'],
 
-            // Prix de vente (peut être forcé manuellement si autorisé)
+            // Prix de vente HT (Peut être pré-rempli par le front mais validé ici)
             'unit_price_ht' => ['required', 'numeric', 'min:0'],
 
-            // Type de ligne
             'is_billable' => ['required', 'boolean'],
         ];
     }
