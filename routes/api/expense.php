@@ -5,21 +5,28 @@ use App\Http\Controllers\Expense\ExpenseItemController;
 use App\Http\Controllers\Expense\ExpenseReportController;
 
 Route::prefix('expense')->group(function () {
-    // Gestion des rapports (En-têtes)
-    Route::apiResource('expense-reports', ExpenseReportController::class);
-    Route::post('expense-reports/{expense_report}/submit', [ExpenseReportController::class, 'submit'])
-        ->name('expense-reports.submit');
+    // --- Espace Salarié (Self-service) ---
+    Route::apiResource('reports', ExpenseReportController::class)->names([
+        'index' => 'expenses.reports.index',
+        'store' => 'expenses.reports.store',
+        'show' => 'expenses.reports.show',
+        'update' => 'expenses.reports.update',
+        'destroy' => 'expenses.reports.destroy',
+    ]);
 
-    // Gestion des items (Lignes)
-    Route::post('expense-items', [ExpenseItemController::class, 'store'])
-        ->name('expense-items.store');
-    Route::delete('expense-items/{expense_item}', [ExpenseItemController::class, 'destroy'])
-        ->name('expense-items.destroy');
+    Route::post('reports/{expense_report}/submit', [ExpenseReportController::class, 'submit'])
+        ->name('expenses.reports.submit');
 
-    // --- Routes Managers / Validateurs ---
+    // Gestion des lignes (Items)
+    Route::post('items', [ExpenseItemController::class, 'store'])->name('expenses.items.store');
+    Route::delete('items/{expense_item}', [ExpenseItemController::class, 'destroy'])->name('expenses.items.destroy');
 
-    Route::middleware(['can:tenant.expenses.manage'])->group(function () {
-        Route::patch('expense-reports/{expense_report}/status', [ExpenseApprovalController::class, 'updateStatus'])
-            ->name('expense-reports.update-status');
+    // --- Espace Manager & Compta (Validation) ---
+    Route::middleware(['can:tenant.expenses.validate'])->group(function () {
+        Route::get('pending', [ExpenseApprovalController::class, 'pending'])
+            ->name('expenses.approval.pending');
+
+        Route::patch('reports/{expense_report}/status', [ExpenseApprovalController::class, 'updateStatus'])
+            ->name('expenses.reports.update-status');
     });
 });

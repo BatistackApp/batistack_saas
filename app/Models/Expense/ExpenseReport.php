@@ -4,13 +4,16 @@ namespace App\Models\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
 use App\Models\User;
+use App\Observers\Expense\ExpenseReportObserver;
 use App\Traits\HasTenant;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+#[ObservedBy([ExpenseReportObserver::class])]
 class ExpenseReport extends Model
 {
     use HasFactory, HasTenant, SoftDeletes;

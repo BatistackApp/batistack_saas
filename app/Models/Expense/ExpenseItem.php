@@ -3,6 +3,7 @@
 namespace App\Models\Expense;
 
 use App\Models\Projects\Project;
+use App\Models\Projects\ProjectPhase;
 use App\Observers\Expense\ExpenseItemObserver;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,6 +32,11 @@ class ExpenseItem extends Model
         return $this->belongsTo(Project::class);
     }
 
+    public function phase(): BelongsTo
+    {
+        return $this->belongsTo(ProjectPhase::class, 'project_phase_id');
+    }
+
     protected function casts(): array
     {
         return [
@@ -43,6 +49,8 @@ class ExpenseItem extends Model
             'distance_km' => 'decimal:2',
             'vehicle_power' => 'integer',
             'is_billable' => 'boolean',
+            'is_mileage' => 'boolean',
+            'is_fixed_allowance' => 'boolean',
         ];
     }
 
@@ -51,6 +59,6 @@ class ExpenseItem extends Model
      */
     public function isMileage(): bool
     {
-        return $this->category->requires_distance === true;
+        return $this->is_mileage || ($this->category && $this->category->requires_distance);
     }
 }
