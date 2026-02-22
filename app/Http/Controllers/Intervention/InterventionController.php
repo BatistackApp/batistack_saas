@@ -68,8 +68,8 @@ class InterventionController extends Controller
         $intervention->update($request->validated());
 
         return response()->json([
-            'message' => "Statut mis à jour : " . $intervention->status->getLabel(),
-            'intervention' => $intervention
+            'message' => 'Statut mis à jour : '.$intervention->status->getLabel(),
+            'intervention' => $intervention,
         ]);
     }
 
@@ -115,7 +115,7 @@ class InterventionController extends Controller
                 $intervention->update($request->safe()->only([
                     'report_notes',
                     'client_signature',
-                    'completed_at'
+                    'completed_at',
                 ]));
 
                 // 2. Mise à jour des heures des techniciens (Table pivot)

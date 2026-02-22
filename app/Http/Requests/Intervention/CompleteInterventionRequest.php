@@ -35,6 +35,7 @@ class CompleteInterventionRequest extends FormRequest
     public function authorize(): bool
     {
         $intervention = $this->route('intervention');
+
         return $this->user()->can('intervention.manage') ||
             $intervention->technicians()->where('user_id', $this->user()->id)->exists();
     }

@@ -30,8 +30,8 @@ class StoreInterventionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'planned_at.after_or_equal' => "La date de planification ne peut pas être dans le passé.",
-            'customer_id.exists' => "Le client sélectionné est invalide.",
+            'planned_at.after_or_equal' => 'La date de planification ne peut pas être dans le passé.',
+            'customer_id.exists' => 'Le client sélectionné est invalide.',
         ];
     }
 

@@ -4,14 +4,10 @@ namespace Database\Factories\Intervention;
 
 use App\Enums\Intervention\BillingType;
 use App\Enums\Intervention\InterventionStatus;
-use App\Models\Articles\Warehouse;
 use App\Models\Core\Tenants;
 use App\Models\Intervention\Intervention;
-use App\Models\Projects\Project;
-use App\Models\Projects\ProjectPhase;
 use App\Models\Tiers\Tiers;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class InterventionFactory extends Factory
 {
@@ -25,8 +21,8 @@ class InterventionFactory extends Factory
         $margin = $amountHt - ($materialCost + $laborCost);
 
         return [
-            'reference' => 'INT-' . $this->faker->unique()->numberBetween(10000, 99999),
-            'label' => 'Maintenance ' . $this->faker->sentence(3),
+            'reference' => 'INT-'.$this->faker->unique()->numberBetween(10000, 99999),
+            'label' => 'Maintenance '.$this->faker->sentence(3),
             'description' => $this->faker->paragraph(),
             'status' => InterventionStatus::Planned,
             'billing_type' => BillingType::Regie,

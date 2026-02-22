@@ -83,5 +83,4 @@ class Intervention extends Model
             get: fn () => $this->material_cost_ht + $this->labor_cost_ht,
         );
     }
-
 }

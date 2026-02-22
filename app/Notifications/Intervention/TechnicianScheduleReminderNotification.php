@@ -27,14 +27,14 @@ class TechnicianScheduleReminderNotification extends Notification implements Sho
         return (new MailMessage)
             ->subject("Rappel d'intervention : {$this->intervention->reference}")
             ->line("Bonjour {$notifiable->name},")
-            ->line("Ceci est un rappel pour votre intervention prévue pour demain.")
-            ->line("**Détails :**")
+            ->line('Ceci est un rappel pour votre intervention prévue pour demain.')
+            ->line('**Détails :**')
             ->line("- Référence : {$this->intervention->reference}")
             ->line("- Client : {$this->intervention->customer->name}")
             ->line("- Heure prévue : {$date}")
-            ->line("- Description : " . Str::limit($this->intervention->description, 100))
-            ->action('Voir les détails sur mobile', url('/interventions/' . $this->intervention->id))
-            ->line("Bonne journée !");
+            ->line('- Description : '.Str::limit($this->intervention->description, 100))
+            ->action('Voir les détails sur mobile', url('/interventions/'.$this->intervention->id))
+            ->line('Bonne journée !');
     }
 
     public function toArray($notifiable): array

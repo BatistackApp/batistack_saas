@@ -34,7 +34,7 @@ beforeEach(function () {
     // Un dépôt pour le technicien (Dépôt Mobile)
     $this->mobileWarehouse = Warehouse::factory()->create([
         'tenants_id' => $this->tenantId,
-        'name' => 'Camion Tech 01'
+        'name' => 'Camion Tech 01',
     ]);
 
     $this->technician = Employee::factory()->create([
@@ -85,12 +85,11 @@ test('on peut démarrer une intervention planifiée', function () {
     $intervention = Intervention::factory()->create([
         'tenants_id' => $this->tenantId,
         'status' => InterventionStatus::Planned,
-        'customer_id' => $this->customer->id
+        'customer_id' => $this->customer->id,
     ]);
 
     $response = $this->actingAs($this->user)
         ->postJson(route('interventions.start', $intervention));
-
 
     $response->assertStatus(200);
     expect($intervention->fresh()->status)->toBe(InterventionStatus::InProgress);
@@ -121,8 +120,8 @@ test('l\'ajout d\'un article met à jour la valorisation de l\'intervention', fu
     // Vente : 2 * 50 = 100
     // Coût : 2 * 20 (CUMP) = 40
     // Marge : 60
-    expect((float)$intervention->amount_ht)->toBe(100.0)
-        ->and((float)$intervention->margin_ht)->toBe(60.0);
+    expect((float) $intervention->amount_ht)->toBe(100.0)
+        ->and((float) $intervention->margin_ht)->toBe(60.0);
 });
 
 /**
@@ -146,9 +145,9 @@ test('la clôture exige un rapport, une signature et génère les écritures RH/
         'technicians' => [
             [
                 'employee_id' => $this->technician->id,
-                'hours_spent' => 3.5 // Saisie des heures à la clôture
-            ]
-        ]
+                'hours_spent' => 3.5, // Saisie des heures à la clôture
+            ],
+        ],
     ];
 
     $response = $this->actingAs($this->user)
@@ -165,14 +164,14 @@ test('la clôture exige un rapport, une signature et génère les écritures RH/
     $this->assertDatabaseHas('time_entries', [
         'employee_id' => $this->technician->id,
         'hours' => 3.5,
-        'status' => TimeEntryStatus::Submitted->value
+        'status' => TimeEntryStatus::Submitted->value,
     ]);
 
     // 3. Vérification de la rentabilité finale
     // Coût Main d'oeuvre : 3.5h * 50€ = 175€
     // Si pas d'articles, marge = -175€
-    expect((float)$intervention->amount_cost_ht)->toBe(175.0)
-        ->and((float)$intervention->margin_ht)->toBe(-175.0);
+    expect((float) $intervention->amount_cost_ht)->toBe(175.0)
+        ->and((float) $intervention->margin_ht)->toBe(-175.0);
 });
 
 /**

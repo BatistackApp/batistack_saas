@@ -12,7 +12,6 @@ use App\Notifications\Intervention\InterventionCompletedNotification;
 use App\Services\Projects\ProjectManagementService;
 use Auth;
 use DB;
-use Illuminate\Validation\ValidationException;
 
 class InterventionWorkflowService
 {
@@ -98,7 +97,7 @@ class InterventionWorkflowService
                 'date' => $intervention->completed_at?->toDateString() ?? now()->toDateString(),
                 'hours' => $employee->pivot->hours_spent,
                 'status' => TimeEntryStatus::Submitted,
-                'notes' => "Rapport d'intervention [{$intervention->reference}] : " . substr($intervention->report_notes, 0, 100),
+                'notes' => "Rapport d'intervention [{$intervention->reference}] : ".substr($intervention->report_notes, 0, 100),
             ]);
         }
     }

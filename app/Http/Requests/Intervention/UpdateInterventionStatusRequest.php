@@ -12,7 +12,7 @@ class UpdateInterventionStatusRequest extends FormRequest
     {
         return [
             'status' => ['required', Rule::enum(InterventionStatus::class)],
-            'reason' => ['required_if:status,' . InterventionStatus::Cancelled->value, 'nullable', 'string', 'max:500'],
+            'reason' => ['required_if:status,'.InterventionStatus::Cancelled->value, 'nullable', 'string', 'max:500'],
         ];
     }
 
