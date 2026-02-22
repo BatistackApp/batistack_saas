@@ -10,31 +10,38 @@ use Illuminate\Contracts\Support\Htmlable;
 
 enum InterventionStatus: string implements HasColor, HasIcon, HasLabel
 {
-    case Planned = 'planned';
-    case InProgress = 'in_progress';
-    case Completed = 'completed';
-    case Cancelled = 'cancelled';
-    case Invoiced = 'invoiced';
+    case Planned = 'planned';       // Planifiée au planning
+    case OnRoute = 'on_route';     // Technicien en cours de trajet
+    case InProgress = 'in_progress'; // Travail en cours sur site
+    case OnHold = 'on_hold';       // En attente (pièce, décision, accès)
+    case Postponed = 'postponed';   // Reportée à une date ultérieure
+    case Completed = 'completed';   // Terminée (Rapport signé, stock sorti)
+    case Cancelled = 'cancelled';   // Annulée
+    case Invoiced = 'invoiced';     // Déjà facturée
 
     public function getColor(): string|array|null
     {
         return match ($this) {
-            self::Planned => 'gray',
-            self::InProgress => 'blue',
-            self::Completed => 'green',
-            self::Cancelled => 'red',
-            self::Invoiced => 'orange',
+            self::Planned, self::Cancelled => 'gray',
+            self::OnRoute => 'warning',
+            self::InProgress => 'info',
+            self::OnHold => 'danger',
+            self::Postponed => 'orange',
+            self::Completed, self::Invoiced => 'success',
         };
     }
 
     public function getIcon(): string|BackedEnum|Htmlable|null
     {
         return match ($this) {
-            self::Planned => 'heroicon-o-clock',
+            self::Planned => 'heroicon-o-calendar',
+            self::OnRoute => 'heroicon-o-truck',
             self::InProgress => 'heroicon-o-play',
-            self::Completed => 'heroicon-o-check',
-            self::Cancelled => 'heroicon-o-x',
-            self::Invoiced => 'heroicon-o-currency-dollar',
+            self::OnHold => 'heroicon-o-pause',
+            self::Postponed => 'heroicon-o-forward',
+            self::Completed => 'heroicon-o-check-badge',
+            self::Cancelled => 'heroicon-o-x-circle',
+            self::Invoiced => 'heroicon-o-currency-euro',
         };
     }
 
@@ -42,7 +49,10 @@ enum InterventionStatus: string implements HasColor, HasIcon, HasLabel
     {
         return match ($this) {
             self::Planned => __('intervention.statuses.planned'),
+            self::OnRoute => __('intervention.statuses.on_route'),
             self::InProgress => __('intervention.statuses.in_progress'),
+            self::OnHold => __('intervention.statuses.on_hold'),
+            self::Postponed => __('intervention.statuses.postponed'),
             self::Completed => __('intervention.statuses.completed'),
             self::Cancelled => __('intervention.statuses.cancelled'),
             self::Invoiced => __('intervention.statuses.invoiced'),
