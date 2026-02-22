@@ -110,23 +110,25 @@ class InterventionController extends Controller
     public function complete(CompleteInterventionRequest $request, Intervention $intervention): JsonResponse
     {
         try {
-            // On enrichit l'intervention avec les données du rapport avant clôture
-            $intervention->update([
-                'report_notes' => $request->report_notes,
-                'client_signature' => $request->client_signature,
-                'completed_at' => $request->completed_at,
-            ]);
+            DB::transaction(function () use ($request, $intervention) {
+                // 1. Mise à jour des données du rapport (colonnes réelles)
+                $intervention->update($request->safe()->only([
+                    'report_notes',
+                    'client_signature',
+                    'completed_at'
+                ]));
 
-            // Mise à jour des heures finales des techniciens si fournies
-            foreach ($request->technicians as $techData) {
-                $intervention->technicians()->updateExistingPivot(
-                    $techData['employee_id'],
-                    ['hours_spent' => $techData['hours_spent']]
-                );
-            }
+                // 2. Mise à jour des heures des techniciens (Table pivot)
+                foreach ($request->technicians as $techData) {
+                    $intervention->technicians()->updateExistingPivot(
+                        $techData['employee_id'],
+                        ['hours_spent' => $techData['hours_spent']]
+                    );
+                }
 
-            // Exécution de la clôture métier (Stock, Finance, RH)
-            $this->workflowService->complete($intervention);
+                // 3. Appel du workflow de clôture (sans passer le tableau pollué par 'technicians')
+                $this->workflowService->complete($intervention, $request->except(['technicians']));
+            });
 
             return response()->json(['message' => 'Intervention clôturée et rapport généré.']);
         } catch (\Exception $e) {

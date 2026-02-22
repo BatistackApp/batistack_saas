@@ -54,8 +54,10 @@ class InterventionWorkflowService
 
         // MODIFICATION : Validation stricte de la signature client (preuve juridique)
         if (empty($reportData['client_signature'])) {
-            throw new ValidationException("La signature du client est obligatoire pour valider le bon d'attachement.");
+            throw new ComplianceException("La signature du client est obligatoire pour valider le bon d'attachement.");
         }
+
+        $intervention = $intervention->load('technicians');
 
         DB::transaction(function () use ($intervention, $reportData) {
 

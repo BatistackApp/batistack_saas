@@ -17,6 +17,13 @@ return new class extends Migration {
             // Analyse financière (Recommandation 4 - Distinction des coûts)
             $table->decimal('material_cost_ht', 15, 2)->default(0)->comment('Coût de revient pièces');
             $table->decimal('labor_cost_ht', 15, 2)->default(0)->comment('Coût de revient main d\'oeuvre');
+
+            $table->dateTime('started_at')->nullable();
+            $table->dateTime('completed_at')->nullable();
+        });
+
+        Schema::table('employees', function (Blueprint $table) {
+            $table->foreignIdFor(\App\Models\Articles\Warehouse::class, 'default_warehouse_id')->nullable()->constrained()->nullOnDelete();
         });
     }
 
@@ -30,7 +37,13 @@ return new class extends Migration {
                 'client_name',
                 'material_cost_ht',
                 'labor_cost_ht',
+                'started_at',
+                'completed_at',
             ]);
+        });
+
+        Schema::table('employees', function (Blueprint $table) {
+            $table->dropColumn('default_warehouse_id');
         });
     }
 };
