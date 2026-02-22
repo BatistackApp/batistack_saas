@@ -13,6 +13,7 @@ use App\Models\Intervention\Intervention;
 use App\Services\Intervention\InterventionWorkflowService;
 use DB;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class InterventionController extends Controller
 {
@@ -33,11 +34,10 @@ class InterventionController extends Controller
     {
         $intervention = DB::transaction(function () use ($request) {
             $intervention = Intervention::create(array_merge(
-                $request->validated(),
+                $request->safe()->except('technician_ids'),
                 ['tenants_id' => auth()->user()->tenants_id]
             ));
 
-            // Si des techniciens sont fournis à la création
             if ($request->has('technician_ids')) {
                 $intervention->technicians()->sync($request->technician_ids);
             }
@@ -45,12 +45,18 @@ class InterventionController extends Controller
             return $intervention;
         });
 
-        return response()->json($intervention, 201);
+        return response()->json($intervention->load('customer'), 201);
     }
 
     public function show(Intervention $intervention): JsonResponse
     {
-        return response()->json($intervention->load(['items.article', 'items.ouvrage', 'technicians', 'customer', 'warehouse']));
+        return response()->json($intervention->load([
+            'items.article',
+            'items.ouvrage',
+            'technicians',
+            'customer',
+            'project',
+        ]));
     }
 
     public function update(UpdateInterventionRequest $request, Intervention $intervention)
@@ -63,14 +69,19 @@ class InterventionController extends Controller
     /**
      * Changement de statut (Annulation, etc.)
      */
+    /**
+     * Changement manuel de statut (Annulation, Report, etc.).
+     */
     public function updateStatus(UpdateInterventionStatusRequest $request, Intervention $intervention): JsonResponse
     {
-        $intervention->update($request->validated());
-
-        return response()->json([
-            'message' => 'Statut mis à jour : '.$intervention->status->getLabel(),
-            'intervention' => $intervention,
+        $intervention->update([
+            'status' => $request->status,
+            'description' => $request->reason
+                ? $intervention->description."\nNote de statut : ".$request->reason
+                : $intervention->description,
         ]);
+
+        return response()->json(['message' => 'Statut mis à jour avec succès.', 'status' => $intervention->status]);
     }
 
     /**
@@ -105,20 +116,65 @@ class InterventionController extends Controller
     }
 
     /**
+     * Le technicien part vers le site (Statut : En route).
+     * URL: POST /api/interventions/{intervention}/on-route
+     */
+    public function startRoute(Intervention $intervention): JsonResponse
+    {
+        try {
+            $this->workflowService->startRoute($intervention);
+
+            return response()->json(['message' => 'Statut mis à jour : Technicien en route.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Le technicien arrive sur le lieu de l'intervention.
+     * URL: POST /api/interventions/{intervention}/arrive
+     */
+    public function arriveOnSite(Intervention $intervention): JsonResponse
+    {
+        try {
+            $this->workflowService->arriveOnSite($intervention);
+
+            return response()->json(['message' => 'Statut mis à jour : Arrivé sur site.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Met l'intervention en pause (Ex: manque de pièces, accès impossible).
+     * URL: POST /api/interventions/{intervention}/on-hold
+     */
+    public function putOnHold(Request $request, Intervention $intervention): JsonResponse
+    {
+        try {
+            $this->workflowService->putOnHold($intervention, $request->reason);
+
+            return response()->json(['message' => 'Intervention mise en attente.']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
      * Déclenche la clôture (Déstockage + Heures + Marge).
      */
     public function complete(CompleteInterventionRequest $request, Intervention $intervention): JsonResponse
     {
         try {
             DB::transaction(function () use ($request, $intervention) {
-                // 1. Mise à jour des données du rapport (colonnes réelles)
+                // 1. Enregistrement des données qualitatives du rapport
                 $intervention->update($request->safe()->only([
                     'report_notes',
                     'client_signature',
                     'completed_at',
                 ]));
 
-                // 2. Mise à jour des heures des techniciens (Table pivot)
+                // 2. Mise à jour des heures finales saisies sur mobile
                 foreach ($request->technicians as $techData) {
                     $intervention->technicians()->updateExistingPivot(
                         $techData['employee_id'],
@@ -126,11 +182,11 @@ class InterventionController extends Controller
                     );
                 }
 
-                // 3. Appel du workflow de clôture (sans passer le tableau pollué par 'technicians')
-                $this->workflowService->complete($intervention, $request->except(['technicians']));
+                // 3. Exécution du workflow métier (Appel au service)
+                $this->workflowService->complete($intervention, $request->except('technicians'));
             });
 
-            return response()->json(['message' => 'Intervention clôturée et rapport généré.']);
+            return response()->json(['message' => 'Intervention clôturée. Rapport et flux générés.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }

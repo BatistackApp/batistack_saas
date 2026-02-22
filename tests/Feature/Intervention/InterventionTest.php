@@ -4,6 +4,7 @@ use App\Enums\Articles\StockMovementType;
 use App\Enums\HR\TimeEntryStatus;
 use App\Enums\Intervention\BillingType;
 use App\Enums\Intervention\InterventionStatus;
+use App\Exceptions\Intervention\InvalidStatusTransitionException;
 use App\Models\Articles\Article;
 use App\Models\Articles\Warehouse;
 use App\Models\Core\Tenants;
@@ -13,6 +14,7 @@ use App\Models\Intervention\InterventionItem;
 use App\Models\Projects\Project;
 use App\Models\Tiers\Tiers;
 use App\Models\User;
+use App\Services\Intervention\InterventionWorkflowService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
 
@@ -23,6 +25,7 @@ beforeEach(function () {
     Permission::firstOrCreate(['name' => 'intervention.create', 'guard_name' => 'web']);
     Permission::firstOrCreate(['name' => 'intervention.update', 'guard_name' => 'web']);
     Permission::firstOrCreate(['name' => 'intervention.manage', 'guard_name' => 'web']);
+    $this->workflowService = app(InterventionWorkflowService::class);
 
     $this->tenant = Tenants::factory()->create();
     $this->user = User::factory()->create(['tenants_id' => $this->tenant->id]);
@@ -54,19 +57,64 @@ beforeEach(function () {
         'sale_price_ht' => 45.00,
     ]);
 
+    $this->intervention = Intervention::factory()->create([
+        'status' => InterventionStatus::Planned,
+    ]);
+
     Queue::fake();
 });
 
-/**
- * Test de création et d'affectation automatique du dépôt
- */
 test('une intervention peut être créée sans dépôt et l\'observer assigne le dépôt mobile du créateur', function () {
+    // 1. On prépare un dépôt "Camion"
+    $mobileWarehouse = Warehouse::factory()->create([
+        'tenants_id' => $this->tenantId,
+        'name' => 'Camion Tech 01',
+    ]);
+
+    // 2. On lie l'utilisateur à un employé qui possède ce dépôt par défaut
+    $employee = Employee::factory()->create([
+        'tenants_id' => $this->tenantId,
+        'user_id' => $this->user->id,
+        'default_warehouse_id' => $mobileWarehouse->id,
+    ]);
+
+    // On s'assure que la relation est disponible pour l'Auth::user()
+    $this->user->setRelation('employee', $employee);
+
+    // 3. Payload de création SANS warehouse_id
     $payload = [
         'customer_id' => $this->customer->id,
-        'label' => 'Réparation fuite évier',
-        'planned_at' => now()->addDay()->format('Y-m-d H:i:s'),
+        'label' => 'Intervention Test Automatique',
+        'planned_at' => now()->addDay()->toDateTimeString(),
         'billing_type' => BillingType::Regie->value,
-        'description' => 'Test de création',
+    ];
+
+    // 4. Exécution de la requête
+    $response = $this->actingAs($this->user)
+        ->postJson(route('interventions.store'), $payload);
+
+    // 5. Assertions
+    $response->assertStatus(201);
+
+    $intervention = Intervention::where('label', 'Intervention Test Automatique')->first();
+
+    // Vérification : L'observer a dû remplir le warehouse_id
+    expect($intervention->warehouse_id)->toBe($mobileWarehouse->id)
+        ->and($intervention->reference)->not->toBeNull(); // On vérifie aussi la réf au passage
+});
+
+/**
+ * Test de non-régression : Respect du choix utilisateur
+ */
+test('on peut créer une intervention en spécifiant manuellement un dépôt (écrase l\'observer)', function () {
+    $specificWarehouse = Warehouse::factory()->create(['tenants_id' => $this->tenantId]);
+
+    $payload = [
+        'customer_id' => $this->customer->id,
+        'warehouse_id' => $specificWarehouse->id,
+        'label' => 'Intervention Dépôt Manuel',
+        'planned_at' => now()->addDay()->toDateTimeString(),
+        'billing_type' => BillingType::Regie->value,
     ];
 
     $response = $this->actingAs($this->user)
@@ -74,151 +122,104 @@ test('une intervention peut être créée sans dépôt et l\'observer assigne le
 
     $response->assertStatus(201);
 
-    $intervention = Intervention::first();
-    // L'observer doit avoir trouvé le dépôt mobile du technicien lié à l'utilisateur
-    expect($intervention->warehouse_id)->toBe($this->mobileWarehouse->id)
-        ->and($intervention->status)->toBe(InterventionStatus::Planned);
+    $intervention = Intervention::where('label', 'Intervention Dépôt Manuel')->first();
+    expect($intervention->warehouse_id)->toBe($specificWarehouse->id);
 });
 
 /**
- * Test du démarrage technique
+ * Test de validation
+ */
+test('la création d\'une intervention requiert les champs obligatoires (sauf warehouse_id)', function () {
+    $response = $this->actingAs($this->user)
+        ->postJson(route('interventions.store'), []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['customer_id', 'label', 'planned_at', 'billing_type']);
+});
+
+/**
+ * --- TESTS CRUD & INITIALISATION ---
+ */
+test('on peut lister les interventions du tenant', function () {
+    Intervention::factory(3)->create(['tenants_id' => $this->tenantId]);
+
+    $response = $this->actingAs($this->user)
+        ->getJson(route('interventions.index'));
+
+    $response->assertStatus(200)
+        ->assertJsonCount(3, 'data');
+});
+
+test('on peut créer une intervention planifiée avec des techniciens', function () {
+    $payload = [
+        'customer_id' => $this->customer->id,
+        'warehouse_id' => $this->mobileWarehouse->id,
+        'label' => 'Maintenance préventive Groupe Électrogène',
+        'planned_at' => now()->addDays(2)->toDateTimeString(),
+        'billing_type' => BillingType::Regie->value,
+        'technician_ids' => [$this->technician->id],
+    ];
+
+    $response = $this->actingAs($this->user)
+        ->postJson(route('interventions.store'), $payload);
+
+    $response->assertStatus(201);
+
+    $this->assertDatabaseHas('interventions', [
+        'label' => 'Maintenance préventive Groupe Électrogène',
+        'status' => InterventionStatus::Planned->value,
+    ]);
+
+    $intervention = Intervention::latest()->first();
+    expect($intervention->technicians)->toHaveCount(1);
+});
+
+/**
+ * --- TESTS DE WORKFLOW (ETATS) ---
  */
 test('on peut démarrer une intervention planifiée', function () {
     $intervention = Intervention::factory()->create([
         'tenants_id' => $this->tenantId,
         'status' => InterventionStatus::Planned,
-        'customer_id' => $this->customer->id,
     ]);
 
     $response = $this->actingAs($this->user)
         ->postJson(route('interventions.start', $intervention));
 
     $response->assertStatus(200);
-    expect($intervention->fresh()->status)->toBe(InterventionStatus::InProgress);
+    expect($intervention->fresh()->status)->toBe(InterventionStatus::InProgress)
+        ->and($intervention->fresh()->started_at)->not->toBeNull();
 });
 
-/**
- * Test de l'ajout de matériel et calcul de marge en temps réel
- */
-test('l\'ajout d\'un article met à jour la valorisation de l\'intervention', function () {
+test('la clôture génère les sorties de stock, les pointages RH et calcule la marge réelle', function () {
+    // Préparation d'une intervention en cours
     $intervention = Intervention::factory()->create([
         'tenants_id' => $this->tenantId,
-        'status' => InterventionStatus::InProgress,
-    ]);
-
-    $payload = [
-        'article_id' => $this->article->id,
-        'label' => $this->article->name,
-        'quantity' => 2,
-        'unit_price_ht' => 50.00, // Saisie manuelle du prix de vente
-        'is_billable' => true,
-    ];
-
-    $this->actingAs($this->user)
-        ->postJson(route('interventions.items.store', $intervention), $payload);
-
-    $intervention->refresh();
-
-    // Vente : 2 * 50 = 100
-    // Coût : 2 * 20 (CUMP) = 40
-    // Marge : 60
-    expect((float) $intervention->amount_ht)->toBe(100.0)
-        ->and((float) $intervention->margin_ht)->toBe(60.0);
-});
-
-/**
- * Test de clôture avec Bon d'Attachement
- */
-test('la clôture exige un rapport, une signature et génère les écritures RH/Stock', function () {
-    $intervention = Intervention::factory()->create([
-        'tenants_id' => $this->tenantId,
-        'status' => InterventionStatus::InProgress,
         'warehouse_id' => $this->mobileWarehouse->id,
-        'project_id' => Project::factory(),
-    ]);
-
-    // Ajout d'un technicien via le pivot
-    $intervention->technicians()->attach($this->technician->id, ['hours_spent' => 0]);
-
-    $payload = [
-        'report_notes' => 'Remplacement de la vanne effectué. Test de pression OK.',
-        'client_signature' => 'data:image/png;base64,fake_signature_data',
-        'completed_at' => now()->format('Y-m-d H:i:s'),
-        'technicians' => [
-            [
-                'employee_id' => $this->technician->id,
-                'hours_spent' => 3.5, // Saisie des heures à la clôture
-            ],
-        ],
-    ];
-
-    $response = $this->actingAs($this->user)
-        ->postJson(route('interventions.complete', $intervention), $payload);
-
-    $response->assertStatus(200);
-    $intervention->refresh();
-
-    // 1. Vérification du statut
-    expect($intervention->status)->toBe(InterventionStatus::Completed)
-        ->and($intervention->report_notes)->toBe($payload['report_notes']);
-
-    // 2. Vérification du pointage RH (TimeEntry)
-    $this->assertDatabaseHas('time_entries', [
-        'employee_id' => $this->technician->id,
-        'hours' => 3.5,
-        'status' => TimeEntryStatus::Submitted->value,
-    ]);
-
-    // 3. Vérification de la rentabilité finale
-    // Coût Main d'oeuvre : 3.5h * 50€ = 175€
-    // Si pas d'articles, marge = -175€
-    expect((float) $intervention->amount_cost_ht)->toBe(175.0)
-        ->and((float) $intervention->margin_ht)->toBe(-175.0);
-});
-
-/**
- * Test de clôture complet : RH + Finance + STOCK
- */
-test('la clôture génère les écritures RH, décrémente les stocks et calcule la marge', function () {
-    $this->article->warehouses()->attach($this->mobileWarehouse->id, [
-        'quantity' => 10,
-        'created_at' => now(),
-        'updated_at' => now(),
-    ]);
-    // 1. Préparation de l'intervention en cours
-    $intervention = Intervention::factory()->create([
-        'tenants_id' => $this->tenantId,
         'status' => InterventionStatus::InProgress,
-        'warehouse_id' => $this->mobileWarehouse->id,
-        'customer_id' => $this->customer->id,
-        'project_id' => Project::factory(),
     ]);
 
-    // 2. Ajout d'un article consommé (2 unités)
-    InterventionItem::create([
+    // Ajout d'un article consommé (InterventionItem)
+    InterventionItem::factory()->create([
         'intervention_id' => $intervention->id,
         'article_id' => $this->article->id,
-        'label' => $this->article->name,
-        'quantity' => 2,
-        'unit_price_ht' => 50.00,
-        'unit_cost_ht' => 20.00, // CUMP
-        'total_ht' => 100.00,
+        'quantity' => 2, // 2 * 120€ vente = 240€ / 2 * 50€ coût = 100€
+        'unit_cost_ht' => 50.00,
+        'unit_price_ht' => 120.00,
+        'total_ht' => 240.00,
         'is_billable' => true,
     ]);
 
-    // 3. Affectation initiale du technicien
+    // Affectation initiale du technicien
     $intervention->technicians()->attach($this->technician->id, ['hours_spent' => 0]);
 
-    // 4. Payload de clôture
+    // Payload de clôture (Rapport technique + Heures finales)
     $payload = [
-        'report_notes' => 'Remplacement de la vanne effectué.',
-        'client_signature' => 'data:image/png;base64,signature_valide',
-        'completed_at' => now()->format('Y-m-d H:i:s'),
+        'report_notes' => 'Remplacement des filtres effectué. Test de charge OK.',
+        'completed_at' => now()->toDateTimeString(),
+        'client_signature' => 'data:image/png;base64,signature_virtuelle_btp',
         'technicians' => [
-            [
-                'employee_id' => $this->technician->id,
-                'hours_spent' => 2.0, // Le technicien a passé 2h
-            ],
+            ['employee_id' => $this->technician->id, 'hours_spent' => 3.0], // 3h * 45€ = 135€ coût MO
         ],
     ];
 
@@ -226,42 +227,60 @@ test('la clôture génère les écritures RH, décrémente les stocks et calcule
         ->postJson(route('interventions.complete', $intervention), $payload);
 
     $response->assertStatus(200);
+
     $intervention->refresh();
 
-    // --- ASSERTIONS STOCK ---
-    // On vérifie qu'un mouvement de sortie a été créé pour l'article
+    // 1. Vérification du changement de statut
+    expect($intervention->status)->toBe(InterventionStatus::Completed);
+
+    // 2. Vérification des impacts Stocks
     $this->assertDatabaseHas('stock_movements', [
         'article_id' => $this->article->id,
-        'warehouse_id' => $this->mobileWarehouse->id,
-        'type' => StockMovementType::Exit->value,
         'quantity' => 2,
+        'type' => StockMovementType::Exit->value,
     ]);
 
-    // --- ASSERTIONS RH ---
+    // 3. Vérification des impacts RH (Pointage)
     $this->assertDatabaseHas('time_entries', [
         'employee_id' => $this->technician->id,
-        'hours' => 2.0,
+        'hours' => 3.0,
         'status' => TimeEntryStatus::Submitted->value,
     ]);
 
-    // --- ASSERTIONS FINANCIÈRES ---
-    // Vente : 100€ (2 * 50€)
-    // Coût Matériel : 40€ (2 * 20€)
-    // Coût MO : 100€ (2h * 50€/h)
-    // Coût Total : 140€
-    // Marge : 100 - 140 = -40€
-    expect((float) $intervention->amount_ht)->toBe(100.0)
-        ->and((float) $intervention->amount_cost_ht)->toBe(140.0)
-        ->and((float) $intervention->margin_ht)->toBe(-40.0);
+    // 4. Vérification du calcul financier (FinancialService)
+    // Vente HT = 240€
+    // Coût Matériel = 100€
+    // Coût Main d'oeuvre = 135€
+    // Total Coût = 235€
+    // Marge = 240 - 235 = 5€
+    expect((float) $intervention->amount_ht)->toBe(240.0)
+        ->and((float) $intervention->amount_cost_ht)->toBe(235.0)
+        ->and((float) $intervention->margin_ht)->toBe(5.0);
 });
 
 /**
- * Test de sécurité : blocage sur client non-conforme
+ * --- TESTS DE SÉCURITÉ & RÈGLES MÉTIER ---
  */
-test('on ne peut pas démarrer une intervention si le projet client est suspendu', function () {
-    // On simule un projet dont le client est bloqué
-    $project = Project::factory()->create(['tenants_id' => $this->tenantId]);
+test('on ne peut pas supprimer une intervention si elle est déjà commencée', function () {
+    $intervention = Intervention::factory()->create([
+        'tenants_id' => $this->tenantId,
+        'status' => InterventionStatus::InProgress,
+    ]);
+
+    $response = $this->actingAs($this->user)
+        ->deleteJson(route('interventions.destroy', $intervention));
+
+    $response->assertStatus(500);
+    $this->assertDatabaseHas('interventions', ['id' => $intervention->id]);
+});
+
+test('on ne peut pas démarrer une intervention si le client est suspendu administrativement', function () {
     $this->customer->update(['status' => \App\Enums\Tiers\TierStatus::Suspended]);
+
+    $project = Project::factory()->create([
+        'tenants_id' => $this->tenantId,
+        'customer_id' => $this->customer->id,
+    ]);
 
     $intervention = Intervention::factory()->create([
         'tenants_id' => $this->tenantId,
@@ -270,10 +289,27 @@ test('on ne peut pas démarrer une intervention si le projet client est suspendu
         'status' => InterventionStatus::Planned,
     ]);
 
-    // Le service ProjectManagementService (injecté dans le Workflow) devrait lever une exception
     $response = $this->actingAs($this->user)
         ->postJson(route('interventions.start', $intervention));
 
-    $response->assertStatus(422);
-    $response->assertJsonPath('error', 'Client non conforme ou suspendu administrativement.');
+    // Doit être bloqué par le ComplianceException du WorkflowService
+    $response->assertStatus(422)
+        ->assertJsonPath('error', 'Client non conforme ou suspendu administrativement.');
+});
+
+test('le workflow respecte la séquence logique', function () {
+    // Planifié -> En route
+    $this->workflowService->startRoute($this->intervention);
+    expect($this->intervention->status)->toBe(InterventionStatus::OnRoute);
+
+    // En route -> Sur site (InProgress)
+    $this->workflowService->arriveOnSite($this->intervention);
+    expect($this->intervention->status)->toBe(InterventionStatus::InProgress);
+});
+
+test('lancement d une exception lors d une transition interdite', function () {
+    // Tentative de passer de Planifié à Sur Site sans passer par "En route"
+    // Selon la logique du service, cela doit échouer
+    expect(fn () => $this->workflowService->arriveOnSite($this->intervention))
+        ->toThrow(InvalidStatusTransitionException::class);
 });

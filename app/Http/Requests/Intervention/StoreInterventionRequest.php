@@ -12,16 +12,19 @@ class StoreInterventionRequest extends FormRequest
     {
         return [
             'customer_id' => ['required', 'exists:tiers,id'],
-            // Optionnel ici pour permettre à l'Observer d'assigner le "Dépôt Mobile" du créateur
+
+            // Le dépôt est optionnel à la création : l'Observer peut assigner le camion du créateur.
             'warehouse_id' => ['nullable', 'exists:warehouses,id'],
+
             'project_id' => ['nullable', 'exists:projects,id'],
             'project_phase_id' => ['nullable', 'exists:project_phases,id'],
+
             'label' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'planned_at' => ['required', 'date', 'after_or_equal:today'],
             'billing_type' => ['required', Rule::enum(BillingType::class)],
 
-            // Possibilité d'assigner des techniciens dès la création
+            // Possibilité d'affecter des techniciens immédiatement
             'technician_ids' => ['nullable', 'array'],
             'technician_ids.*' => ['exists:employees,id'],
         ];

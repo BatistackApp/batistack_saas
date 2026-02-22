@@ -83,4 +83,11 @@ class Intervention extends Model
             get: fn () => $this->material_cost_ht + $this->labor_cost_ht,
         );
     }
+
+    protected function pdfPath(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => '/tenants/{$this->tenants_id}/interventions/{$this->reference}.pdf'
+        );
+    }
 }
