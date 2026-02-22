@@ -15,10 +15,8 @@ return new class extends Migration {
             $table->string('client_name')->nullable();
 
             // Analyse financière (Recommandation 4 - Distinction des coûts)
-            $table->decimal('amount_ht', 15, 2)->default(0);
             $table->decimal('material_cost_ht', 15, 2)->default(0)->comment('Coût de revient pièces');
             $table->decimal('labor_cost_ht', 15, 2)->default(0)->comment('Coût de revient main d\'oeuvre');
-            $table->decimal('margin_ht', 15, 2)->default(0);
         });
     }
 
@@ -30,10 +28,8 @@ return new class extends Migration {
                 'completed_notes',
                 'client_signature',
                 'client_name',
-                'amount_ht',
                 'material_cost_ht',
                 'labor_cost_ht',
-                'margin_ht',
             ]);
         });
     }
