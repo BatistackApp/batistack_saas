@@ -2,6 +2,7 @@
 
 namespace App\Services\Core;
 
+use App\Models\Intervention\Intervention;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\View;
@@ -65,6 +66,7 @@ class DocumentManagementService
         return match (get_class($model)) {
             \App\Models\Commerce\Quote::class => ['customer', 'items', 'project'],
             \App\Models\Commerce\Invoices::class => ['tiers', 'items.quoteItem', 'project', 'quote'],
+            Intervention::class => ['customer', 'item.article', 'project', 'technicians'],
             default => [],
         };
     }
