@@ -4,6 +4,7 @@ namespace App\Services\Intervention;
 
 use App\Models\Intervention\Intervention;
 use App\Services\Core\DocumentManagementService;
+use Illuminate\Support\Facades\Mail;
 
 class InterventionReportService
 {
@@ -32,9 +33,7 @@ class InterventionReportService
         }
 
         // Logique d'envoi d'email via un Mailable Laravel
-        /*
         Mail::to($intervention->customer->email)
             ->send(new \App\Mail\Intervention\ReportSignedMail($intervention));
-        */
     }
 }
