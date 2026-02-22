@@ -2,7 +2,6 @@
 
 namespace App\Observers\Expense;
 
-use App\Enums\Expense\ExpenseStatus;
 use App\Exceptions\Expense\ReportLockedException;
 use App\Models\Expense\ExpenseItem;
 use App\Services\Expense\ExpenseCalculationService;
@@ -22,7 +21,7 @@ class ExpenseItemObserver
     {
         $report = $item->report;
 
-        if ($report && !$report->isEditable()) {
+        if ($report && ! $report->isEditable()) {
             throw new ReportLockedException(
                 "Action impossible : la note de frais [{$report->label}] est en cours de validation ou payée."
             );

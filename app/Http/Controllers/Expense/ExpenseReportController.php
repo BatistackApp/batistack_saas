@@ -22,7 +22,9 @@ class ExpenseReportController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = ExpenseReport::query()->withCount('items');
+        $query = ExpenseReport::query()
+            ->withCount('items')
+            ->with(['user:id,name']);
 
         // Filtrage par utilisateur si non-admin
         if (! auth()->user()->hasRole('tenant_admin')) {
@@ -60,7 +62,9 @@ class ExpenseReportController extends Controller
      */
     public function show(ExpenseReport $report): JsonResponse
     {
-        return response()->json($report->load(['items.category', 'items.project', 'user']));
+        return response()->json(
+            $report->load(['items.category', 'items.project', 'user:id,name'])
+        );
     }
 
     /**

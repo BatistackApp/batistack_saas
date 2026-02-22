@@ -18,13 +18,16 @@ class UpdateExpenseStatusRequest extends FormRequest
                 'string',
                 'max:1000',
             ],
+            // Optionnel : date de paiement si statut Paid
+            'paid_at' => ['required_if:status,'.ExpenseStatus::Paid->value, 'nullable', 'date'],
         ];
     }
 
     public function messages(): array
     {
         return [
-            'reason.required_if' => 'Un motif est obligatoire pour justifier le rejet de la note de frais.',
+            'status.required' => 'Le nouveau statut est obligatoire.',
+            'reason.required_if' => 'Un motif de refus doit être fourni pour rejeter une note de frais.',
         ];
     }
 
