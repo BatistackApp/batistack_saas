@@ -15,4 +15,5 @@ return [
     App\Providers\AccountingServiceProvider::class,
     App\Providers\PilotageServiceProvider::class,
     App\Providers\GED::class,
+    App\Providers\InterventionServiceProvider::class,
 ];
