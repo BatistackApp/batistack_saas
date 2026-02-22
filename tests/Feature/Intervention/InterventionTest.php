@@ -58,7 +58,7 @@ beforeEach(function () {
     ]);
 
     $this->intervention = Intervention::factory()->create([
-        'status' => InterventionStatus::Planned
+        'status' => InterventionStatus::Planned,
     ]);
 
     Queue::fake();
@@ -68,7 +68,7 @@ test('une intervention peut être créée sans dépôt et l\'observer assigne le
     // 1. On prépare un dépôt "Camion"
     $mobileWarehouse = Warehouse::factory()->create([
         'tenants_id' => $this->tenantId,
-        'name' => 'Camion Tech 01'
+        'name' => 'Camion Tech 01',
     ]);
 
     // 2. On lie l'utilisateur à un employé qui possède ce dépôt par défaut
@@ -310,6 +310,6 @@ test('le workflow respecte la séquence logique', function () {
 test('lancement d une exception lors d une transition interdite', function () {
     // Tentative de passer de Planifié à Sur Site sans passer par "En route"
     // Selon la logique du service, cela doit échouer
-    expect(fn() => $this->workflowService->arriveOnSite($this->intervention))
+    expect(fn () => $this->workflowService->arriveOnSite($this->intervention))
         ->toThrow(InvalidStatusTransitionException::class);
 });

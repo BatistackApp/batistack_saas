@@ -123,6 +123,7 @@ class InterventionController extends Controller
     {
         try {
             $this->workflowService->startRoute($intervention);
+
             return response()->json(['message' => 'Statut mis à jour : Technicien en route.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
@@ -137,6 +138,7 @@ class InterventionController extends Controller
     {
         try {
             $this->workflowService->arriveOnSite($intervention);
+
             return response()->json(['message' => 'Statut mis à jour : Arrivé sur site.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
@@ -151,6 +153,7 @@ class InterventionController extends Controller
     {
         try {
             $this->workflowService->putOnHold($intervention, $request->reason);
+
             return response()->json(['message' => 'Intervention mise en attente.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
