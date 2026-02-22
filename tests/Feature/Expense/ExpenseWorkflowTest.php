@@ -192,9 +192,9 @@ test('l ajout d une ligne met à jour automatiquement le total du rapport via l 
             'date' => now()->toDateString(),
             'description' => 'Achat outillage',
             'amount_ttc' => 120,
-            'tax_rate' => 20
+            'tax_rate' => 20,
         ])
         ->assertStatus(201);
 
-    expect((float)$report->refresh()->amount_ttc)->toBe(120.0);
+    expect((float) $report->refresh()->amount_ttc)->toBe(120.0);
 });

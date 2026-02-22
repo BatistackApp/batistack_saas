@@ -1,11 +1,10 @@
 <?php
 
 use App\Models\Core\Tenants;
-use App\Models\Expense\ExpenseReport;
 use App\Services\Expense\ExpenseCalculationService;
 
 beforeEach(function () {
-    $this->calcService = new ExpenseCalculationService();
+    $this->calcService = new ExpenseCalculationService;
     $this->tenant = Tenants::factory()->create();
 });
 
