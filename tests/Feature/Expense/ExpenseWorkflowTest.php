@@ -22,6 +22,8 @@ beforeEach(function () {
     $this->adminA = User::factory()->create(['tenants_id' => $this->tenantA->id]);
     $this->adminA->assignRole('tenant_admin');
 
+    $this->userA->givePermissionTo('tenant.expenses.manage');
+
     // Setup Tenant B (pour tester l'isolation)
     $this->tenantB = Tenants::factory()->create();
     $this->userB = User::factory()->create(['tenants_id' => $this->tenantB->id]);
@@ -44,7 +46,7 @@ test('un utilisateur ne peut pas voir les notes de frais d\'un autre tenant', fu
     ]);
 
     $this->actingAs($this->userA)
-        ->getJson('/api/expense/expense-reports')
+        ->getJson(route('expenses.reports.index'))
         ->assertOk()
         ->assertJsonMissing(['label' => 'Secret de Tenant B']);
 });
@@ -75,14 +77,14 @@ test('une note de frais passe en statut soumis et bloque les modifications', fun
     ExpenseItem::factory()->create(['expense_report_id' => $expense_report->id, 'amount_ttc' => 50]);
 
     $response = $this->actingAs($this->userA)
-        ->postJson("/api/expense/expense-reports/{$expense_report->id}/submit");
+        ->postJson(route('expenses.reports.submit', $expense_report->id));
 
     expect($expense_report->refresh()->status)->toBe(ExpenseStatus::Submitted);
 
     // Tentative de suppression d'une ligne après soumission -> Doit échouer
     $item = $expense_report->items->first();
     $this->actingAs($this->userA)
-        ->deleteJson("/api/expense/expense-items/{$item->id}")
+        ->deleteJson(route('expenses.items.destroy', $item->id))
         ->assertStatus(422);
 });
 
@@ -97,7 +99,7 @@ test('le système calcule automatiquement le montant pour les frais kilométriqu
     ]);
 
     $response = $this->actingAs($this->userA)
-        ->postJson('/api/expense/expense-items', [
+        ->postJson(route('expenses.items.store'), [
             'expense_report_id' => $report->id,
             'expense_category_id' => $this->category->id,
             'date' => now()->format('Y-m-d'),
@@ -125,7 +127,7 @@ test('un justificatif est correctement stocké et lié à la ligne de frais', fu
     $file = UploadedFile::fake()->image('facture_resto.jpg');
 
     $response = $this->actingAs($this->userA)
-        ->postJson('/api/expense/expense-items', [
+        ->postJson(route('expenses.items.store'), [
             'expense_report_id' => $report->id,
             'expense_category_id' => $this->category->id,
             'date' => now()->format('Y-m-d'),
@@ -157,7 +159,7 @@ test('l\'approbation déclenche l\'imputation comptable', function () {
 
     // On donne la permission de valider à l'admin (simulé par le rôle ici)
     $this->actingAs($this->adminA)
-        ->patchJson(route('expense-reports.update-status', $report), [
+        ->patchJson(route('expenses.reports.update-status', $report), [
             'status' => ExpenseStatus::Approved,
         ])
         ->assertOk();
@@ -165,18 +167,34 @@ test('l\'approbation déclenche l\'imputation comptable', function () {
     expect($report->refresh()->status)->toBe(ExpenseStatus::Approved);
 });
 
-test('le rejet nécessite obligatoirement un motif', function () {
+test('le rejet d une note nécessite obligatoirement un motif', function () {
     $report = ExpenseReport::factory()->create([
         'tenants_id' => $this->tenantA->id,
         'status' => ExpenseStatus::Submitted,
-        'user_id' => $this->userA->id,
     ]);
 
     $this->actingAs($this->adminA)
-        ->patchJson(route('expense-reports.update-status', $report), [
+        ->patchJson(route('expenses.reports.update-status', $report), [
             'status' => ExpenseStatus::Rejected->value,
-            'reason' => '', // Vide
+            'reason' => '', // Motif vide
         ])
         ->assertStatus(422)
         ->assertJsonValidationErrors(['reason']);
+});
+
+test('l ajout d une ligne met à jour automatiquement le total du rapport via l observer', function () {
+    $report = ExpenseReport::factory()->create(['tenants_id' => $this->tenantA->id]);
+
+    $this->actingAs($this->userA)
+        ->postJson(route('expenses.items.store'), [
+            'expense_report_id' => $report->id,
+            'expense_category_id' => $this->category->id,
+            'date' => now()->toDateString(),
+            'description' => 'Achat outillage',
+            'amount_ttc' => 120,
+            'tax_rate' => 20,
+        ])
+        ->assertStatus(201);
+
+    expect((float) $report->refresh()->amount_ttc)->toBe(120.0);
 });

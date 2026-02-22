@@ -15,7 +15,7 @@ class ExpenseServiceProvider extends ServiceProvider
             $schedule = $this->app->make(Schedule::class);
 
             $schedule->command('expense:remind-pending')
-                ->dailyAt('02:00')
+                ->dailyAt('08:00')
                 ->onOneServer();
         });
     }

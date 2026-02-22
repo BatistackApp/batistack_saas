@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Expense;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Exceptions\Expense\ExpenseModuleException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Expense\UpdateExpenseStatusRequest;
 use App\Models\Expense\ExpenseReport;
@@ -35,23 +34,32 @@ class ExpenseApprovalController extends Controller
     public function updateStatus(UpdateExpenseStatusRequest $request, ExpenseReport $expenseReport): JsonResponse
     {
         try {
-            if ($request->status === ExpenseStatus::Approved->value) {
-                $this->workflowService->approve($expenseReport, auth()->id());
+            $status = ExpenseStatus::from($request->status);
 
-                return response()->json(['message' => 'Note approuvée et imputation lancée.']);
+            switch ($status) {
+                case ExpenseStatus::Approved:
+                    $this->workflowService->approve($expenseReport, auth()->id());
+                    $msg = 'Note de frais approuvée.';
+                    break;
+
+                case ExpenseStatus::Rejected:
+                    $this->workflowService->reject($expenseReport, $request->reason);
+                    $msg = 'Note de frais rejetée.';
+                    break;
+
+                case ExpenseStatus::Paid:
+                    // Logique optionnelle de paiement direct
+                    $expenseReport->update(['status' => ExpenseStatus::Paid]);
+                    $msg = 'Note marquée comme payée.';
+                    break;
+
+                default:
+                    return response()->json(['error' => 'Action non gérée.'], 400);
             }
 
-            if ($request->status === ExpenseStatus::Rejected->value) {
-                // On met à jour le motif avant de rejeter
-                $expenseReport->update(['rejection_reason' => $request->reason]);
-                $this->workflowService->reject($expenseReport, $request->reason);
+            return response()->json(['message' => $msg]);
 
-                return response()->json(['message' => 'Note rejetée. L\'employé a été notifié.']);
-            }
-
-            return response()->json(['error' => 'Action non supportée.'], 400);
-
-        } catch (ExpenseModuleException $e) {
+        } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }

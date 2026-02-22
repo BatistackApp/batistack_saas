@@ -30,14 +30,14 @@ class ExpenseCalculationService
      */
     public function calculateMileage(int $tenantId, float $distance, int $vehiclePower): float
     {
-        // On récupère le barème spécifique au tenant
+        $year = $year ?? now()->year;
+
         $scale = DB::table('expense_mileage_scales')
             ->where('tenants_id', $tenantId)
             ->where('vehicle_power', $vehiclePower)
-            ->where('active_year', now()->year)
+            ->where('active_year', $year)
             ->first();
 
-        // Fallback sur un taux par défaut (0.60) si non configuré pour éviter le 0.00
         $rate = $scale ? (float) $scale->rate_per_km : 0.60;
 
         return round($distance * $rate, 2);

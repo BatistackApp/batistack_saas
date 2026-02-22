@@ -24,27 +24,35 @@ class ExpenseItemController extends Controller
         $data = $request->validated();
         $amounts = [];
 
-        // Logique de bascule Kilométrage vs Standard
+        // Gestion spécifique des frais kilométriques (IK)
         if ($request->boolean('is_mileage')) {
-            $ttc = $this->calcService->calculateMileage(
+            $ht = $this->calcService->calculateMileage(
                 auth()->user()->tenants_id,
-                $data['distance_km'],
-                $data['vehicle_power'] ?? 5
+                (float) $data['distance_km'],
+                (int) $data['vehicle_power']
             );
 
             $amounts = [
-                'amount_ttc' => $ttc,
-                'amount_ht' => $ttc, // Pas de TVA sur les IK
+                'amount_ht' => $ht,
                 'amount_tva' => 0,
+                'amount_ttc' => $ht,
                 'tax_rate' => 0,
             ];
         } else {
-            $amounts = $this->calcService->calculateFromTtc($data['amount_ttc'], $data['tax_rate']);
+            // Calcul standard TVA/HT depuis le TTC saisi
+            $amounts = $this->calcService->calculateFromTtc(
+                (float) $data['amount_ttc'],
+                (float) $data['tax_rate']
+            );
         }
 
+        // Gestion du justificatif (Receipt)
         if ($request->hasFile('receipt_path')) {
             $tenantId = auth()->user()->tenants_id;
-            $data['receipt_path'] = $request->file('receipt_path')->store("tenants/{$tenantId}/expenses", 'public');
+            $data['receipt_path'] = $request->file('receipt_path')->store(
+                "tenants/{$tenantId}/expenses/receipts",
+                'public'
+            );
         }
 
         $item = ExpenseItem::create(array_merge($data, $amounts));
