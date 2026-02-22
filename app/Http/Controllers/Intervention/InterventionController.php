@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Intervention;
 use App\Enums\Intervention\InterventionStatus;
 use App\Exceptions\Intervention\InterventionModuleException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Intervention\CompleteInterventionRequest;
 use App\Http\Requests\Intervention\StoreInterventionRequest;
 use App\Http\Requests\Intervention\UpdateInterventionRequest;
+use App\Http\Requests\Intervention\UpdateInterventionStatusRequest;
 use App\Models\Intervention\Intervention;
 use App\Services\Intervention\InterventionWorkflowService;
+use DB;
 use Illuminate\Http\JsonResponse;
 
 class InterventionController extends Controller
@@ -19,7 +22,7 @@ class InterventionController extends Controller
 
     public function index(): JsonResponse
     {
-        $interventions = Intervention::with(['customer', 'project'])
+        $interventions = Intervention::with(['customer', 'project', 'technicians'])
             ->latest()
             ->paginate();
 
@@ -28,17 +31,26 @@ class InterventionController extends Controller
 
     public function store(StoreInterventionRequest $request): JsonResponse
     {
-        $intervention = Intervention::create(array_merge(
-            $request->validated(),
-            ['tenants_id' => auth()->user()->tenants_id]
-        ));
+        $intervention = DB::transaction(function () use ($request) {
+            $intervention = Intervention::create(array_merge(
+                $request->validated(),
+                ['tenants_id' => auth()->user()->tenants_id]
+            ));
+
+            // Si des techniciens sont fournis à la création
+            if ($request->has('technician_ids')) {
+                $intervention->technicians()->sync($request->technician_ids);
+            }
+
+            return $intervention;
+        });
 
         return response()->json($intervention, 201);
     }
 
     public function show(Intervention $intervention): JsonResponse
     {
-        return response()->json($intervention->load(['items.article', 'items.ouvrage', 'technicians', 'customer']));
+        return response()->json($intervention->load(['items.article', 'items.ouvrage', 'technicians', 'customer', 'warehouse']));
     }
 
     public function update(UpdateInterventionRequest $request, Intervention $intervention)
@@ -46,6 +58,19 @@ class InterventionController extends Controller
         $intervention->update($request->validated());
 
         return response()->json($intervention);
+    }
+
+    /**
+     * Changement de statut (Annulation, etc.)
+     */
+    public function updateStatus(UpdateInterventionStatusRequest $request, Intervention $intervention): JsonResponse
+    {
+        $intervention->update($request->validated());
+
+        return response()->json([
+            'message' => "Statut mis à jour : " . $intervention->status->getLabel(),
+            'intervention' => $intervention
+        ]);
     }
 
     /**
@@ -82,12 +107,28 @@ class InterventionController extends Controller
     /**
      * Déclenche la clôture (Déstockage + Heures + Marge).
      */
-    public function complete(Intervention $intervention): JsonResponse
+    public function complete(CompleteInterventionRequest $request, Intervention $intervention): JsonResponse
     {
         try {
+            // On enrichit l'intervention avec les données du rapport avant clôture
+            $intervention->update([
+                'report_notes' => $request->report_notes,
+                'client_signature' => $request->client_signature,
+                'completed_at' => $request->completed_at,
+            ]);
+
+            // Mise à jour des heures finales des techniciens si fournies
+            foreach ($request->technicians as $techData) {
+                $intervention->technicians()->updateExistingPivot(
+                    $techData['employee_id'],
+                    ['hours_spent' => $techData['hours_spent']]
+                );
+            }
+
+            // Exécution de la clôture métier (Stock, Finance, RH)
             $this->workflowService->complete($intervention);
 
-            return response()->json(['message' => 'Intervention clôturée avec succès.']);
+            return response()->json(['message' => 'Intervention clôturée et rapport généré.']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
