@@ -79,7 +79,7 @@ class InterventionWorkflowService
 
         $intervention->update([
             'status' => InterventionStatus::OnHold,
-            'report_notes' => $intervention->report_notes . "\n[MISE EN ATTENTE " . now()->format('d/m/Y H:i') . "] : " . $reason,
+            'report_notes' => $intervention->report_notes."\n[MISE EN ATTENTE ".now()->format('d/m/Y H:i').'] : '.$reason,
         ]);
     }
 
@@ -131,7 +131,7 @@ class InterventionWorkflowService
      */
     protected function validateTransition(Intervention $intervention, InterventionStatus $targetStatus): void
     {
-        $allowed = match($targetStatus) {
+        $allowed = match ($targetStatus) {
             InterventionStatus::OnRoute => $intervention->status === InterventionStatus::Planned,
             InterventionStatus::InProgress => in_array($intervention->status, [InterventionStatus::OnRoute, InterventionStatus::OnHold]),
             InterventionStatus::OnHold => $intervention->status === InterventionStatus::InProgress,
@@ -139,7 +139,7 @@ class InterventionWorkflowService
             default => false
         };
 
-        if (!$allowed) {
+        if (! $allowed) {
             throw new InvalidStatusTransitionException(
                 "Transition impossible de {$intervention->status->value} vers {$targetStatus->value}"
             );

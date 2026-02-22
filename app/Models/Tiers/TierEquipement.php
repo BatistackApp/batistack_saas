@@ -2,7 +2,6 @@
 
 namespace App\Models\Tiers;
 
-use App\Models\Core\Tenants;
 use App\Models\Intervention\Intervention;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TierEquipement extends Model
 {
-    use HasFactory, SoftDeletes, HasTenant;
+    use HasFactory, HasTenant, SoftDeletes;
 
     protected $fillable = [
         'tenants_id',

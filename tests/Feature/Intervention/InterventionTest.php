@@ -60,7 +60,6 @@ beforeEach(function () {
 /**
  * --- TESTS CRUD & INITIALISATION ---
  */
-
 test('on peut lister les interventions du tenant', function () {
     Intervention::factory(3)->create(['tenants_id' => $this->tenantId]);
 
@@ -78,7 +77,7 @@ test('on peut créer une intervention planifiée avec des techniciens', function
         'label' => 'Maintenance préventive Groupe Électrogène',
         'planned_at' => now()->addDays(2)->toDateTimeString(),
         'billing_type' => BillingType::Regie->value,
-        'technician_ids' => [$this->technician->id]
+        'technician_ids' => [$this->technician->id],
     ];
 
     $response = $this->actingAs($this->user)
@@ -88,7 +87,7 @@ test('on peut créer une intervention planifiée avec des techniciens', function
 
     $this->assertDatabaseHas('interventions', [
         'label' => 'Maintenance préventive Groupe Électrogène',
-        'status' => InterventionStatus::Planned->value
+        'status' => InterventionStatus::Planned->value,
     ]);
 
     $intervention = Intervention::latest()->first();
@@ -98,11 +97,10 @@ test('on peut créer une intervention planifiée avec des techniciens', function
 /**
  * --- TESTS DE WORKFLOW (ETATS) ---
  */
-
 test('on peut démarrer une intervention planifiée', function () {
     $intervention = Intervention::factory()->create([
         'tenants_id' => $this->tenantId,
-        'status' => InterventionStatus::Planned
+        'status' => InterventionStatus::Planned,
     ]);
 
     $response = $this->actingAs($this->user)
@@ -129,7 +127,7 @@ test('la clôture génère les sorties de stock, les pointages RH et calcule la 
         'unit_cost_ht' => 50.00,
         'unit_price_ht' => 120.00,
         'total_ht' => 240.00,
-        'is_billable' => true
+        'is_billable' => true,
     ]);
 
     // Affectation initiale du technicien
@@ -141,8 +139,8 @@ test('la clôture génère les sorties de stock, les pointages RH et calcule la 
         'completed_at' => now()->toDateTimeString(),
         'client_signature' => 'data:image/png;base64,signature_virtuelle_btp',
         'technicians' => [
-            ['employee_id' => $this->technician->id, 'hours_spent' => 3.0] // 3h * 45€ = 135€ coût MO
-        ]
+            ['employee_id' => $this->technician->id, 'hours_spent' => 3.0], // 3h * 45€ = 135€ coût MO
+        ],
     ];
 
     $response = $this->actingAs($this->user)
@@ -159,14 +157,14 @@ test('la clôture génère les sorties de stock, les pointages RH et calcule la 
     $this->assertDatabaseHas('stock_movements', [
         'article_id' => $this->article->id,
         'quantity' => 2,
-        'type' => StockMovementType::Exit->value
+        'type' => StockMovementType::Exit->value,
     ]);
 
     // 3. Vérification des impacts RH (Pointage)
     $this->assertDatabaseHas('time_entries', [
         'employee_id' => $this->technician->id,
         'hours' => 3.0,
-        'status' => TimeEntryStatus::Submitted->value
+        'status' => TimeEntryStatus::Submitted->value,
     ]);
 
     // 4. Vérification du calcul financier (FinancialService)
@@ -175,19 +173,18 @@ test('la clôture génère les sorties de stock, les pointages RH et calcule la 
     // Coût Main d'oeuvre = 135€
     // Total Coût = 235€
     // Marge = 240 - 235 = 5€
-    expect((float)$intervention->amount_ht)->toBe(240.0)
-        ->and((float)$intervention->amount_cost_ht)->toBe(235.0)
-        ->and((float)$intervention->margin_ht)->toBe(5.0);
+    expect((float) $intervention->amount_ht)->toBe(240.0)
+        ->and((float) $intervention->amount_cost_ht)->toBe(235.0)
+        ->and((float) $intervention->margin_ht)->toBe(5.0);
 });
 
 /**
  * --- TESTS DE SÉCURITÉ & RÈGLES MÉTIER ---
  */
-
 test('on ne peut pas supprimer une intervention si elle est déjà commencée', function () {
     $intervention = Intervention::factory()->create([
         'tenants_id' => $this->tenantId,
-        'status' => InterventionStatus::InProgress
+        'status' => InterventionStatus::InProgress,
     ]);
 
     $response = $this->actingAs($this->user)
@@ -202,14 +199,14 @@ test('on ne peut pas démarrer une intervention si le client est suspendu admini
 
     $project = Project::factory()->create([
         'tenants_id' => $this->tenantId,
-        'customer_id' => $this->customer->id
+        'customer_id' => $this->customer->id,
     ]);
 
     $intervention = Intervention::factory()->create([
         'tenants_id' => $this->tenantId,
         'customer_id' => $this->customer->id,
         'project_id' => $project->id,
-        'status' => InterventionStatus::Planned
+        'status' => InterventionStatus::Planned,
     ]);
 
     $response = $this->actingAs($this->user)

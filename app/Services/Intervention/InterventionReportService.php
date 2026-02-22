@@ -27,7 +27,7 @@ class InterventionReportService
     {
         $pdfPath = $intervention->pdfPath;
 
-        if (!$pdfPath) {
+        if (! $pdfPath) {
             $pdfPath = $this->generatePdfReport($intervention);
         }
 

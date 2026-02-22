@@ -22,7 +22,7 @@ class InterventionObserver
                 ->first();
 
             $number = $latest ? ((int) Str::afterLast($latest->reference, '-') + 1) : 1;
-            $intervention->reference = "INT-{$year}-" . str_pad($number, 4, '0', STR_PAD_LEFT);
+            $intervention->reference = "INT-{$year}-".str_pad($number, 4, '0', STR_PAD_LEFT);
         }
 
         if (empty($intervention->warehouse_id) && Auth::check()) {

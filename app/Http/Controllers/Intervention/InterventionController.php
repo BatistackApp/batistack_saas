@@ -54,7 +54,7 @@ class InterventionController extends Controller
             'items.ouvrage',
             'technicians',
             'customer',
-            'project'
+            'project',
         ]));
     }
 
@@ -76,8 +76,8 @@ class InterventionController extends Controller
         $intervention->update([
             'status' => $request->status,
             'description' => $request->reason
-                ? $intervention->description . "\nNote de statut : " . $request->reason
-                : $intervention->description
+                ? $intervention->description."\nNote de statut : ".$request->reason
+                : $intervention->description,
         ]);
 
         return response()->json(['message' => 'Statut mis à jour avec succès.', 'status' => $intervention->status]);
