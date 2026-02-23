@@ -11,7 +11,16 @@ class ExpenseReportRequest extends FormRequest
     {
         return [
             'label' => ['required', 'string', 'max:255'],
-            'user_id' => ['sometimes', 'exists:users,id'], // Permet à un admin de créer pour un tiers
+            'user_id' => [
+                'sometimes',
+                'exists:users,id',
+                function ($attribute, $value, $fail) {
+                    $user = \App\Models\User::find($value);
+                    if ($user && $user->tenants_id !== auth()->user()->tenants_id) {
+                        $fail("L'utilisateur sélectionné n'appartient pas à votre organisation.");
+                    }
+                },
+            ],
         ];
     }
 

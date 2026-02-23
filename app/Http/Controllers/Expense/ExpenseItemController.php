@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Expense;
 
-use App\Enums\Expense\ExpenseStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Expense\StoreExpenseItemRequest;
 use App\Models\Expense\ExpenseItem;
@@ -22,42 +21,27 @@ class ExpenseItemController extends Controller
     public function store(StoreExpenseItemRequest $request): JsonResponse
     {
         $data = $request->validated();
-        $amounts = [];
 
-        // Gestion spécifique des frais kilométriques (IK)
-        if ($request->boolean('is_mileage')) {
-            $ht = $this->calcService->calculateMileage(
-                auth()->user()->tenants_id,
-                (float) $data['distance_km'],
-                (int) $data['vehicle_power']
-            );
-
-            $amounts = [
-                'amount_ht' => $ht,
-                'amount_tva' => 0,
-                'amount_ttc' => $ht,
-                'tax_rate' => 0,
-            ];
-        } else {
-            // Calcul standard TVA/HT depuis le TTC saisi
+        // Calcul des montants financiers pour les frais standards
+        if (! $request->boolean('is_mileage')) {
             $amounts = $this->calcService->calculateFromTtc(
                 (float) $data['amount_ttc'],
                 (float) $data['tax_rate']
             );
+            $data = array_merge($data, $amounts);
         }
 
-        // Gestion du justificatif (Receipt)
+        // Gestion du stockage du justificatif
         if ($request->hasFile('receipt_path')) {
             $tenantId = auth()->user()->tenants_id;
-            $data['receipt_path'] = $request->file('receipt_path')->store(
-                "tenants/{$tenantId}/expenses/receipts",
-                'public'
-            );
+            // Organisation des fichiers par tenant et par mois pour faciliter l'archivage
+            $path = "tenants/{$tenantId}/expenses/".now()->format('Y-m');
+            $data['receipt_path'] = $request->file('receipt_path')->store($path, 'public');
         }
 
-        $item = ExpenseItem::create(array_merge($data, $amounts));
+        $item = ExpenseItem::create($data);
 
-        return response()->json($item->load('category'), 201);
+        return response()->json($item->load('category', 'project', 'phase'), 201);
     }
 
     /**
@@ -65,11 +49,12 @@ class ExpenseItemController extends Controller
      */
     public function destroy(ExpenseItem $expenseItem): JsonResponse
     {
-        // On vérifie que le rapport parent est modifiable
-        if (! in_array($expenseItem->report->status, [ExpenseStatus::Draft, ExpenseStatus::Rejected])) {
-            return response()->json(['error' => 'Ligne verrouillée.'], 422);
+        // Sécurité : Vérifier si le rapport parent est modifiable
+        if (! $expenseItem->report->isEditable()) {
+            return response()->json(['error' => 'Action impossible : le rapport est verrouillé.'], 422);
         }
 
+        // Nettoyage physique du fichier
         if ($expenseItem->receipt_path) {
             Storage::disk('public')->delete($expenseItem->receipt_path);
         }

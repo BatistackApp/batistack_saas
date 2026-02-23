@@ -3,6 +3,7 @@
 namespace App\Services\Expense;
 
 use App\Models\Expense\ExpenseReport;
+use App\Models\User;
 use DB;
 
 /**
@@ -10,6 +11,10 @@ use DB;
  */
 class ExpenseCalculationService
 {
+    public function __construct(
+        protected MileageCalculatorService $mileageService
+    ) {}
+
     /**
      * Calcule le HT et la TVA à partir d'un montant TTC et d'un taux.
      */
@@ -28,19 +33,9 @@ class ExpenseCalculationService
     /**
      * Calcule les IK en fonction du barème du Tenant.
      */
-    public function calculateMileage(int $tenantId, float $distance, int $vehiclePower): float
+    public function calculateMileage(User $user, float $distance, int $vehiclePower): float
     {
-        $year = $year ?? now()->year;
-
-        $scale = DB::table('expense_mileage_scales')
-            ->where('tenants_id', $tenantId)
-            ->where('vehicle_power', $vehiclePower)
-            ->where('active_year', $year)
-            ->first();
-
-        $rate = $scale ? (float) $scale->rate_per_km : 0.60;
-
-        return round($distance * $rate, 2);
+        return $this->mileageService->calculateForUser($user, $vehiclePower, $distance);
     }
 
     /**
