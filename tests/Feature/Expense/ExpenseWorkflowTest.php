@@ -5,6 +5,8 @@ use App\Models\Core\Tenants;
 use App\Models\Expense\ExpenseCategory;
 use App\Models\Expense\ExpenseItem;
 use App\Models\Expense\ExpenseReport;
+use App\Models\Projects\Project;
+use App\Models\Projects\ProjectPhase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -197,4 +199,44 @@ test('l ajout d une ligne met à jour automatiquement le total du rapport via l 
         ->assertStatus(201);
 
     expect((float) $report->refresh()->amount_ttc)->toBe(120.0);
+});
+
+test('la phase doit obligatoirement appartenir au projet sélectionné', function () {
+    $project1 = Project::factory()->create(['tenants_id' => $this->tenantA->id]);
+    $project2 = Project::factory()->create(['tenants_id' => $this->tenantA->id]);
+    $phaseOfProject2 = ProjectPhase::factory()->create(['project_id' => $project2->id]);
+
+    $report = ExpenseReport::factory()->create(['user_id' => $this->userA->id, 'tenants_id' => $this->tenantA->id]);
+
+    $response = $this->actingAs($this->userA)
+        ->postJson(route('expenses.items.store'), [
+            'expense_report_id' => $report->id,
+            'expense_category_id' => $this->category->id,
+            'project_id' => $project1->id,
+            'project_phase_id' => $phaseOfProject2->id, // Incohérence ici
+            'date' => now()->toDateString(),
+            'description' => 'Achat plomberie',
+            'amount_ttc' => 50,
+            'tax_rate' => 20
+        ]);
+
+    $response->assertStatus(422);
+    expect($response->json('errors.project_phase_id.0'))->toContain('pas rattaché au chantier');
+});
+
+/**
+ * --- TESTS DE WORKFLOW ---
+ */
+
+test('on ne peut pas soumettre une note de frais vide', function () {
+    $report = ExpenseReport::factory()->create([
+        'tenants_id' => $this->tenantA->id,
+        'status' => ExpenseStatus::Draft
+    ]);
+
+    $response = $this->actingAs($this->userA)
+        ->postJson(route('expenses.reports.submit', $report));
+
+    $response->assertStatus(422);
+    expect($response->json('error'))->toContain('aucune ligne');
 });
