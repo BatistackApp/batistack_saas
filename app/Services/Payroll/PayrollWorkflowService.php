@@ -4,6 +4,7 @@ namespace App\Services\Payroll;
 
 use App\Enums\Payroll\PayrollStatus;
 use App\Exceptions\Payroll\PeriodLockedException;
+use App\Jobs\Payroll\ExportPayrollToAccountingJob;
 use App\Jobs\Payroll\ProcessPayrollImputationJob;
 use App\Models\Payroll\PayrollPeriod;
 use App\Notifications\Payroll\PayslipAvailableNotification;
@@ -29,6 +30,14 @@ class PayrollWorkflowService
             ProcessPayrollImputationJob::dispatch($period);
             $this->notifyEmployees($period);
         });
+    }
+
+    public function markAsPaid(PayrollPeriod $period): void
+    {
+        $period->update(['status' => PayrollStatus::Paid]);
+
+        // Déclenchement de l'export automatique vers la compta
+        ExportPayrollToAccountingJob::dispatch($period);
     }
 
     /**
