@@ -16,4 +16,5 @@ return [
     App\Providers\PilotageServiceProvider::class,
     App\Providers\GED::class,
     App\Providers\InterventionServiceProvider::class,
+    App\Providers\PayrollServiceProvider::class,
 ];

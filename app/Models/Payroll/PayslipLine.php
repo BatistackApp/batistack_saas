@@ -3,10 +3,13 @@
 namespace App\Models\Payroll;
 
 use App\Enums\Payroll\PayslipLineType;
+use App\Observers\Payroll\PayslipLineObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy([PayslipLineObserver::class])]
 class PayslipLine extends Model
 {
     use HasFactory;

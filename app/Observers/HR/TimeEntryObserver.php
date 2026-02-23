@@ -7,11 +7,14 @@ use App\Enums\HR\TimeEntryStatus;
 use App\Models\HR\AbsenceRequest;
 use App\Models\HR\TimeEntry;
 use App\Notifications\HR\TimeEntryStatusChangedNotification;
+use App\Traits\PayrollLockObserverTrait;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
 class TimeEntryObserver
 {
+    use PayrollLockObserverTrait;
+
     public function creating(TimeEntry $timeEntry): void
     {
         $this->checkAbsenceConflict($timeEntry);
@@ -22,6 +25,12 @@ class TimeEntryObserver
         if ($timeEntry->status === TimeEntryStatus::Submitted) {
             $this->notifyManager($timeEntry);
         }
+    }
+
+    public function saving(TimeEntry $timeEntry): void
+    {
+        // On interdit toute modification si la paie est passée
+        $this->checkPayrollLock($timeEntry->tenants_id, $timeEntry->date);
     }
 
     public function updating(TimeEntry $timeEntry): void
@@ -57,6 +66,7 @@ class TimeEntryObserver
      */
     public function deleting(TimeEntry $timeEntry): bool
     {
+        $this->checkPayrollLock($timeEntry->tenants_id, $timeEntry->date);
         if ($timeEntry->status === TimeEntryStatus::Approved || $timeEntry->status === TimeEntryStatus::Verified) {
             return false;
         }
