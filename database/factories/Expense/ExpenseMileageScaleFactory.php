@@ -5,7 +5,6 @@ namespace Database\Factories\Expense;
 use App\Models\Core\Tenants;
 use App\Models\Expense\ExpenseMileageScale;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class ExpenseMileageScaleFactory extends Factory
 {

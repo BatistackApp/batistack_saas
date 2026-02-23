@@ -13,11 +13,11 @@ class StoreExpenseItemRequest extends FormRequest
             'expense_report_id' => ['required', 'exists:expense_reports,id'],
             'expense_category_id' => [
                 'required',
-                'exists:expense_categories,id,tenants_id,' . auth()->user()->tenants_id
+                'exists:expense_categories,id,tenants_id,'.auth()->user()->tenants_id,
             ],
 
             // --- Imputation Analytique (BTP) ---
-            'project_id' => ['nullable', 'exists:projects,id,tenants_id,' . auth()->user()->tenants_id],
+            'project_id' => ['nullable', 'exists:projects,id,tenants_id,'.auth()->user()->tenants_id],
             'project_phase_id' => [
                 'nullable',
                 'exists:project_phases,id',
@@ -27,7 +27,7 @@ class StoreExpenseItemRequest extends FormRequest
                         $exists = ProjectPhase::where('id', $value)
                             ->where('project_id', $this->project_id)
                             ->exists();
-                        if (!$exists) {
+                        if (! $exists) {
                             $fail("Le lot/phase sélectionné n'est pas rattaché au chantier choisi.");
                         }
                     }

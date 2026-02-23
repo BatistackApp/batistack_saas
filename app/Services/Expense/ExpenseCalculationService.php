@@ -14,6 +14,7 @@ class ExpenseCalculationService
     public function __construct(
         protected MileageCalculatorService $mileageService
     ) {}
+
     /**
      * Calcule le HT et la TVA à partir d'un montant TTC et d'un taux.
      */

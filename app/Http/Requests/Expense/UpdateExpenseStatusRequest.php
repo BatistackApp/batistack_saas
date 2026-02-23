@@ -15,18 +15,18 @@ class UpdateExpenseStatusRequest extends FormRequest
 
             // Le motif est obligatoire en cas de rejet pour que le salarié puisse corriger
             'reason' => [
-                'required_if:status,' . ExpenseStatus::Rejected->value,
+                'required_if:status,'.ExpenseStatus::Rejected->value,
                 'nullable',
                 'string',
                 'min:5',
-                'max:1000'
+                'max:1000',
             ],
 
             // On peut demander une date de paiement si le statut passe à "Paid"
             'paid_at' => [
-                'required_if:status,' . ExpenseStatus::Paid->value,
+                'required_if:status,'.ExpenseStatus::Paid->value,
                 'nullable',
-                'date'
+                'date',
             ],
         ];
     }

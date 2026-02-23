@@ -6,7 +6,7 @@ use App\Models\Expense\ExpenseReport;
 use App\Services\Expense\ExpenseCalculationService;
 
 beforeEach(function () {
-    $this->mileageService = new \App\Services\Expense\MileageCalculatorService();
+    $this->mileageService = new \App\Services\Expense\MileageCalculatorService;
     $this->calcService = new ExpenseCalculationService($this->mileageService);
     $this->tenant = Tenants::factory()->create();
     $this->user = \App\Models\User::factory()->create(['tenants_id' => $this->tenant->id]);
@@ -53,18 +53,18 @@ test('il recalcule les totaux globaux d un rapport à partir de ses lignes', fun
             'expense_report_id' => $report->id,
             'amount_ht' => 100,
             'amount_tva' => 20,
-            'amount_ttc' => 120
+            'amount_ttc' => 120,
         ]);
         ExpenseItem::factory()->create([
             'expense_report_id' => $report->id,
             'amount_ht' => 50,
             'amount_tva' => 10,
-            'amount_ttc' => 60
+            'amount_ttc' => 60,
         ]);
     });
 
     $this->calcService->refreshReportTotals($report);
 
-    expect((float)$report->refresh()->amount_ttc)->toBe(180.0)
-        ->and((float)$report->amount_ht)->toBe(150.0);
+    expect((float) $report->refresh()->amount_ttc)->toBe(180.0)
+        ->and((float) $report->amount_ht)->toBe(150.0);
 });

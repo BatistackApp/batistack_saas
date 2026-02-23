@@ -67,7 +67,7 @@ class ExpenseReportController extends Controller
                 'items.category',
                 'items.project:id,name',
                 'items.phase:id,name',
-                'user:id,name'
+                'user:id,name',
             ])
         );
     }

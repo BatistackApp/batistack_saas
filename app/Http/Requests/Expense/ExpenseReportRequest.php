@@ -19,7 +19,7 @@ class ExpenseReportRequest extends FormRequest
                     if ($user && $user->tenants_id !== auth()->user()->tenants_id) {
                         $fail("L'utilisateur sélectionné n'appartient pas à votre organisation.");
                     }
-                }
+                },
             ],
         ];
     }

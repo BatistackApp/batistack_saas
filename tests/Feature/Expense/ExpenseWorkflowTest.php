@@ -217,7 +217,7 @@ test('la phase doit obligatoirement appartenir au projet sélectionné', functio
             'date' => now()->toDateString(),
             'description' => 'Achat plomberie',
             'amount_ttc' => 50,
-            'tax_rate' => 20
+            'tax_rate' => 20,
         ]);
 
     $response->assertStatus(422);
@@ -227,11 +227,10 @@ test('la phase doit obligatoirement appartenir au projet sélectionné', functio
 /**
  * --- TESTS DE WORKFLOW ---
  */
-
 test('on ne peut pas soumettre une note de frais vide', function () {
     $report = ExpenseReport::factory()->create([
         'tenants_id' => $this->tenantA->id,
-        'status' => ExpenseStatus::Draft
+        'status' => ExpenseStatus::Draft,
     ]);
 
     $response = $this->actingAs($this->userA)

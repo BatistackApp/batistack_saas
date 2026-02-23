@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Expense;
 
-use App\Enums\Expense\ExpenseStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Expense\StoreExpenseItemRequest;
 use App\Models\Expense\ExpenseItem;
@@ -24,7 +23,7 @@ class ExpenseItemController extends Controller
         $data = $request->validated();
 
         // Calcul des montants financiers pour les frais standards
-        if (!$request->boolean('is_mileage')) {
+        if (! $request->boolean('is_mileage')) {
             $amounts = $this->calcService->calculateFromTtc(
                 (float) $data['amount_ttc'],
                 (float) $data['tax_rate']
@@ -36,7 +35,7 @@ class ExpenseItemController extends Controller
         if ($request->hasFile('receipt_path')) {
             $tenantId = auth()->user()->tenants_id;
             // Organisation des fichiers par tenant et par mois pour faciliter l'archivage
-            $path = "tenants/{$tenantId}/expenses/" . now()->format('Y-m');
+            $path = "tenants/{$tenantId}/expenses/".now()->format('Y-m');
             $data['receipt_path'] = $request->file('receipt_path')->store($path, 'public');
         }
 
@@ -51,7 +50,7 @@ class ExpenseItemController extends Controller
     public function destroy(ExpenseItem $expenseItem): JsonResponse
     {
         // Sécurité : Vérifier si le rapport parent est modifiable
-        if (!$expenseItem->report->isEditable()) {
+        if (! $expenseItem->report->isEditable()) {
             return response()->json(['error' => 'Action impossible : le rapport est verrouillé.'], 422);
         }
 

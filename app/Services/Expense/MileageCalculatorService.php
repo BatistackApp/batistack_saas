@@ -65,7 +65,9 @@ class MileageCalculatorService
                 $simulatedTotal += $distanceInThisScale;
             }
 
-            if ($remainingDistance <= 0) break;
+            if ($remainingDistance <= 0) {
+                break;
+            }
         }
 
         return round($totalAmount, 2);
