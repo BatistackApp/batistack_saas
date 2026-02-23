@@ -66,7 +66,7 @@ class PayrollPeriodController extends Controller
                 ]);
 
                 // 2. Agrégation des données (Heures, Paniers, Trajet)
-                $data = $this->aggService->getAggregatedTimeData($employee, $period);
+                $data = $this->aggService->getAggregatedData($employee, $period);
 
                 // 3. Calcul du moteur de paie
                 $this->calcService->computePayslip($payslip, $data);

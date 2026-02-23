@@ -43,6 +43,12 @@ class Employee extends Model
         return $this->hasMany(Payslip::class);
     }
 
+    public function absenceRequests(): HasMany
+    {
+        return $this->hasMany(AbsenceRequest::class);
+    }
+
+
     protected function casts(): array
     {
         return [
