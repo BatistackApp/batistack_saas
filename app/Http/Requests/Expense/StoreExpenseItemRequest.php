@@ -11,21 +11,24 @@ class StoreExpenseItemRequest extends FormRequest
     {
         return [
             'expense_report_id' => ['required', 'exists:expense_reports,id'],
-            'expense_category_id' => ['required', 'exists:expense_categories,id'],
+            'expense_category_id' => [
+                'required',
+                'exists:expense_categories,id,tenants_id,' . auth()->user()->tenants_id
+            ],
 
-            // Imputation Analytique (Recommandation 1)
-            'project_id' => ['nullable', 'exists:projects,id'],
+            // --- Imputation Analytique (BTP) ---
+            'project_id' => ['nullable', 'exists:projects,id,tenants_id,' . auth()->user()->tenants_id],
             'project_phase_id' => [
                 'nullable',
                 'exists:project_phases,id',
-                // Règle de cohérence : la phase doit appartenir au projet
+                // Règle de cohérence : La phase doit appartenir au chantier
                 function ($attribute, $value, $fail) {
                     if ($this->project_id && $value) {
                         $exists = ProjectPhase::where('id', $value)
                             ->where('project_id', $this->project_id)
                             ->exists();
-                        if (! $exists) {
-                            $fail("La phase sélectionnée n'appartient pas au projet choisi.");
+                        if (!$exists) {
+                            $fail("Le lot/phase sélectionné n'est pas rattaché au chantier choisi.");
                         }
                     }
                 },
@@ -34,21 +37,22 @@ class StoreExpenseItemRequest extends FormRequest
             'date' => ['required', 'date', 'before_or_equal:today'],
             'description' => ['required', 'string', 'max:500'],
 
-            // Flags métier (Recommandation 3)
+            // --- Flags Métier ---
             'is_mileage' => ['boolean'],
-            'is_billable' => ['boolean'], // Pour refacturation client
+            'is_billable' => ['boolean'], // Refacturation client
 
-            // Gestion des IK (Recommandation 2)
+            // --- Validation conditionnelle IK (Kilométrage) ---
             'distance_km' => ['required_if:is_mileage,true', 'nullable', 'numeric', 'min:0.1'],
             'vehicle_power' => ['required_if:is_mileage,true', 'nullable', 'integer', 'min:1'],
             'start_location' => ['nullable', 'string', 'max:255'],
             'end_location' => ['nullable', 'string', 'max:255'],
 
-            // Montants financiers (Non requis pour l'IK car calculés)
+            // --- Validation financière standard ---
+            // Le montant TTC est obligatoire sauf si c'est de l'IK (car calculé par le service)
             'amount_ttc' => ['required_unless:is_mileage,true', 'nullable', 'numeric', 'min:0'],
             'tax_rate' => ['required_unless:is_mileage,true', 'nullable', 'numeric', 'in:0,2.1,5.5,10,20'],
 
-            'receipt_path' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
+            'receipt_path' => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:10240'], // 10Mo max pour les factures
         ];
     }
 

@@ -21,8 +21,9 @@ class ExpenseApprovalController extends Controller
     public function pending(): JsonResponse
     {
         $reports = ExpenseReport::where('status', ExpenseStatus::Submitted)
-            ->with(['user', 'items'])
-            ->latest()
+            ->with(['user:id,name', 'items.category'])
+            ->withCount('items')
+            ->latest('submitted_at')
             ->paginate();
 
         return response()->json($reports);
@@ -49,7 +50,7 @@ class ExpenseApprovalController extends Controller
 
                 case ExpenseStatus::Paid:
                     // Logique optionnelle de paiement direct
-                    $expenseReport->update(['status' => ExpenseStatus::Paid]);
+                    $expenseReport->update(['status' => ExpenseStatus::Paid, 'metadata' => array_merge($expenseReport->metadata ?? [], ['paid_at' => $request->paid_at])]);
                     $msg = 'Note marquée comme payée.';
                     break;
 

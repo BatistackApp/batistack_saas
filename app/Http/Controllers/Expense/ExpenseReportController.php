@@ -63,7 +63,12 @@ class ExpenseReportController extends Controller
     public function show(ExpenseReport $report): JsonResponse
     {
         return response()->json(
-            $report->load(['items.category', 'items.project', 'user:id,name'])
+            $report->load([
+                'items.category',
+                'items.project:id,name',
+                'items.phase:id,name',
+                'user:id,name'
+            ])
         );
     }
 
