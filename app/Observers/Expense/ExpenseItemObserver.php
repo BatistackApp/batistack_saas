@@ -29,12 +29,15 @@ class ExpenseItemObserver
 
         // Automatisation : Si c'est un frais kilométrique, on force le calcul via le service
         if ($item->is_mileage && $item->distance_km > 0) {
+            // On utilise le service mis à jour à l'étape 4
             $item->amount_ht = $this->calculationService->calculateMileage(
-                $item->report->tenants_id,
+                $report->user,
                 (float) $item->distance_km,
                 (int) $item->vehicle_power
             );
-            // On recalcule la TVA (souvent 0 sur les IK mais dépend du pays/tenant)
+
+            // Les IK n'ont généralement pas de TVA récupérable en France
+            $item->tax_rate = 0;
             $item->amount_tva = 0;
             $item->amount_ttc = $item->amount_ht;
         }
