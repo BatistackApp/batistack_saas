@@ -14,13 +14,27 @@ class ExpenseMileageScaleFactory extends Factory
     public function definition(): array
     {
         return [
-            'vehicle_power' => $this->faker->randomNumber(),
-            'rate_per_km' => $this->faker->randomFloat(),
-            'active_year' => $this->faker->randomNumber(),
-            'created_at' => Carbon::now(),
-            'updated_at' => Carbon::now(),
-
             'tenants_id' => Tenants::factory(),
+            'vehicle_power' => $this->faker->numberBetween(3, 7),
+            'min_km' => 0,
+            'max_km' => 5000,
+            'rate_per_km' => 0.636,
+            'fixed_amount' => 0,
+            'active_year' => now()->year,
+            'vehicle_type' => 'car',
         ];
+    }
+
+    /**
+     * État pour le palier intermédiaire (5001 - 20000)
+     */
+    public function midRange(): self
+    {
+        return $this->state(fn (array $attributes) => [
+            'min_km' => 5001,
+            'max_km' => 20000,
+            'rate_per_km' => 0.339,
+            'fixed_amount' => 1488,
+        ]);
     }
 }

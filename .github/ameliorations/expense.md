@@ -1,4 +1,4 @@
-#### ** [ ] Recommandation 1 : Affiner l'Imputation Analytique des Frais**
+#### ** [X] Recommandation 1 : Affiner l'Imputation Analytique des Frais**
 
 *   **Observation :** Le service `ChantierImputationService` est présent, ce qui est une excellente base. Le modèle `ExpenseItem` a un `project_id`, ce qui permet de lier un frais à un chantier.
 *   **Point de vigilance métier :** Dans le BTP, imputer un coût au "chantier" global n'est souvent pas suffisant. Un conducteur de travaux a besoin de savoir si un frais (ex: "achat de petit outillage en urgence") concerne le lot "Gros Œuvre" ou "Second Œuvre".
