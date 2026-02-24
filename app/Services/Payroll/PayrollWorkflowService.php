@@ -21,7 +21,7 @@ class PayrollWorkflowService
     public function validatePeriod(PayrollPeriod $period): void
     {
         if ($period->status !== PayrollStatus::Draft) {
-            throw new PeriodLockedException;
+            throw new PeriodLockedException('La période de paie est clôturée et ne peut plus être modifiée.');
         }
 
         DB::transaction(function () use ($period) {

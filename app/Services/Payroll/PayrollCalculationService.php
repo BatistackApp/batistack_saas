@@ -35,12 +35,12 @@ class PayrollCalculationService
                 'metadata' => [
                     'level' => $employee->level,
                     'coefficient' => $employee->coefficient,
-                    'hourly_rate' => $employee->hourly_rate,
+                    'hourly_rate' => $employee->hourly_rate ?? $employee->contractual_hourly_rate,
                     'btp_zone' => $employee->btp_travel_zone,
                 ]
             ]);
 
-            $baseRate = (float) $employee->hourly_rate;
+            $baseRate = (float) ($employee->hourly_rate ?? $employee->contractual_hourly_rate);
 
             // 2. Lignes de Gains (Heures, Heures Sup, Primes BTP)
             $this->calculateGains($payslip, $aggregatedData['work'], $baseRate);
@@ -49,7 +49,8 @@ class PayrollCalculationService
             $this->calculateAbsenceDeductions($payslip, $aggregatedData['absences'], $baseRate);
 
             // 4. Lignes de Cotisations (Dynamiques via Template)
-            $this->calculateContributions($payslip, $employee->status->value);
+            $status = $employee->status ? $employee->status->value : 'ouvrier';
+            $this->calculateContributions($payslip, $status);
 
             // 5. Finalisation des totaux
             $this->refreshTotals($payslip);
@@ -64,7 +65,7 @@ class PayrollCalculationService
 
         if ($totalHours > 151.67) {
             $remaining = $totalHours - 151.67;
-            $overtime25 = min($remaining, 34.66); // Jusqu'à 186.33h
+            $overtime25 = min($remaining, 34.66); // Jusqu'à 186.33h (151.67 + 34.66)
             $overtime50 = max(0, $remaining - 34.66);
         }
 
@@ -140,18 +141,11 @@ class PayrollCalculationService
 
     protected function calculateGains(Payslip $payslip, array $work, float $rate): void
     {
-        // Salaire de base (Heures normales)
-        $payslip->lines()->create([
-            'label' => 'Salaire de base',
-            'base' => $work['total_hours'],
-            'rate' => $rate,
-            'amount_gain' => $work['total_hours'] * $rate,
-            'type' => PayslipLineType::Earning,
-            'sort_order' => 10,
-        ]);
+        // Utilisation de la méthode dédiée pour le découpage des heures
+        $this->generateHoursLines($payslip, $work['total_hours'], $rate);
 
         // Indemnité Repas (Taux dynamique)
-        if ($work['meal_count'] > 0) {
+        if (isset($work['meal_count']) && $work['meal_count'] > 0) {
             $mealRate = $this->scaleService->getRate('repas_btp', $payslip->tenants_id);
             $payslip->lines()->create([
                 'label' => 'Indemnité de repas (Panier)',

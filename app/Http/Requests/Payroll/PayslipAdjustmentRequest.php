@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Payroll;
 
 use App\Enums\Payroll\PayrollStatus;
+use App\Enums\Payroll\PayslipLineType;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -13,8 +14,17 @@ class PayslipAdjustmentRequest extends FormRequest
         return [
             'label' => ['required', 'string', 'max:255'],
             'amount' => ['required', 'numeric', 'not_in:0'],
-            'type' => ['required', Rule::in(['earning', 'deduction'])],
+            'type' => ['required', Rule::enum(PayslipLineType::class)],
             'is_taxable' => ['required', 'boolean'],
+            'description' => ['nullable', 'string', 'max:500'],
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'amount.not_in' => 'Le montant de l\'ajustement ne peut pas être nul.',
+            'type.Illuminate\Validation\Rules\Enum' => 'Le type d\'ajustement est invalide.',
         ];
     }
 

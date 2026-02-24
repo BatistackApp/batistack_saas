@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Payroll;
 
+use App\Enums\Payroll\PayrollStatus;
 use App\Exceptions\Payroll\PayrollModuleException;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Payroll\PayrollExportRequest;
 use App\Http\Requests\Payroll\PayrollPeriodRequest;
 use App\Http\Requests\Payroll\UpdatePayrollStatusRequest;
+use App\Mail\Payroll\PayrollExportMail;
 use App\Models\HR\Employee;
 use App\Models\Payroll\PayrollPeriod;
 use App\Models\Payroll\Payslip;
@@ -13,13 +16,15 @@ use App\Services\Payroll\PayrollAggregationService;
 use App\Services\Payroll\PayrollCalculationService;
 use App\Services\Payroll\PayrollWorkflowService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 
 class PayrollPeriodController extends Controller
 {
     public function __construct(
         protected PayrollWorkflowService $workflowService,
         protected PayrollCalculationService $calcService,
-        protected PayrollAggregationService $aggService
+        protected PayrollAggregationService $aggService,
     ) {}
 
     /**
@@ -27,7 +32,9 @@ class PayrollPeriodController extends Controller
      */
     public function index(): JsonResponse
     {
-        $periods = PayrollPeriod::latest()->paginate();
+        $periods = PayrollPeriod::withCount('payslips')
+            ->latest()
+            ->paginate();
 
         return response()->json($periods);
     }
@@ -37,43 +44,54 @@ class PayrollPeriodController extends Controller
      */
     public function store(PayrollPeriodRequest $request): JsonResponse
     {
-        $period = PayrollPeriod::create(array_merge(
-            $request->validated(),
-            ['tenants_id' => auth()->user()->tenants_id]
-        ));
+        $period = PayrollPeriod::create([
+            ...$request->validated(),
+            'tenants_id' => auth()->user()->tenants_id,
+            'status' => PayrollStatus::Draft,
+        ]);
 
         return response()->json($period, 201);
     }
 
     /**
-     * Génération massive des bulletins pour tous les employés actifs de la période.
+     * Détails d'une période spécifique.
      */
-    public function generatePayslips(PayrollPeriod $period): JsonResponse
+    public function show(PayrollPeriod $payrollPeriod): JsonResponse
+    {
+        return response()->json($payrollPeriod->loadCount('payslips'));
+    }
+
+    /**
+     * Génération ou Mise à jour massive des bulletins.
+     */
+    public function generate(PayrollPeriod $period): JsonResponse
     {
         try {
-            $employees = Employee::where('is_active', true)
-                ->where('tenants_id', auth()->user()->tenants_id)
-                ->get();
-            $count = 0;
+            if ($period->status !== PayrollStatus::Draft) {
+                throw new PayrollModuleException("Impossible de régénérer une période clôturée.", 422);
+            }
 
+            $employees = Employee::where('tenants_id', $period->tenants_id)
+                ->where('is_active', true)
+                ->get();
+
+            $count = 0;
             foreach ($employees as $employee) {
-                // 1. Création ou récupération de l'en-tête du bulletin
                 $payslip = Payslip::firstOrCreate([
                     'payroll_period_id' => $period->id,
                     'employee_id' => $employee->id,
-                ], [
                     'tenants_id' => $period->tenants_id,
                 ]);
 
-                // 2. Agrégation des données (Heures, Paniers, Trajet)
+                // On récupère les pointages approuvés (Étape 4)
                 $data = $this->aggService->getAggregatedData($employee, $period);
 
-                // 3. Calcul du moteur de paie
+                // On calcule le moteur de paie (Étape 4)
                 $this->calcService->computePayslip($payslip, $data);
                 $count++;
             }
 
-            return response()->json(['message' => "{$count} bulletins ont été générés ou mis à jour."]);
+            return response()->json(['message' => "{$count} bulletins synchronisés avec les pointages."]);
         } catch (PayrollModuleException $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode());
         }
@@ -85,12 +103,37 @@ class PayrollPeriodController extends Controller
     public function validatePeriod(UpdatePayrollStatusRequest $request, PayrollPeriod $period): JsonResponse
     {
         try {
-            $request->validated();
             $this->workflowService->validatePeriod($period);
 
             return response()->json(['message' => 'Période validée et clôturée avec succès.']);
         } catch (PayrollModuleException $e) {
             return response()->json(['error' => $e->getMessage()], $e->getCode());
         }
+    }
+
+    /**
+     * Export vers le comptable (Étape 5 & 6).
+     */
+    public function export(PayrollExportRequest $request, PayrollPeriod $payrollPeriod): JsonResponse
+    {
+        // Simulation de génération de CSV (Normalement via un Service d'export)
+        $fileName = "exports/payroll/export_{$payrollPeriod->id}.csv";
+        Storage::disk('public')->put($fileName, "Compte;Libellé;Débit;Crédit\n641000;Salaires;15000;0");
+
+        Mail::to($request->recipient_email)->send(
+            new PayrollExportMail($payrollPeriod, $fileName)
+        );
+
+        return response()->json(['message' => 'L\'export a été transmis par email au cabinet comptable.']);
+    }
+
+    public function destroy(PayrollPeriod $payrollPeriod): JsonResponse
+    {
+        if ($payrollPeriod->status !== PayrollStatus::Draft) {
+            return response()->json(['error' => 'Impossible de supprimer une période validée.'], 422);
+        }
+
+        $payrollPeriod->delete();
+        return response()->json(['message' => 'Période supprimée.']);
     }
 }

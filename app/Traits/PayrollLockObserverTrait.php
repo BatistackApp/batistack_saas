@@ -13,7 +13,7 @@ trait PayrollLockObserverTrait
      * Vérifie si la date donnée appartient à une période de paie clôturée.
      * * @throws ValidationException
      */
-    protected function checkPayrollLock(int $tenantId, Carbon $date): void
+    protected function checkPayrollLock(int $tenantId, $date): void
     {
         $carbonDate = Carbon::parse($date);
 
