@@ -35,12 +35,12 @@ class PayrollAggregationService
                 'total_hours' => (float) $entries->sum('hours'),
                 'meal_count' => $entries->where('has_meal_allowance', true)->count(),
                 'travel_zones' => $entries->groupBy('btp_travel_zone')->map->count(),
-                'projects_breakdown' => $entries->groupBy('project_id')->map(fn($group) => [
+                'projects_breakdown' => $entries->groupBy('project_id')->map(fn ($group) => [
                     'hours' => $group->sum('hours'),
-                    'project_id' => $group->first()->project_id
+                    'project_id' => $group->first()->project_id,
                 ]),
             ],
-            'absences' => $absences->map(fn($a) => [
+            'absences' => $absences->map(fn ($a) => [
                 'type' => $a->type,
                 'duration_days' => $a->duration_days, // Déjà calculé par AbsenceService
                 'label' => $a->type->getLabel(),

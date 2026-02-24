@@ -62,7 +62,7 @@ test('le moteur de calcul découpe correctement les tranches d\'heures (151.67h 
 test('il calcule correctement le net à payer en sommant les lignes de gains', function () {
     $payslip = Payslip::factory()->create([
         'gross_amount' => 0,
-        'net_to_pay' => 0
+        'net_to_pay' => 0,
     ]);
 
     $payslip->lines()->create([

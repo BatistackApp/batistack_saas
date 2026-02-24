@@ -19,7 +19,9 @@ class PayslipLineObserver
     protected function recalculatePayslip(PayslipLine $line): void
     {
         $payslip = $line->payslip;
-        if (!$payslip) return;
+        if (! $payslip) {
+            return;
+        }
 
         $lines = $payslip->lines;
 

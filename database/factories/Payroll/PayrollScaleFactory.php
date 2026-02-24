@@ -5,7 +5,6 @@ namespace Database\Factories\Payroll;
 use App\Models\Core\Tenants;
 use App\Models\Payroll\PayrollScale;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class PayrollScaleFactory extends Factory
 {

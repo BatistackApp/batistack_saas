@@ -26,7 +26,9 @@ class PayrollImputationService
             $fullCost = $totalGross + $totalEmployerCharges;
             $totalHours = $aggregated['work']['total_hours'];
 
-            if ($totalHours <= 0) continue;
+            if ($totalHours <= 0) {
+                continue;
+            }
 
             $hourlyCostCharged = $fullCost / $totalHours;
 

@@ -23,7 +23,7 @@ class PayrollPeriodCreatedNotification extends Notification implements ShouldQue
     {
         return (new MailMessage)
             ->subject("Nouvelle période de paie créée : {$this->period->name}")
-            ->line("Le système a généré automatiquement la période de paie pour le mois prochain.")
+            ->line('Le système a généré automatiquement la période de paie pour le mois prochain.')
             ->line("Nom de la période : **{$this->period->name}**")
             ->line("Dates : du {$this->period->start_date->format('d/m/Y')} au {$this->period->end_date->format('d/m/Y')}")
             ->action('Accéder à la gestion de paie', url('/payroll/periods'))

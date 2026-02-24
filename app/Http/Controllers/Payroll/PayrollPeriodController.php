@@ -68,7 +68,7 @@ class PayrollPeriodController extends Controller
     {
         try {
             if ($period->status !== PayrollStatus::Draft) {
-                throw new PayrollModuleException("Impossible de régénérer une période clôturée.", 422);
+                throw new PayrollModuleException('Impossible de régénérer une période clôturée.', 422);
             }
 
             $employees = Employee::where('tenants_id', $period->tenants_id)
@@ -134,6 +134,7 @@ class PayrollPeriodController extends Controller
         }
 
         $payrollPeriod->delete();
+
         return response()->json(['message' => 'Période supprimée.']);
     }
 }

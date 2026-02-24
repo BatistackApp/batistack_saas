@@ -25,7 +25,7 @@ class PendingPayrollApprovalsNotification extends Notification implements Should
     {
         return (new MailMessage)
             ->subject("Relance : Approbations de pointages en attente ({$this->periodName})")
-            ->greeting("Bonjour " . $notifiable->name)
+            ->greeting('Bonjour '.$notifiable->name)
             ->line("La clôture de la paie pour la période **{$this->periodName}** approche.")
             ->line("Il reste actuellement **{$this->pendingCount} pointage(s)** en attente de votre validation pour vos équipes.")
             ->action('Valider les pointages', url('/hr/timesheets/approvals'))

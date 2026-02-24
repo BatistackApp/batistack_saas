@@ -29,10 +29,10 @@ class PayrollAnomaliesNotification extends Notification implements ShouldQueue
             ->line("Le contrôle automatique a détecté des points d'attention avant la clôture de la paie.");
 
         foreach ($this->anomalies as $anomaly) {
-            $email->line("- " . $anomaly);
+            $email->line('- '.$anomaly);
         }
 
-        return $email->action('Vérifier la période', url('/payroll/periods/' . $this->period->id))
+        return $email->action('Vérifier la période', url('/payroll/periods/'.$this->period->id))
             ->line('Merci de corriger ces données pour garantir une paie exacte.');
     }
 
@@ -46,7 +46,7 @@ class PayrollAnomaliesNotification extends Notification implements ShouldQueue
         return [
             'period_id' => $this->period->id,
             'anomalies_count' => count($this->anomalies),
-            'message' => count($this->anomalies) . " anomalies détectées sur la paie " . $this->period->name,
+            'message' => count($this->anomalies).' anomalies détectées sur la paie '.$this->period->name,
         ];
     }
 }

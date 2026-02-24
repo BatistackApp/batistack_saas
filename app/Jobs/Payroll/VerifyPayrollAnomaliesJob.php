@@ -32,13 +32,13 @@ class VerifyPayrollAnomaliesJob implements ShouldQueue
                 ->whereBetween('date', [$this->period->start_date, $this->period->end_date])
                 ->exists();
 
-            if (!$hasActivity) {
+            if (! $hasActivity) {
                 $anomalies[] = "L'employé {$employee->first_name} {$employee->last_name} n'a aucune activité enregistrée.";
             }
         }
 
         // 2. Si anomalies trouvées, on notifie le gestionnaire RH/Paie
-        if (!empty($anomalies)) {
+        if (! empty($anomalies)) {
             $hrAdmins = User::role('tenant_admin')->where('tenants_id', $this->period->tenants_id)->get();
             foreach ($hrAdmins as $admin) {
                 $admin->notify(new PayrollAnomaliesNotification($this->period, $anomalies));

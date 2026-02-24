@@ -67,7 +67,7 @@ class PayslipController extends Controller
             return response()->json(['error' => 'Bulletin verrouillé.'], 422);
         }
 
-        if (!$payslipLine->is_manual_adjustment) {
+        if (! $payslipLine->is_manual_adjustment) {
             return response()->json(['error' => 'Impossible de supprimer une ligne calculée automatiquement.'], 422);
         }
 

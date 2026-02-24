@@ -19,14 +19,14 @@ class NotifyEmployeeSubmitTimesheetCommand extends Command
         $endOfWeek = now()->endOfWeek();
 
         // On cherche les employés qui ont des pointages en 'Draft' sur la semaine en cours
-        $employeesToNotify = Employee::whereHas('timeEntries', function($query) use ($startOfWeek, $endOfWeek) {
+        $employeesToNotify = Employee::whereHas('timeEntries', function ($query) use ($startOfWeek, $endOfWeek) {
             $query->whereBetween('date', [$startOfWeek, $endOfWeek])
                 ->where('status', TimeEntryStatus::Draft);
         })->with('user')->get();
 
         foreach ($employeesToNotify as $employee) {
             if ($employee->user) {
-                $employee->user->notify(new SubmitTimesheetNotification());
+                $employee->user->notify(new SubmitTimesheetNotification);
                 $this->info("Rappel envoyé à : {$employee->user->name}");
             }
         }

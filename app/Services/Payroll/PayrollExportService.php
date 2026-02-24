@@ -13,8 +13,8 @@ class PayrollExportService
      */
     public function generateAccountingExport(PayrollPeriod $period): string
     {
-        $fileName = "export_paie_" . $period->id . "_" . now()->format('Ymd_His') . ".csv";
-        $filePath = "tenants/" . $period->tenants_id . "/payroll/exports/" . $fileName;
+        $fileName = 'export_paie_'.$period->id.'_'.now()->format('Ymd_His').'.csv';
+        $filePath = 'tenants/'.$period->tenants_id.'/payroll/exports/'.$fileName;
 
         $handle = fopen('php://temp', 'r+');
 
@@ -32,10 +32,10 @@ class PayrollExportService
                     'OD',
                     $date,
                     $account,
-                    "PAIE-" . $period->id,
+                    'PAIE-'.$period->id,
                     $label,
                     $line->amount_gain > 0 ? $line->amount_gain : 0,
-                    $line->amount_deduction > 0 ? $line->amount_deduction : 0
+                    $line->amount_deduction > 0 ? $line->amount_deduction : 0,
                 ]);
             }
         });

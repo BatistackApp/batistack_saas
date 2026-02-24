@@ -23,7 +23,7 @@ class RemindPendingTimesheetsCommand extends Command
             ->with('employee.manager')
             ->get();
 
-        $managersToNotify = $pendingEntries->map(fn($e) => $e->employee->manager)->filter()->unique('id');
+        $managersToNotify = $pendingEntries->map(fn ($e) => $e->employee->manager)->filter()->unique('id');
 
         foreach ($managersToNotify as $manager) {
             // Notification personnalisée (non fournie mais à prévoir)

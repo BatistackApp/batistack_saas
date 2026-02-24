@@ -48,7 +48,6 @@ class Employee extends Model
         return $this->hasMany(AbsenceRequest::class);
     }
 
-
     protected function casts(): array
     {
         return [

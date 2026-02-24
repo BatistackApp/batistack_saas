@@ -20,14 +20,14 @@ class GeneratePayrollPeriodCommand extends Command
         $nextMonth = Carbon::now()->addMonth();
         $start = $nextMonth->copy()->startOfMonth();
         $end = $nextMonth->copy()->endOfMonth();
-        $name = "Paie " . $nextMonth->translatedFormat('F Y');
+        $name = 'Paie '.$nextMonth->translatedFormat('F Y');
 
         Tenants::all()->each(function ($tenant) use ($start, $end, $name) {
             $exists = PayrollPeriod::where('tenants_id', $tenant->id)
                 ->where('start_date', $start->format('Y-m-d'))
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 $period = PayrollPeriod::create([
                     'tenants_id' => $tenant->id,
                     'name' => $name,

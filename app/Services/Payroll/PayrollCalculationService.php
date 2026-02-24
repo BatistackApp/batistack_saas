@@ -2,7 +2,6 @@
 
 namespace App\Services\Payroll;
 
-use App\Enums\Payroll\PayrollStatus;
 use App\Enums\Payroll\PayslipLineType;
 use App\Models\Payroll\Payslip;
 use DB;
@@ -37,7 +36,7 @@ class PayrollCalculationService
                     'coefficient' => $employee->coefficient,
                     'hourly_rate' => $employee->hourly_rate ?? $employee->contractual_hourly_rate,
                     'btp_zone' => $employee->btp_travel_zone,
-                ]
+                ],
             ]);
 
             $baseRate = (float) ($employee->hourly_rate ?? $employee->contractual_hourly_rate);
@@ -164,7 +163,7 @@ class PayrollCalculationService
         foreach ($absences as $absence) {
             $hours = $absence['duration_days'] * 7; // Hypothèse 7h/jour
             $payslip->lines()->create([
-                'label' => 'Absence ' . $absence['label'],
+                'label' => 'Absence '.$absence['label'],
                 'base' => $hours,
                 'rate' => $rate,
                 'amount_deduction' => $hours * $rate,

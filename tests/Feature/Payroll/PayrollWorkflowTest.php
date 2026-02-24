@@ -22,14 +22,14 @@ beforeEach(function () {
     $this->employee = Employee::factory()->create([
         'tenants_id' => $this->tenant->id,
         'is_active' => true,
-        'monthly_base_salary' => 2275.05 // 15.00 * 151.67
+        'monthly_base_salary' => 2275.05, // 15.00 * 151.67
     ]);
 
     $this->period = PayrollPeriod::factory()->create([
         'tenants_id' => $this->tenant->id,
         'start_date' => now()->startOfMonth(),
         'end_date' => now()->endOfMonth(),
-        'status' => PayrollStatus::Draft
+        'status' => PayrollStatus::Draft,
     ]);
 
     // Mock du service de barèmes pour éviter les erreurs de tables manquantes
@@ -48,7 +48,7 @@ test('la génération de paie n\'inclut que les pointages RH "Approved"', functi
         'tenants_id' => $this->tenant->id,
         'date' => $this->period->start_date->addDay(),
         'hours' => 8,
-        'status' => TimeEntryStatus::Approved
+        'status' => TimeEntryStatus::Approved,
     ]);
 
     // Création d'un pointage encore en brouillon (4h) - NE DOIT PAS ETRE COMPTE
@@ -57,7 +57,7 @@ test('la génération de paie n\'inclut que les pointages RH "Approved"', functi
         'tenants_id' => $this->tenant->id,
         'date' => $this->period->start_date->addDays(2),
         'hours' => 4,
-        'status' => TimeEntryStatus::Draft
+        'status' => TimeEntryStatus::Draft,
     ]);
 
     $this->actingAs($this->admin)
@@ -93,7 +93,7 @@ test('la validation d\'une période verrouille les modifications et lance l\'imp
     $this->actingAs($this->admin)
         ->postJson(route('payroll.periods.validate', $this->period), [
             'status' => PayrollStatus::Validated->value,
-            'confirm_lock' => true
+            'confirm_lock' => true,
         ])
         ->assertOk();
 
@@ -111,7 +111,7 @@ test('un utilisateur ne peut pas accéder aux bulletins d\'un autre tenant', fun
     $payslip = \App\Models\Payroll\Payslip::factory()->create([
         'payroll_period_id' => $this->period->id,
         'employee_id' => $this->employee->id,
-        'tenants_id' => $this->tenant->id
+        'tenants_id' => $this->tenant->id,
     ]);
 
     $this->actingAs($otherAdmin)
@@ -124,7 +124,7 @@ test('on ne peut pas ajouter d\'ajustement à un bulletin clôturé', function (
     $payslip = \App\Models\Payroll\Payslip::factory()->create([
         'payroll_period_id' => $this->period->id,
         'status' => PayrollStatus::Validated,
-        'tenants_id' => $this->tenant->id
+        'tenants_id' => $this->tenant->id,
     ]);
 
     $this->actingAs($this->admin)
@@ -132,7 +132,7 @@ test('on ne peut pas ajouter d\'ajustement à un bulletin clôturé', function (
             'label' => 'Prime illégale',
             'amount' => 100,
             'type' => 'earning',
-            'is_taxable' => true
+            'is_taxable' => true,
         ])
         ->assertStatus(403);
 });

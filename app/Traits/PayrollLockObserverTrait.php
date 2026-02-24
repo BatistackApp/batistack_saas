@@ -11,6 +11,7 @@ trait PayrollLockObserverTrait
 {
     /**
      * Vérifie si la date donnée appartient à une période de paie clôturée.
+     *
      * * @throws ValidationException
      */
     protected function checkPayrollLock(int $tenantId, $date): void
@@ -25,7 +26,7 @@ trait PayrollLockObserverTrait
 
         if ($isLocked) {
             throw ValidationException::withMessages([
-                'payroll' => "Action impossible : Cette date appartient à une période de paie déjà clôturée ou en cours de virement."
+                'payroll' => 'Action impossible : Cette date appartient à une période de paie déjà clôturée ou en cours de virement.',
             ]);
         }
     }
