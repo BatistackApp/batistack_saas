@@ -24,7 +24,7 @@ class AbsenceRequestObserver
 
     public function saving(AbsenceRequest $request): void
     {
-        if (!$request->relationLoaded('employee')) {
+        if (! $request->relationLoaded('employee')) {
             $request->load('employee');
         }
         $tenantId = $request->tenants_id ?? $request->employee?->tenants_id;
@@ -56,7 +56,7 @@ class AbsenceRequestObserver
      */
     public function deleting(AbsenceRequest $request): void
     {
-        if (!$request->relationLoaded('employee')) {
+        if (! $request->relationLoaded('employee')) {
             $request->load('employee');
         }
         $tenantId = $request->tenants_id ?? $request->employee?->tenants_id;
