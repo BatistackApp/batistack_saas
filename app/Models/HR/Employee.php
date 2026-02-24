@@ -2,6 +2,8 @@
 
 namespace App\Models\HR;
 
+use App\Enums\Payroll\BtpTravelZone;
+use App\Models\Payroll\Payslip;
 use App\Models\User;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -36,12 +38,26 @@ class Employee extends Model
         return $this->hasMany(EmployeeSkill::class);
     }
 
+    public function payslips(): HasMany
+    {
+        return $this->hasMany(Payslip::class);
+    }
+
+    public function absenceRequests(): HasMany
+    {
+        return $this->hasMany(AbsenceRequest::class);
+    }
+
+
     protected function casts(): array
     {
         return [
             'hired_at' => 'date',
             'is_active' => 'boolean',
             'hourly_cost_charged' => 'decimal:2',
+            'monthly_base_salary' => 'decimal:2',
+            'btp_travel_zone' => BtpTravelZone::class,
+            'is_long_distance_travel' => 'boolean',
         ];
     }
 
@@ -52,6 +68,14 @@ class Employee extends Model
         })->where(function ($query) {
             $query->whereNull('expiry_date')->orWhere('expiry_date', '>', now());
         });
+    }
+
+    /**
+     * Calcul du taux horaire contractuel basé sur le salaire mensuel (ex: 151.67h)
+     */
+    public function getContractualHourlyRateAttribute(): float
+    {
+        return round($this->monthly_base_salary / 151.67, 4);
     }
 
     public function getFullNameAttribute(): string

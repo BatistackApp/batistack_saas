@@ -4,36 +4,39 @@ namespace App\Http\Requests\Payroll;
 
 use App\Models\Payroll\PayrollPeriod;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Validator;
 
 class PayrollPeriodRequest extends FormRequest
 {
     public function rules(): array
     {
-        $periodId = $this->route('payroll_period')?->id;
-
         return [
             'name' => ['required', 'string', 'max:100'],
             'start_date' => ['required', 'date'],
-            'end_date' => [
-                'required',
-                'date',
-                'after:start_date',
-                // On s'assure que les dates ne se chevauchent pas avec une autre période du même tenant
-                function ($attribute, $value, $fail) use ($periodId) {
-                    $overlap = PayrollPeriod::where('tenants_id', auth()->user()->tenants_id)
-                        ->where(function ($query) use ($value) {
-                            $query->where('start_date', '<=', $value)
-                                ->where('end_date', '>=', $this->start_date);
-                        })
-                        ->when($periodId, fn ($q) => $q->where('id', '!=', $periodId))
-                        ->exists();
-
-                    if ($overlap) {
-                        $fail('Cette période chevauche une période de paie existante.');
-                    }
-                },
-            ],
+            'end_date' => ['required', 'date', 'after:start_date'],
         ];
+    }
+
+    /**
+     * Utilisation de la méthode after() de Laravel 12 pour les règles métiers complexes.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function ($validator) {
+            $periodId = $this->route('payroll_period')?->id;
+
+            $overlap = PayrollPeriod::where('tenants_id', auth()->user()->tenants_id)
+                ->where(function ($query) {
+                    $query->where('start_date', '<=', $this->end_date)
+                        ->where('end_date', '>=', $this->start_date);
+                })
+                ->when($periodId, fn ($q) => $q->where('id', '!=', $periodId))
+                ->exists();
+
+            if ($overlap) {
+                $validator->errors()->add('start_date', 'Cette période chevauche une période de paie existante.');
+            }
+        });
     }
 
     public function messages(): array
@@ -46,6 +49,6 @@ class PayrollPeriodRequest extends FormRequest
 
     public function authorize(): bool
     {
-        return true;
+        return auth()->user()->can('payroll.manage');
     }
 }
