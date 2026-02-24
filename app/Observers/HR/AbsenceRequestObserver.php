@@ -24,9 +24,16 @@ class AbsenceRequestObserver
 
     public function saving(AbsenceRequest $request): void
     {
-        // On vérifie le verrouillage pour la date de début et de fin
-        $this->checkPayrollLock($request->tenants_id, $request->starts_at);
-        $this->checkPayrollLock($request->tenants_id, $request->ends_at);
+        if (!$request->relationLoaded('employee')) {
+            $request->load('employee');
+        }
+        $tenantId = $request->tenants_id ?? $request->employee?->tenants_id;
+
+        if ($tenantId) {
+            // On vérifie le verrouillage pour la date de début et de fin
+            $this->checkPayrollLock($tenantId, $request->starts_at);
+            $this->checkPayrollLock($tenantId, $request->ends_at);
+        }
     }
 
     /**
@@ -49,7 +56,14 @@ class AbsenceRequestObserver
      */
     public function deleting(AbsenceRequest $request): void
     {
-        $this->checkPayrollLock($request->tenants_id, $request->starts_at);
+        if (!$request->relationLoaded('employee')) {
+            $request->load('employee');
+        }
+        $tenantId = $request->tenants_id ?? $request->employee?->tenants_id;
+
+        if ($tenantId) {
+            $this->checkPayrollLock($tenantId, $request->starts_at);
+        }
 
         if ($request->justification_path) {
             Storage::disk('public')->delete($request->justification_path);
