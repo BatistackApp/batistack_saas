@@ -80,7 +80,7 @@ test('la génération de paie n\'inclut que les pointages RH "Approved"', functi
 
 test('on ne peut pas créer deux périodes qui se chevauchent pour le même tenant', function () {
     $this->actingAs($this->admin)
-        ->postJson(route('periods.store'), [
+        ->postJson(route('payroll.periods.store'), [
             'name' => 'Période Conflit',
             'start_date' => $this->period->start_date->format('Y-m-d'), // Même date
             'end_date' => $this->period->end_date->format('Y-m-d'),
