@@ -112,21 +112,21 @@ class PayrollPeriodController extends Controller
     /**
      * Export vers le comptable (Étape 5 & 6).
      */
-    public function export(PayrollExportRequest $request, PayrollPeriod $payrollPeriod): JsonResponse
+    public function export(PayrollExportRequest $request, PayrollPeriod $period): JsonResponse
     {
         // Simulation de génération de CSV (Normalement via un Service d'export)
-        ExportPayrollToAccountingJob::dispatch($payrollPeriod);
+        ExportPayrollToAccountingJob::dispatch($period);
 
         return response()->json(['message' => 'L\'export a été transmis par email au cabinet comptable.']);
     }
 
-    public function destroy(PayrollPeriod $payrollPeriod): JsonResponse
+    public function destroy(PayrollPeriod $period): JsonResponse
     {
-        if ($payrollPeriod->status !== PayrollStatus::Draft) {
+        if ($period->status !== PayrollStatus::Draft) {
             return response()->json(['error' => 'Impossible de supprimer une période validée.'], 422);
         }
 
-        $payrollPeriod->delete();
+        $period->delete();
 
         return response()->json(['message' => 'Période supprimée.']);
     }

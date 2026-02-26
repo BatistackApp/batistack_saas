@@ -7,6 +7,18 @@ Route::prefix('payroll')->group(function () {
     // --- Périodes ---
     Route::apiResource('periods', PayrollPeriodController::class);
 
+    Route::get('periods', [PayrollPeriodController::class, 'index'])
+        ->name('payroll.periods.index');
+
+    Route::post('periods', [PayrollPeriodController::class, 'store'])
+        ->name('payroll.periods.store');
+
+    Route::get('periods/{period}', [PayrollPeriodController::class, 'show'])
+        ->name('payroll.periods.show');
+
+    Route::delete('periods/{period}', [PayrollPeriodController::class, 'destroy'])
+        ->name('payroll.periods.destroy');
+
     Route::post('periods/{period}/generate', [PayrollPeriodController::class, 'generate'])
         ->name('payroll.periods.generate');
 
