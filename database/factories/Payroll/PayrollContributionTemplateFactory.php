@@ -5,7 +5,6 @@ namespace Database\Factories\Payroll;
 use App\Models\Core\Tenants;
 use App\Models\Payroll\PayrollContributionTemplate;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Carbon;
 
 class PayrollContributionTemplateFactory extends Factory
 {
@@ -15,7 +14,7 @@ class PayrollContributionTemplateFactory extends Factory
     {
         return [
             'tenants_id' => Tenants::factory(),
-            'label' => 'Cotisation ' . $this->faker->word,
+            'label' => 'Cotisation '.$this->faker->word,
             'employee_rate' => $this->faker->randomFloat(4, 1, 15),
             'employer_rate' => $this->faker->randomFloat(4, 10, 30),
             'applicable_to' => 'ouvrier',

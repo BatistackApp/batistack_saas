@@ -4,18 +4,15 @@ use App\Enums\HR\AbsenceRequestStatus;
 use App\Enums\HR\AbsenceType;
 use App\Enums\HR\TimeEntryStatus;
 use App\Enums\Payroll\PayrollStatus;
-use App\Enums\Payroll\PayslipLineType;
 use App\Models\Core\Tenants;
 use App\Models\HR\AbsenceRequest;
 use App\Models\HR\Employee;
 use App\Models\HR\TimeEntry;
-use App\Models\Payroll\PayrollContributionTemplate;
 use App\Models\Payroll\PayrollPeriod;
 use App\Models\Payroll\Payslip;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;
-
 
 uses(RefreshDatabase::class);
 
@@ -75,7 +72,7 @@ test('il applique les déductions pour absences approuvées sur le bulletin', fu
     $this->assertDatabaseHas('payslip_lines', [
         'payslip_id' => $payslip->id,
         'amount_deduction' => 210.00,
-        'type' => 'deduction'
+        'type' => 'deduction',
     ]);
 });
 
@@ -93,7 +90,7 @@ test('il déclenche l\'export comptable avec succès', function () {
     $this->actingAs($this->admin)
         ->postJson(route('payroll.periods.export', $this->period), [
             'format' => 'sage',
-            'recipient_email' => 'comptable@batistack.fr'
+            'recipient_email' => 'comptable@batistack.fr',
         ])
         ->assertStatus(200);
 });
