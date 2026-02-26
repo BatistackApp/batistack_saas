@@ -2,6 +2,7 @@
 
 namespace App\Models\Payroll;
 
+use App\Enums\Payroll\PayrollScaleCategory;
 use App\Traits\HasTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +28,7 @@ class PayrollScale extends Model
             'effective_date' => 'date',
             'metadata' => 'array',
             'value' => 'decimal:4',
+            'category' => PayrollScaleCategory::class,
         ];
     }
 

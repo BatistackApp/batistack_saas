@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Payroll\PayrollExportRequest;
 use App\Http\Requests\Payroll\PayrollPeriodRequest;
 use App\Http\Requests\Payroll\UpdatePayrollStatusRequest;
-use App\Mail\Payroll\PayrollExportMail;
+use App\Jobs\Payroll\ExportPayrollToAccountingJob;
 use App\Models\HR\Employee;
 use App\Models\Payroll\PayrollPeriod;
 use App\Models\Payroll\Payslip;
@@ -16,8 +16,6 @@ use App\Services\Payroll\PayrollAggregationService;
 use App\Services\Payroll\PayrollCalculationService;
 use App\Services\Payroll\PayrollWorkflowService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Storage;
 
 class PayrollPeriodController extends Controller
 {
@@ -117,12 +115,7 @@ class PayrollPeriodController extends Controller
     public function export(PayrollExportRequest $request, PayrollPeriod $payrollPeriod): JsonResponse
     {
         // Simulation de génération de CSV (Normalement via un Service d'export)
-        $fileName = "exports/payroll/export_{$payrollPeriod->id}.csv";
-        Storage::disk('public')->put($fileName, "Compte;Libellé;Débit;Crédit\n641000;Salaires;15000;0");
-
-        Mail::to($request->recipient_email)->send(
-            new PayrollExportMail($payrollPeriod, $fileName)
-        );
+        ExportPayrollToAccountingJob::dispatch($payrollPeriod);
 
         return response()->json(['message' => 'L\'export a été transmis par email au cabinet comptable.']);
     }

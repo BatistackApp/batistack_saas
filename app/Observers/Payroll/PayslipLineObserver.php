@@ -21,19 +21,8 @@ class PayslipLineObserver
         $payslip = $line->payslip;
         if (! $payslip) {
             return;
+        } else {
+            app(\App\Services\Payroll\PayrollCalculationService::class)->refreshTotals($payslip);
         }
-
-        $lines = $payslip->lines;
-
-        $gross = $lines->sum('amount_gain');
-        $deductions = $lines->sum('amount_deduction');
-
-        // Calcul simplifié du Net à payer
-        $netToPay = $gross - $deductions;
-
-        $payslip->updateQuietly([
-            'gross_amount' => $gross,
-            'net_to_pay' => $netToPay,
-        ]);
     }
 }
