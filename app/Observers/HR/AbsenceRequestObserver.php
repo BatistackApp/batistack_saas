@@ -7,16 +7,32 @@ use App\Enums\HR\TimeEntryStatus;
 use App\Models\HR\AbsenceRequest;
 use App\Models\HR\TimeEntry;
 use App\Notifications\HR\AbsenceRequestNotification;
+use App\Traits\PayrollLockObserverTrait;
 use Storage;
 
 class AbsenceRequestObserver
 {
+    use PayrollLockObserverTrait;
+
     public function created(AbsenceRequest $request): void
     {
-        $manager = $request->employee->manager;
-
+        $manager = $request->employee?->manager;
         if ($manager) {
             $manager->notify(new AbsenceRequestNotification($request, 'submitted'));
+        }
+    }
+
+    public function saving(AbsenceRequest $request): void
+    {
+        if (! $request->relationLoaded('employee')) {
+            $request->load('employee');
+        }
+        $tenantId = $request->tenants_id ?? $request->employee?->tenants_id;
+
+        if ($tenantId) {
+            // On vérifie le verrouillage pour la date de début et de fin
+            $this->checkPayrollLock($tenantId, $request->starts_at);
+            $this->checkPayrollLock($tenantId, $request->ends_at);
         }
     }
 
@@ -27,9 +43,8 @@ class AbsenceRequestObserver
     {
         // 1. Notification de l'employé sur la décision (Approuvé ou Refusé)
         if ($request->wasChanged('status')) {
-            $request->employee->user->notify(new AbsenceRequestNotification($request, 'status_changed'));
+            $request->employee?->user?->notify(new AbsenceRequestNotification($request, 'status_changed'));
 
-            // 2. Si l'absence est validée, on nettoie les pointages existants qui feraient doublon
             if ($request->status === AbsenceRequestStatus::Approved) {
                 $this->cleanupConflictingTimeEntries($request);
             }
@@ -41,6 +56,15 @@ class AbsenceRequestObserver
      */
     public function deleting(AbsenceRequest $request): void
     {
+        if (! $request->relationLoaded('employee')) {
+            $request->load('employee');
+        }
+        $tenantId = $request->tenants_id ?? $request->employee?->tenants_id;
+
+        if ($tenantId) {
+            $this->checkPayrollLock($tenantId, $request->starts_at);
+        }
+
         if ($request->justification_path) {
             Storage::disk('public')->delete($request->justification_path);
         }

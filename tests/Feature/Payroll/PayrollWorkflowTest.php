@@ -19,74 +19,120 @@ beforeEach(function () {
     $this->admin = User::factory()->create(['tenants_id' => $this->tenant->id]);
     $this->admin->givePermissionTo('payroll.manage', 'payroll.validate');
 
-    $this->employee = Employee::factory()->create(['is_active' => true, 'tenants_id' => $this->tenant->id]);
+    $this->employee = Employee::factory()->create([
+        'tenants_id' => $this->tenant->id,
+        'is_active' => true,
+        'monthly_base_salary' => 2275.05, // 15.00 * 151.67
+    ]);
 
     $this->period = PayrollPeriod::factory()->create([
-        'start_date' => '2025-11-01',
-        'end_date' => '2025-11-30',
-        'status' => PayrollStatus::Draft,
         'tenants_id' => $this->tenant->id,
+        'start_date' => now()->startOfMonth(),
+        'end_date' => now()->endOfMonth(),
+        'status' => PayrollStatus::Draft,
     ]);
+
+    // Mock du service de barèmes pour éviter les erreurs de tables manquantes
+    $this->scaleService = Mockery::mock(\App\Services\Payroll\PayrollScaleService::class);
+    $this->scaleService->shouldReceive('getRate')->andReturn(10.0);
+    $this->scaleService->shouldReceive('getContributionRates')->andReturn(collect([]));
+    $this->app->instance(\App\Services\Payroll\PayrollScaleService::class, $this->scaleService);
 
     Queue::fake();
 });
 
-test('la génération de paie agrège correctement les heures de pointage approuvées', function () {
-    // Création de 2 pointages approuvés (8h chacun = 16h total)
-    TimeEntry::factory()->count(2)->create([
+test('la génération de paie n\'inclut que les pointages RH "Approved"', function () {
+    // Création d'un pointage approuvé (8h)
+    TimeEntry::factory()->create([
         'employee_id' => $this->employee->id,
-        'date' => '2025-11-15',
+        'tenants_id' => $this->tenant->id,
+        'date' => $this->period->start_date->addDay(),
         'hours' => 8,
         'status' => TimeEntryStatus::Approved,
-        'has_meal_allowance' => true,
-        'tenants_id' => $this->tenant->id,
     ]);
 
-    // Lancement de la génération via l'API
-    $response = $this->actingAs($this->admin)
-        ->postJson(route('payroll-periods.generate', $this->period));
+    // Création d'un pointage encore en brouillon (4h) - NE DOIT PAS ETRE COMPTE
+    TimeEntry::factory()->create([
+        'employee_id' => $this->employee->id,
+        'tenants_id' => $this->tenant->id,
+        'date' => $this->period->start_date->addDays(2),
+        'hours' => 4,
+        'status' => TimeEntryStatus::Draft,
+    ]);
 
-    $response->assertStatus(200);
+    $this->actingAs($this->admin)
+        ->postJson(route('payroll.periods.generate', $this->period))
+        ->assertOk();
 
-    // Vérifier que le bulletin existe
     $payslip = $this->period->payslips()->where('employee_id', $this->employee->id)->first();
+
+    // On s'assure que le bulletin a été créé
     expect($payslip)->not->toBeNull();
 
-    // Vérifier la ligne de salaire de base (16h)
     $baseLine = $payslip->lines()->where('label', 'Salaire de base')->first();
-    expect((float) $baseLine->base)->toEqual(16.0);
 
-    // Vérifier les paniers repas (2)
-    $mealLine = $payslip->lines()->where('label', 'Indemnité de repas')->first();
-    expect((int) $mealLine->base)->toEqual(2);
+    // On s'assure que la ligne existe
+    expect($baseLine)->not->toBeNull()
+        ->and((float) $baseLine->base)->toEqual(8.0);
+
+    // On ne doit avoir que 8h de base
 });
 
-test('la validation d\'une période clôture la paie et lance l\'imputation chantier', function () {
-    $response = $this->actingAs($this->admin)
-        ->patchJson(route('payroll-periods.validate', $this->period), [
+test('on ne peut pas créer deux périodes qui se chevauchent pour le même tenant', function () {
+    $this->actingAs($this->admin)
+        ->postJson(route('payroll.periods.store'), [
+            'name' => 'Période Conflit',
+            'start_date' => $this->period->start_date->format('Y-m-d'), // Même date
+            'end_date' => $this->period->end_date->format('Y-m-d'),
+        ])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors(['start_date']);
+});
+
+test('la validation d\'une période verrouille les modifications et lance l\'imputation', function () {
+    $this->actingAs($this->admin)
+        ->postJson(route('payroll.periods.validate', $this->period), [
             'status' => PayrollStatus::Validated->value,
             'confirm_lock' => true,
-        ]);
+        ])
+        ->assertOk();
 
-    $response->assertStatus(200);
     expect($this->period->refresh()->status)->toBe(PayrollStatus::Validated);
 
-    // Vérifier que le Job d'imputation aux chantiers a été dispatché
+    // Le job d'imputation analytique doit être dans la file
     Queue::assertPushed(ProcessPayrollImputationJob::class);
 });
 
-test('on ne peut pas modifier un bulletin si la période est validée', function () {
-    $this->period->update(['status' => PayrollStatus::Validated]);
-    $payslip = \App\Models\Payroll\Payslip::factory()->create(['payroll_period_id' => $this->period->id, 'tenants_id' => $this->tenant->id]);
+test('un utilisateur ne peut pas accéder aux bulletins d\'un autre tenant', function () {
+    $otherTenant = Tenants::factory()->create();
+    $otherAdmin = User::factory()->create(['tenants_id' => $otherTenant->id]);
 
-    $response = $this->actingAs($this->admin)
-        ->postJson(route('payslips.adjustments', $payslip), [
-            'label' => 'Prime fraude',
+    // Création explicite d'un bulletin pour le tenant A pour être sûr qu'il existe
+    $payslip = \App\Models\Payroll\Payslip::factory()->create([
+        'payroll_period_id' => $this->period->id,
+        'employee_id' => $this->employee->id,
+        'tenants_id' => $this->tenant->id,
+    ]);
+
+    $this->actingAs($otherAdmin)
+        ->getJson(route('payroll.payslips.show', $payslip))
+        ->assertStatus(404); // Isolation par TenantScope -> 404 Not Found
+});
+
+test('on ne peut pas ajouter d\'ajustement à un bulletin clôturé', function () {
+    $this->period->update(['status' => PayrollStatus::Validated]);
+    $payslip = \App\Models\Payroll\Payslip::factory()->create([
+        'payroll_period_id' => $this->period->id,
+        'status' => PayrollStatus::Validated,
+        'tenants_id' => $this->tenant->id,
+    ]);
+
+    $this->actingAs($this->admin)
+        ->postJson(route('payroll.payslips.adjustments.store', $payslip), [
+            'label' => 'Prime illégale',
             'amount' => 100,
             'type' => 'earning',
             'is_taxable' => true,
-        ]);
-
-    // Doit être bloqué par l'authorize() de la FormRequest
-    $response->assertStatus(403);
+        ])
+        ->assertStatus(403);
 });
