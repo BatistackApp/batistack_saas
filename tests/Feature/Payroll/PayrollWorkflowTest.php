@@ -72,10 +72,10 @@ test('la génération de paie n\'inclut que les pointages RH "Approved"', functi
     $baseLine = $payslip->lines()->where('label', 'Salaire de base')->first();
 
     // On s'assure que la ligne existe
-    expect($baseLine)->not->toBeNull();
+    expect($baseLine)->not->toBeNull()
+        ->and((float) $baseLine->base)->toEqual(8.0);
 
     // On ne doit avoir que 8h de base
-    expect((float) $baseLine->base)->toEqual(8.0);
 });
 
 test('on ne peut pas créer deux périodes qui se chevauchent pour le même tenant', function () {
